@@ -1,0 +1,318 @@
+import React from "react";
+import { useSelector } from "react-redux";
+import {
+  createDrawerNavigator,
+  DrawerContentComponentProps,
+} from "@react-navigation/drawer";
+import {
+  CardStyleInterpolators,
+  createStackNavigator,
+} from "@react-navigation/stack";
+import { DARK_BLUE } from "../util/colors";
+
+import HomeScreen from "../screens/HomeScreen";
+import ChangePassword from "../screens/ChangePassword";
+import Info from "../screens/Info";
+import Contact from "../screens/Contact";
+import NotificationListScreen from "../screens/Notification";
+import NotificationDetailScreen from "../screens/NotificationDetails";
+import ViewStatement from "../screens/ViewStatement";
+import PDFComponent from "../screens/PdfComponent";
+import Profile from "../screens/Profile";
+import CardRecharge from "../screens/CardRecharge";
+import AffilatedClub from "../screens/AffilatedClub";
+import PaymentWebViewComponent from "../screens/PaymentWebViewComponent";
+import AuthStack from "./AuthStack";
+
+// import Ionicons from "react-native-vector-icons/Ionicons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+
+import { CustomDrawerContent } from "../navigation/CustomDrawerContent";
+import { RootState } from "../store/store";
+import Room from "../screens/Room";
+import BookRoom from "../screens/Bookings/Room/BookRoom";
+import RoomReview from "../screens/Bookings/Room/RoomReview";
+import MyBookings from "../screens/Bookings/MyBookings";
+import BookBanquet from "../screens/Bookings/BookBanquet";
+import InvoiceDetails from "../screens/Bookings/InvoiceDetails";
+import InvoiceHallDetails from "../screens/Bookings/InvoiceHallDetails";
+import FeedbackScreen from "../screens/FeedBack";
+import Tee from "../screens/Tee/Tee";
+import TeeBuddies from "../screens/Tee/TeeBuddies";
+import Buddies from "../screens/Tee/Buddies";
+import Addgroups from "../screens/Tee/Addgroups";
+import TeeBookingDetail from "../screens/Tee/TeeBookingDetail";
+import Events from "../services/Events/Events";
+import EventBooking from "../services/Events/EventBooking";
+import EventCheckOut from "../services/Events/EventCheckOut";
+import EventPassDetails from "../services/Events/EventBookingDetails";
+import EventPasses from "../services/Events/EventPasses";
+import EventsList from "../services/Events/EventsList";
+import AllActivities from "../screens/Activity/AllActivities";
+import Activity from "../screens/Activity/Activity";
+import ChoosePlayer from "../screens/Activity/ChoosePlayer";
+import Players from "../screens/Activity/Players";
+import ActivityBookingDetail from "../screens/Activity/ActivityBookingDetail";
+import UniversalPaymentScreen from "../screens/Payment/UniversalPaymentScreen";
+import Tables from "../screens/Table/Tables";
+import MMR from "../screens/MMR/MMR";
+import TableBookingDetail from "../screens/Table/TableBookingDetail";
+import FoodOrder from "../screens/KOT/FoodOrder";
+import Cart from "../screens/KOT/Cart";
+import MemberOrders from "../screens/KOT/MemberOrders";
+import KotReceipt from "../screens/KOT/KotReciept";
+import Table from "../screens/KOT/Table";
+import TableOrder from "../screens/KOT/TableOrder";
+import Miscellaneous from "../screens/KOT/Miscellaneous";
+import CameraScreen from "../screens/QRCode/Camera";
+import ClubMenu from "../screens/ClubMenu/ClubMenu";
+
+/* -----------------------------------------------------------
+   TYPE DEFINITIONS FOR NAVIGATION
+----------------------------------------------------------- */
+
+export type DrawerParamList = {
+  Home: undefined;
+};
+
+export type AppStackParamList = {
+  Home: undefined;
+  NotificationDetailScreen: {
+    data:{id:number}
+  };
+  Recharge: undefined;
+  Profile: undefined;
+  ChangePassword: undefined;
+  Info: {
+    index:number,
+     title:string,
+     data:string
+  };
+  Contact: undefined;
+  Notification: undefined;
+  Invoice: undefined;
+  PDFView: undefined;
+  Rooms: undefined;
+  AffilatedClub: undefined;
+  PaymentWebView: {
+      type:string;
+            member_id: string,
+            amount:number|string,
+            data:any;
+  };
+
+  // MyBookings
+  BookRoom: undefined;
+  BookBanquet: undefined;
+  MyBookings: {
+    url:any[],
+    toggle:string
+  };
+  RoomReview: {
+    booking:any;
+  };
+  InvoiceHallDetails: {
+    id:number|string;
+  };
+  InvoiceDetails:  {
+    id:number|string;
+  };
+  FeedBack: undefined;
+  // Tee Booking
+  Tee: undefined;
+  TeeBuddies: undefined;
+  Buddies: undefined;
+  Addgroups: undefined;
+  TeeBookingDetail:undefined;
+
+  //Events
+  Event:{
+    data:number|string
+  };
+  EventBooking:undefined;
+  EventCheckOut:undefined;
+  EventBookingDetails:{
+    bookingId:string|number,
+  };
+  EventPasses:{
+    bookingId:string|number,
+  };
+EventsList:undefined;
+
+//Activity
+AllActivities:undefined;
+Activity:undefined;
+ChoosePlayer:undefined;
+Players:undefined;
+ActivityBookingDetail:{bookingId:number|string};
+
+//Payment
+UniversalPayment:{
+   orderData:any;
+    type:string;
+};
+
+//Tables
+Table:undefined;
+TableBookingDetail:{
+  bookingId:number|string;
+}
+
+//MMR
+MMR:undefined;
+
+//single KOT
+FoodOrder:undefined;
+Cart:undefined;
+KotReceipt:undefined;
+MemberOrders:undefined;
+Tables:undefined;
+TableOrder:undefined;
+Miscellaneous:undefined;
+Camera:undefined;
+ClubMenu:undefined;
+};
+
+export type RootStackParamList = {
+  MainApp: undefined;
+};
+
+/* -----------------------------------------------------------
+   NAVIGATORS
+----------------------------------------------------------- */
+
+const Stack = createStackNavigator<AppStackParamList>();
+const Drawer = createDrawerNavigator<DrawerParamList>();
+const RootStack = createStackNavigator<RootStackParamList>();
+
+/* -----------------------------------------------------------
+   DRAWER NAVIGATOR (Inside App)
+----------------------------------------------------------- */
+
+const DrawerNavigator = () => (
+  <Drawer.Navigator
+    drawerContent={(props: DrawerContentComponentProps) => (
+      <CustomDrawerContent {...props} />
+    )}
+    screenOptions={{
+      headerShown: false,
+      drawerStyle: {
+        backgroundColor: DARK_BLUE,
+        width: "70%",
+        borderRadius: 0,
+      },
+      drawerLabelStyle: {
+        color: "white",
+        fontSize: 16,
+      },
+      drawerInactiveTintColor: "white",
+    }}
+  >
+    <Drawer.Screen
+      name="Home"
+      component={HomeScreen}
+      options={{
+        drawerIcon: ({ size }) => (
+          <MaterialCommunityIcons name="home-outline" size={size} color="white" />
+        ),
+      }}
+    />
+  </Drawer.Navigator>
+);
+
+/* -----------------------------------------------------------
+   STACK SCREENS INSIDE APP
+----------------------------------------------------------- */
+
+const AppStackScreens = () => (
+  <Stack.Navigator
+    screenOptions={{
+      headerShown: false,
+      gestureEnabled: true,
+      cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+    }}
+  >
+    <Stack.Screen name="Home" component={DrawerNavigator} />
+    <Stack.Screen name="NotificationDetailScreen" component={NotificationDetailScreen} />
+    <Stack.Screen name="Recharge" component={CardRecharge} />
+    <Stack.Screen name="Profile" component={Profile} />
+    <Stack.Screen name="ChangePassword" component={ChangePassword} />
+    <Stack.Screen name="Info" component={Info} />
+    <Stack.Screen name="Contact" component={Contact} />
+    <Stack.Screen name="Notification" component={NotificationListScreen} />
+    <Stack.Screen name="Invoice" component={ViewStatement} />
+
+    <Stack.Screen name="PDFView" component={PDFComponent} />
+    <Stack.Screen name="Rooms" component={Room} />
+    <Stack.Screen name="AffilatedClub" component={AffilatedClub} />
+    <Stack.Screen name="PaymentWebView" component={PaymentWebViewComponent} />
+    <Stack.Screen name="UniversalPayment" component={UniversalPaymentScreen} />
+    <Stack.Screen name="ClubMenu" component={ClubMenu} />
+
+{/* TEE BOOKING */}
+
+<Stack.Screen name="Tee" component={Tee} />
+      <Stack.Screen name="TeeBuddies" component={TeeBuddies} />
+      <Stack.Screen name="Buddies" component={Buddies} />
+      <Stack.Screen name="Addgroups" component={Addgroups} />
+      <Stack.Screen name="TeeBookingDetail" component={TeeBookingDetail} />
+    {/* MyBookings*/}
+    <Stack.Screen name="BookRoom" component={BookRoom} />
+    <Stack.Screen name="BookBanquet" component={BookBanquet} />
+    <Stack.Screen name="MyBookings" component={MyBookings} />
+    <Stack.Screen name="RoomReview" component={RoomReview} />
+    <Stack.Screen name="InvoiceHallDetails" component={InvoiceHallDetails} />
+    <Stack.Screen name="InvoiceDetails" component={InvoiceDetails} />
+    <Stack.Screen name="FeedBack" component={FeedbackScreen} />
+
+    {/* Events */}
+     <Stack.Screen name="Event" component={Events} />
+     <Stack.Screen name="EventBooking" component={EventBooking} />
+     <Stack.Screen name="EventCheckOut" component={EventCheckOut} />
+     <Stack.Screen name="EventBookingDetails" component={EventPassDetails} />
+     <Stack.Screen name="EventPasses" component={EventPasses} />
+     <Stack.Screen name="EventsList" component={EventsList} />
+     
+      {/* Activity */}
+      <Stack.Screen name="AllActivities" component={AllActivities} />
+      <Stack.Screen name="Activity" component={Activity} />
+      <Stack.Screen name="ChoosePlayer" component={ChoosePlayer} />
+      <Stack.Screen name="Players" component={Players}/>
+      <Stack.Screen name="ActivityBookingDetail" component={ActivityBookingDetail} />
+      
+    {/* Table */}
+      <Stack.Screen name="Table" component={Tables} />
+      <Stack.Screen name="TableBookingDetail" component={TableBookingDetail} />
+    {/* MMR */}
+      <Stack.Screen name="MMR" component={MMR} />
+
+        {/* KOT */}
+    <Stack.Screen name="FoodOrder" component={FoodOrder} />
+    <Stack.Screen name="Cart" component={Cart} />
+    <Stack.Screen name="MemberOrders" component={MemberOrders} />
+    <Stack.Screen name="KotReceipt" component={KotReceipt} />
+    <Stack.Screen name="Tables" component={Table} />
+    <Stack.Screen name="TableOrder" component={TableOrder} />
+    <Stack.Screen name="Miscellaneous" component={Miscellaneous} />
+    <Stack.Screen name="Camera" component={CameraScreen} />
+  </Stack.Navigator>
+);
+
+/* -----------------------------------------------------------
+   ROOT NAVIGATOR (Handles AUTH)
+----------------------------------------------------------- */
+
+const AppDrawerNavigator = () => {
+  const userData = useSelector((state: RootState) => state.auth);
+  const isLoggedIn = !!userData?.user?.MemberID;
+
+  return !isLoggedIn ? (
+    <AuthStack />
+  ) : (
+    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+      <RootStack.Screen name="MainApp" component={AppStackScreens} />
+    </RootStack.Navigator>
+  );
+};
+
+export default AppDrawerNavigator;

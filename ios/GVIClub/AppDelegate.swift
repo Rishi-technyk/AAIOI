@@ -2,7 +2,7 @@ import UIKit
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
-
+import Firebase
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
   var window: UIWindow?
@@ -14,17 +14,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    UIFont.familyNames.forEach { family in
+      print("Font family: \(family)")
+      UIFont.fontNames(forFamilyName: family).forEach { fontName in
+        print("  \(fontName)")
+      }
+    }
+    FirebaseApp.configure()
     let delegate = ReactNativeDelegate()
     let factory = RCTReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()
-
+    
     reactNativeDelegate = delegate
     reactNativeFactory = factory
 
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "GVIClub",
+      withModuleName: "AFSC",
       in: window,
       launchOptions: launchOptions
     )
