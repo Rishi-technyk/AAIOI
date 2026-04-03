@@ -10,18 +10,17 @@ import {
   Platform,
 } from "react-native";
 
-import RNHTMLtoPDF from "react-native-html-to-pdf";
+import  { generatePDF } from "react-native-html-to-pdf";
 import Pdf from "react-native-pdf";
 import RNFS from "react-native-fs";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { SECONDARY_COLOR } from "../util/colors";
-import Loader from "../components/Loader";
+import { SECONDARY_COLOR } from "../../util/colors";
+// import Loader from "../components/Loader";
 
 const SummeryPDFViewer = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   const { html, date } = route.params;
-
   const [tempPdfPath, setTempPdfPath] = useState<string | null>(null);
   const [loader, setLoader] = useState(false);
 
@@ -38,7 +37,7 @@ const SummeryPDFViewer = () => {
 
       const fileName = `event_summary_preview_${Date.now()}`;
 
-      const file = await RNHTMLtoPDF.convert({
+      const file = await generatePDF({
         html,
         fileName,
         directory: "Documents", // temp only
@@ -72,7 +71,7 @@ const SummeryPDFViewer = () => {
       const basePath =
         Platform.OS === "ios"
           ? RNFS.LibraryDirectoryPath
-          : RNFS.DownloadDirectoryPath;
+          : RNFS.DocumentDirectoryPath;
 
       const destPath = `${basePath}/${fileName}`;
 
@@ -124,7 +123,7 @@ const SummeryPDFViewer = () => {
         <Text style={styles.downloadText}>Download PDF</Text>
       </TouchableOpacity>
 
-      {loader && <Loader />}
+      {/* {loader && <Loader />} */}
     </View>
   );
 };

@@ -26,7 +26,6 @@ const Profile = () => {
     'https://randomuser.me/api/portraits/men/1.jpg'
   );
 
-  console.log( data, '---------------------- data.profile_image ---------------------');
   const dispatch = useDispatch();
 
 const openImagePicker = () => {
@@ -60,13 +59,6 @@ const updateProfilePicture = async (imageUri) => {
       setProfileImage(imageUri);
      const data=await AsyncStorage.getItem('user');
     
-        // if (data) {
-        //   const userData = JSON.parse(data);
-        //  userData.user.profile_image = result.image_url;
-        //  console.log( userData.user, '---------------------- userData.user ---------------------');
-        //   AsyncStorage.setItem('user', JSON.stringify(userData));
-        //   dispatch(loginSuccess(userData))
-        // }
        Toast.show(result.message || 'Profile picture updated successfully!', {
         type: 'success',
       });
@@ -81,7 +73,6 @@ const updateProfilePicture = async (imageUri) => {
   try {
 
     launchImageLibrary(options, response => {
-      console.log( response, '---------------------- response ---------------------');
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.error) {
@@ -144,6 +135,7 @@ const updateProfilePicture = async (imageUri) => {
       // url: url?.contact_us,
     },
   ];
+  console.log( `${DOMAIN.API_IMAGE_URL}${data.profile_image}`, '---------------------- data.profile_image ---------------------');
 return (
     <View style={styles.container}>
       <Header title={'Profile'} />
@@ -152,7 +144,7 @@ return (
         <TouchableOpacity  onPress={openImagePicker}style={styles.body}>
           <Avatar.Image
             size={100}
-            source={{uri: data.profile_image ? `https://gvicc.in/gvicc/public/member_profile/${data.profile_image}` : profileImage}}
+            source={{uri: data.profile_image ? `${DOMAIN.API_IMAGE_URL}${data.profile_image}` : profileImage}}
             style={{backgroundColor: 'white', margin: 20}}
           />
           <Text

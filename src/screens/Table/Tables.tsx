@@ -18,10 +18,11 @@ import { RootState } from '../../store/store';
 import Header from '../../components/Header';
 import CalendarStrip from '../../components/CalendarStrip';
 import { Toast } from 'react-native-toast-notifications';
+import { FONT_FAMILY, LIGHT_GREEN, LIGHT_RED, SECONDARY_COLOR } from '../../util/colors';
 
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
-const Tables = () => {
+const Tables = ({navigation}) => {
   const userData = useSelector((state: RootState) => state.auth);
 
   const today = moment().format('YYYY-MM-DD');
@@ -32,126 +33,205 @@ const Tables = () => {
   const [selectedVenue, setSelectedVenue] = useState<any>(null);
   const [selectedTable, setSelectedTable] = useState<any>(null);
 
+const [hasChecked, setHasChecked] = useState(false);
   /* ==========================
      SINGLE API CALL
   ========================== */
+const { data, isLoading, refetch, isFetching } = useQuery({
+  queryKey: ['availability', selectedDate, hasChecked],
+  queryFn: async () => {
+    let url = `member/table/avaiablity?date=${selectedDate}`;
 
-  const { data, isLoading,refetch } = useQuery({
-    queryKey: ['availability'],
-    queryFn: async () => {
-      const res = await javascriptGet({
-        path: 'member/table/avaiablity',
-        Token: userData.token,
-      });
-      console.log( res, '---------------------- res ---------------------');
+    if (hasChecked && selectedMeal && selectedTime && selectedVenue) {
+      url += `&meal_id=${selectedMeal}&time_id=${selectedTime}&venue_id=${selectedVenue}`;
+    }
+
+    const res = await javascriptGet({
+      path: url,
+      Token: userData.token,
+    });
+    if(res.status ==true){
+
       return res.data;
-    },
-  });
+    }else{
+      Toast.show(res.message,{type:'danger'})
+    }
+  },
+  enabled: true,
+});
+
+
+const { data: bookingData, isLoading: bookingLoading, refetch: refetchBookings } = useQuery({
+  queryKey: ['my-upcoming-table-bookings'],
+  queryFn: async () => {
+    const res = await javascriptGet({
+      path: 'member/table/my-upcoming-bookings',
+      Token: userData.token,
+    });
+    if (!res.status) {
+      return {
+        data:[]
+      };
+    }
+
+    return res.data;
+  },
+});
+console.log( bookingData, '---------------------- bookingData ---------------------');
 
   /* ==========================
      FILTERING LOGIC
   ========================== */
 
-  const dayData = useMemo(
-    () => data?.find((d: any) => d.date === selectedDate),
-    [data, selectedDate]
-  );
+React.useEffect(() => {
+  setSelectedTable(null);
+  setHasChecked(false); // ❗ require recheck
+}, [selectedMeal, selectedTime, selectedVenue]);
+React.useEffect(() => {
+  setSelectedMeal(null);
+  setSelectedTime(null);
+  setSelectedVenue(null);
+  setSelectedTable(null);
+  setHasChecked(false);
 
-  const meals = dayData?.meals || [];
+  refetch(); // only here
+}, [selectedDate]);
+  const meals = data?.meals || [];
 
-  const times = useMemo(() => {
+
+
+  const venues =  data?.venues || [];
+
+
+
+    const times = useMemo(() => {
     if (!selectedMeal) return [];
     return meals.find((m: any) => m.id === selectedMeal)?.times || [];
   }, [selectedMeal, meals]);
 
-  const venues = useMemo(() => {
-    if (!selectedTime) return [];
-    return times.find((t: any) => t.id === selectedTime)?.venues || [];
-  }, [selectedTime, times]);
 
-  const tables = useMemo(() => {
-    if (!selectedVenue) return [];
-    return venues.find((v: any) => v.id === selectedVenue)?.tables || [];
-  }, [selectedVenue, venues]);
-
+const tables = hasChecked ? data?.tables || [] : [];
   /* ==========================
      RESET CASCADE
   ========================== */
 
-  React.useEffect(() => {
-    setSelectedMeal(null);
-    setSelectedTime(null);
-    setSelectedVenue(null);
-    setSelectedTable(null);
-  }, [selectedDate]);
 
-  React.useEffect(() => {
-    setSelectedTime(null);
-    setSelectedVenue(null);
-    setSelectedTable(null);
-  }, [selectedMeal]);
+const renderTableItem = ({ item }: { item: any }) => {
+  const isCancelled = item.status === "Cancelled";
 
-  React.useEffect(() => {
-    setSelectedVenue(null);
-    setSelectedTable(null);
-  }, [selectedTime]);
+  return (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      style={[styles.card, { backgroundColor: "#fff" }]}
+      onPress={() =>
+        navigation.navigate("TableBookingDetail", { bookingId: item.id })
+      }
+    >
+      {/* Header */}
+      <View style={styles.rowBetween}>
+        <Text style={styles.cardTitle}>
+          {item?.meal?.name} - {item?.table?.name}
+        </Text>
 
-  React.useEffect(() => {
-    setSelectedTable(null);
-  }, [selectedVenue]);
+        <View
+          style={[
+            styles.badge,
+            {
+              backgroundColor: isCancelled ? LIGHT_RED : LIGHT_GREEN,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.badgeText,
+              { color: isCancelled ? "red" : SECONDARY_COLOR },
+            ]}
+          >
+            {item.status}
+          </Text>
+        </View>
+      </View>
 
-  /* ==========================
-     BOOKING
-  ========================== */
+      {/* Booking Info */}
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>Booking Date</Text>
+        <Text style={styles.value}>
+          {moment(item.booking_date).format("DD MMM YYYY")}
+        </Text>
+      </View>
 
-  const bookMutation = useMutation({
-    mutationFn: async () => {
-      return javascriptPost({
-        path: 'member/table/create',
-        body: {
-          meal_id: selectedMeal,
-          time_id: selectedTime,
-          venue_id: selectedVenue,
-          table_id: selectedTable,
-          booking_date: selectedDate,
-        },
-        Token: userData.token,
-      });
-    },
-    onSuccess: () => {
-      Toast.show('Booking Successful', { type: 'success' });
-      refetch()
-    },
-    onError: () => {
-      Toast.show('Booking Failed', { type: 'danger' });
-    },
-  });
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>Time Slot</Text>
+        <Text style={styles.value}>{item?.time?.time}</Text>
+      </View>
 
+      <View style={styles.infoRow}>
+        <Text style={styles.label}>Venue</Text>
+        <Text style={styles.value}>{item?.venue?.name}</Text>
+      </View>
+
+      <View style={styles.divider} />
+
+
+    </TouchableOpacity>
+  );
+};
+const bookMutation = useMutation({
+  mutationFn: async () => {
+    const res = await javascriptPost({
+      path: 'member/table/create',
+      body: {
+        meal_id: selectedMeal,
+        time_id: selectedTime,
+        venue_id: selectedVenue,
+        table_id: selectedTable,
+        booking_date: selectedDate,
+      },
+      Token: userData.token,
+    });
+console.log( res, '---------------------- res ---------------------');
+
+    // 🔥 IMPORTANT: throw error if API says false
+    if (!res.status) {
+      throw new Error(res.message || 'Booking failed');
+    }
+
+    return res;
+  },
+    onSuccess: (data) => {
+    Toast.show(data.message || 'Booking Successful', { type: 'success' });
+    refetch();
+      refetchBookings(); // 🔥 important
+  },
+  onError: (error: any) => {
+    Toast.show(error.message || 'Booking Failed', { type: 'danger' });
+  },
+});
   const isValid =
-    selectedMeal && selectedTime && selectedVenue && selectedTable;
+    selectedMeal && selectedTime && selectedVenue ;
 
   /* ==========================
      SHIMMER
   ========================== */
 
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1 }}>
-        <Header title="Book Table" />
-        <ShimmerList />
-      </View>
-    );
-  }
-
   return (
     <View style={{ flex: 1 }}>
       <Header title="Book Table" />
-
-      <ScrollView>
+      <ScrollView stickyHeaderIndices={[5]}>
         <CalendarStrip
           dayOpenBooking={data?.length || 3}
           selectedDate={selectedDate}
           onSelectDate={setSelectedDate}
+        />
+
+ <Dropdown
+          style={styles.dropdown}
+          data={venues}
+          labelField="name"
+          valueField="id"
+          placeholder="Select Venue"
+          value={selectedVenue}
+          onChange={item => setSelectedVenue(item.id)}
         />
 
         <Dropdown
@@ -161,8 +241,10 @@ const Tables = () => {
           valueField="id"
           placeholder="Select Meal"
           value={selectedMeal}
-          onChange={(item) => setSelectedMeal(item.id)}
+          onChange={item => setSelectedMeal(item.id)}
         />
+
+       
 
         <Dropdown
           style={styles.dropdown}
@@ -171,28 +253,20 @@ const Tables = () => {
           valueField="id"
           placeholder="Select Time"
           value={selectedTime}
-          onChange={(item) => setSelectedTime(item.id)}
+          onChange={item => setSelectedTime(item.id)}
         />
 
-        <Dropdown
-          style={styles.dropdown}
-          data={venues}
-          labelField="name"
-          valueField="id"
-          placeholder="Select Venue"
-          value={selectedVenue}
-          onChange={(item) => setSelectedVenue(item.id)}
-        />
-
-        <Dropdown
-          style={styles.dropdown}
-          data={tables}
-          labelField="name"
-          valueField="id"
-          placeholder="Select Table"
-          value={selectedTable}
-          onChange={(item) => setSelectedTable(item.id)}
-        />
+    {tables.length > 0 && (
+  <Dropdown
+    style={styles.dropdown}
+    data={tables}
+    labelField="name"
+    valueField="id"
+    placeholder="Select Table"
+    value={selectedTable}
+    onChange={item => setSelectedTable(item.id)}
+  />
+)}
 
         <TouchableOpacity
           style={[
@@ -200,310 +274,101 @@ const Tables = () => {
             { backgroundColor: isValid ? '#012970' : '#ccc' },
           ]}
           disabled={!isValid || bookMutation.isPending}
-          onPress={() => bookMutation.mutate()}
+    onPress={() => {
+  if (!selectedMeal || !selectedTime || !selectedVenue) {
+    Toast.show('Please select all fields', { type: 'warning' });
+    return;
+  }
+
+  if (!hasChecked) {
+ setHasChecked(true);
+setTimeout(() => {
+  refetch();
+}, 0); // ✅ check availability
+    return;
+  }
+
+  if (!selectedTable) {
+    Toast.show('Please select table', { type: 'warning' });
+    return;
+  }
+
+  bookMutation.mutate(); // ✅ confirm booking
+}}
         >
           {bookMutation.isPending ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text style={{ color: 'white', fontWeight: 'bold' }}>
-              Confirm Booking
-            </Text>
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>
+  {isFetching
+    ? 'Checking...'
+    : !hasChecked
+      ? 'Check Availability'
+      : tables.length > 0
+        ? selectedTable
+          ? 'Confirm Booking'
+          : 'Select Table'
+        : 'No Tables Available'}
+</Text>
           )}
         </TouchableOpacity>
+
+      {!bookingLoading &&
+      <View style={{backgroundColor:'white',padding:20,}}>
+
+      <Text style={{ fontWeight: 'bold', fontSize: 16 }}>
+  Upcoming Bookings
+</Text>
+      </View>
+}
+{bookingLoading ? (
+
+    <ShimmerList />
+) : bookingData?.length === 0 ? (
+  <Text style={{ textAlign: 'center' ,marginTop:40}}>No bookings found</Text>
+) : (
+  bookingData?.map((item: any) => renderTableItem({ item }))
+)
+}
       </ScrollView>
     </View>
+
   );
 };
 
 export default Tables;
 const ShimmerList = () => (
-  <View style={{ padding: 20 }}>
-    {[1, 2, 3, 4].map((i) => (
+  <View style={{  flex: 1, }}>
+    {[1, 2, 3, 4].map(i => (
+      <View style={styles.card} key={i}>
+        <View style={{flexDirection:'row',justifyContent:'space-between'}}>
       <ShimmerPlaceholder
         key={i}
-        height={50}
+        height={30}
         style={{ marginBottom: 20, borderRadius: 10 }}
       />
+      <ShimmerPlaceholder
+        key={i}
+        height={30}
+        width={60}
+        style={{ marginBottom: 20, borderRadius: 10 }}
+      />
+          </View>
+      <ShimmerPlaceholder
+        key={i}
+        height={20}
+        style={{ marginBottom: 20, borderRadius: 10 }}
+      />
+      <ShimmerPlaceholder
+        key={i}
+        height={20}
+        style={{ marginBottom: 20, borderRadius: 10 }}
+      />
+    </View>
     ))}
   </View>
 );
 
-// import React, { useState, useMemo } from 'react';
-// import {
-//   StyleSheet,
-//   View,
-//   Text,
-//   TouchableOpacity,
-//   ActivityIndicator,
-//   ScrollView,
-// } from 'react-native';
-// import { NativeStackScreenProps } from '@react-navigation/native-stack';
-// import { AppStackParamList } from '../../navigation/AppDrawer';
-// import Header from '../../components/Header';
-// import CalendarStrip from '../../components/CalendarStrip';
-// import { Dropdown } from 'react-native-element-dropdown';
-// import { useQuery, useMutation } from '@tanstack/react-query';
-// import { javascriptGet, javascriptPost } from '../../util/api';
-// import { RootState } from '../../store/store';
-// import { useSelector } from 'react-redux';
-// import { Toast } from 'react-native-toast-notifications';
-// import moment from 'moment';
-// import LinearGradient from 'react-native-linear-gradient';
-// import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
-
-// const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
-
-// type Props = NativeStackScreenProps<AppStackParamList, 'Table'>;
-
-// const Tables: React.FC<Props> = () => {
-//   const userData = useSelector((state: RootState) => state.auth);
-
-//   const today = moment().format('YYYY-MM-DD');
-
-//   const [selectedDate, setSelectedDate] = useState(today);
-//   const [meal, setMeal] = useState(null);
-//   const [time, setTime] = useState(null);
-//   const [venue, setVenue] = useState(null);
-//   const [table, setTable] = useState(null);
-
-//   /* ==============================
-//      🔹 API CALLS
-//   ============================== */
-
-//   const {
-//     data: meals,
-//     isLoading: mealsLoading,
-//   } = useQuery({
-//     queryKey: ['meals'],
-//     queryFn: async () => {
-//       const res = await javascriptGet({
-//         path: 'member/table/meals',
-//         Token: userData.token,
-//       });
-//       return res.data;
-//     },
-//   });
-
-//   const {
-//     data: times,
-//     isLoading: timeLoading,
-//   } = useQuery({
-//     queryKey: ['times', meal],
-//     queryFn: async () => {
-//       const res = await javascriptGet({
-//         path: `member/table/times/${meal}`,
-//         Token: userData.token,
-//       });
-//       return res.data;
-//     },
-//     enabled: !!meal,
-//   });
-
-//   const {
-//     data: venues,
-//     isLoading: venueLoading,
-//   } = useQuery({
-//     queryKey: ['venues'],
-//     queryFn: async () => {
-//       const res = await javascriptGet({
-//         path: 'member/table/venues',
-//         Token: userData.token,
-//       });
-//       return res.data;
-//     },
-//   });
-
-//   const {
-//     data: availableTables,
-//     refetch,
-//     isFetching: checkingAvailability,
-//   } = useQuery({
-//     queryKey: ['availability', meal, time, venue, selectedDate],
-//     queryFn: async () => {
-//       const res = await javascriptPost({
-//         path: 'member/table/check-availability',
-//         body: {
-//           meal_id: meal,
-//           time_id: time,
-//           venue_id: venue,
-//           booking_date: selectedDate,
-//         },
-//         Token: userData.token,
-//       });
-//       return res.available_tables;
-//     },
-//     enabled: false,
-//   });
-
-//   const bookMutation = useMutation({
-//     mutationFn: async () => {
-//       return javascriptPost({
-//         path: 'member/table/create',
-//         body: {
-//           meal_id: meal,
-//           time_id: time,
-//           venue_id: venue,
-//           table_id: table,
-//           booking_date: selectedDate,
-//         },
-//         Token: userData.token,
-//       });
-//     },
-//     onSuccess: () => {
-//       Toast.show('Booking Successful', { type: 'success' });
-//       resetForm();
-//     },
-//     onError: () => {
-//       Toast.show('Booking Failed', { type: 'danger' });
-//     },
-//   });
-
-//   const isValid = useMemo(() => {
-//     return selectedDate && meal && time && venue && table;
-//   }, [selectedDate, meal, time, venue, table]);
-
-//   const handleCheckAvailability = () => {
-//     if (!selectedDate || !meal || !time || !venue) {
-//       Toast.show('Please select all fields', { type: 'warning' });
-//       return;
-//     }
-//     refetch();
-//   };
-
-//   const handleBooking = () => {
-//     if (!isValid) {
-//       Toast.show('All fields required', { type: 'warning' });
-//       return;
-//     }
-//     bookMutation.mutate();
-//   };
-
-//   const resetForm = () => {
-//     setMeal(null);
-//     setTime(null);
-//     setVenue(null);
-//     setTable(null);
-//   };
-
-//   /* ==============================
-//      🔹 SHIMMER UI
-//   ============================== */
-
-//   if (mealsLoading) {
-//     return (
-//       <View style={{ flex: 1 }}>
-//         <Header title="Book Table" />
-//         <ShimmerList />
-//       </View>
-//     );
-//   }
-// console.log( availableTables, '---------------------- availableTables ---------------------');
-//   return (
-//     <View style={styles.container}>
-//       <Header title="Book Table" />
-
-//       <ScrollView showsVerticalScrollIndicator={false}>
-//         <CalendarStrip
-//           dayOpenBooking={availableTables?.day||5}
-//           selectedDate={selectedDate}
-//           onSelectDate={setSelectedDate}
-//         />
-
-//         <Dropdown
-//           style={styles.dropdown}
-//           data={meals || []}
-//           labelField="name"
-//           valueField="id"
-//           placeholder="Select Meal"
-//           value={meal}
-//           onChange={item => {
-//             setMeal(item.id);
-//             setTime(null);
-//             setTable(null);
-//           }}
-//         />
-
-//         {timeLoading ? (
-//           <ActivityIndicator style={{ marginTop: 20 }} />
-//         ) : (
-//           <Dropdown
-//             style={styles.dropdown}
-//             data={times || []}
-//             labelField="time"
-//             valueField="id"
-//             placeholder="Select Time"
-//             value={time}
-//             onChange={item => setTime(item.id)}
-//           />
-//         )}
-
-//         {venueLoading ? (
-//           <ActivityIndicator style={{ marginTop: 20 }} />
-//         ) : (
-//           <Dropdown
-//             style={styles.dropdown}
-//             data={venues || []}
-//             labelField="name"
-//             valueField="id"
-//             placeholder="Select Venue"
-//             value={venue}
-//             onChange={item => setVenue(item.id)}
-//           />
-//         )}
-
-//         <TouchableOpacity
-//           style={styles.checkBtn}
-//           onPress={handleCheckAvailability}
-//           disabled={checkingAvailability}
-//         >
-//           {checkingAvailability ? (
-//             <ActivityIndicator color="white" />
-//           ) : (
-//             <Text style={styles.btnText}>Check Availability</Text>
-//           )}
-//         </TouchableOpacity>
-
-//         {availableTables && (
-//           <Dropdown
-//             style={styles.dropdown}
-//             data={availableTables}
-//             labelField="name"
-//             valueField="id"
-//             placeholder="Select Table"
-//             value={table}
-//             onChange={item => setTable(item.id)}
-//           />
-//         )}
-
-//         <TouchableOpacity
-//           style={[
-//             styles.bookBtn,
-//             { backgroundColor: isValid ? '#012970' : '#ccc' },
-//           ]}
-//           disabled={!isValid || bookMutation.isPending}
-//           onPress={handleBooking}
-//         >
-//           {bookMutation.isPending ? (
-//             <ActivityIndicator color="white" />
-//           ) : (
-//             <Text style={styles.btnText}>Confirm Booking</Text>
-//           )}
-//         </TouchableOpacity>
-//       </ScrollView>
-//     </View>
-//   );
-// };
-
-// export default Tables;
-// const ShimmerList = () => (
-//   <View style={{ padding: 20 }}>
-//     {[1, 2, 3, 4].map(i => (
-//       <View key={i} style={{ marginBottom: 20 }}>
-//         <ShimmerPlaceholder height={50} style={{ borderRadius: 10 }} />
-//       </View>
-//     ))}
-//   </View>
-// );
 
 const styles = StyleSheet.create({
   container: {
@@ -536,5 +401,70 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+    infoRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 6,
+    },
+  
+    label: {
+      fontSize: 12,
+      color: '#666',
+      fontFamily: FONT_FAMILY.normal,
+    },
+    value: {
+        fontSize: 13,
+        fontFamily: FONT_FAMILY.semiBold,
+        color: '#333',
+      },
+    
+      badge: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 6,
+      },
+    
+      badgeText: {
+        color: '#FFF',
+        fontSize: 11,
+        fontFamily: FONT_FAMILY.semiBold,
+      },
+    
+      divider: {
+        height: 1,
+        backgroundColor: '#EEE',
+        marginVertical: 10,
+      },
+      empty: {
+        textAlign: 'center',
+        marginTop: 40,
+        fontFamily: FONT_FAMILY.normal,
+        color: '#999',
+        fontSize: 15,
+      },
+      ctaRow: {
+        alignItems: 'flex-end',
+        marginTop: 8,
+      },
+      cardTitle: {
+    fontSize: 15,
+    fontFamily: FONT_FAMILY.bold,
+    color: '#1d4184ff',
+    maxWidth: '70%',
+  },
+
+  rowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  card: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    padding: 16,
+    borderRadius: 14,
+    elevation: 2,
   },
 });

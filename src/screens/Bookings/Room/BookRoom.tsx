@@ -13,6 +13,7 @@ import {
   Pressable,
   useWindowDimensions,
 } from 'react-native';
+
 import moment from 'moment';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Header from '../../../components/Header';
@@ -88,7 +89,6 @@ type Props=NativeStackScreenProps<AppStackParamList,'BookRoom'>
 const RoomBooking: React.FC <Props>= ({navigation}) => {
   const [showSummary, setShowSummary] = useState(false);
   const [rooms, setRooms] = useState<any[]>([]);
-  console.log( rooms, '-----------dfgdf----------- rooms ---------------------');
 const [openCheckIn, setOpenCheckIn] = useState(false);
 const [openCheckOut, setOpenCheckOut] = useState(false);
 

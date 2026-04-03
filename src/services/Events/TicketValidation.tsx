@@ -8,30 +8,37 @@ import {
   Pressable
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import Header from "../components/Header";
-import { javascriptGet } from "../util/api";
-import { ENDPOINT, FONT_FAMILY } from "../util/constant";
+import Header from "../../components/Header";
+import { javascriptGet } from "../../util/api";
+import { ENDPOINT,  } from "../../util/constant";
 import { useSelector } from "react-redux";
-import { DARK_BLUE } from "../util/colors";
-import QRScanModal from "../components/QRScanModal";
+import { DARK_BLUE,FONT_FAMILY } from "../..//util/colors";
+import QRScanModal from "../../components/QRScanModal";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { ActivityIndicator, Modal } from "react-native-paper";
-import ScanStatusPopup from "../components/ScanStatusPopup";
+import { RootState } from "../../store/store";
+import { AppStackParamList } from "../../navigation/AppDrawer";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
-const TicketValidation = ({navigation}) => {
+
+type Props=NativeStackScreenProps<AppStackParamList,'TicketValidation'>;
+
+const TicketValidation:React.FC<Props> = ({navigation,route}) => {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({
     visible: false,
   });
+  const {data}=route.params;
+  console.log( data, '---------------------- data ---------------------');
   const [error, seterror] = useState("");
   const [member, setMember] = useState("");
-  const userData = useSelector((state) => state.auth.userData);
+  const userData = useSelector((state :RootState) => state.auth);
   const [selectedTab, setSelectedTab] = useState(null);
   const [settings, setSettings] = useState<null | []>(null);
   const fetchSettings = async () => {
     const apiObj = {
       path: ENDPOINT.admin_event_setting,
-      Token: userData.data.token,
+      Token: userData?.token,
       body: {},
     };
     const res = await javascriptGet(apiObj);
@@ -46,22 +53,23 @@ const TicketValidation = ({navigation}) => {
   const verifyMember = async () => {
     setLoading(true);
     const response = await javascriptGet({
-      path: `member/verify/${member}`,
-      Token: userData.data.token,
+      path: `event/verify-ticket/${data}?search=${member}`,
+      Token: userData?.token,
       body: {},
     });
     setLoading(false);
+    console.log( response, '---------------------- response ---------------------');
     if (response.success) {
      
       setMember(response.data);
-      navigation.navigate("ValidateMemberTickets", { memberData: response.data });
+      navigation.navigate("ValidateMemberTickets", { bookingIDs: response.data,id:data });
       seterror("");
       setModal({ visible: false });
     } else {
       seterror(response.message || "Invalid Member ID");
     }
   };
-  const role = userData.data.data[0].role;
+  const role = userData?.user?.role;
   useEffect(() => {
     fetchSettings();
   }, []);
@@ -151,7 +159,7 @@ const TicketValidation = ({navigation}) => {
                   marginBottom: 10,
                 }}
               >
-                Verify Member
+                Verify Booking
               </Text>
               <TextInput
                 style={{
@@ -162,8 +170,9 @@ const TicketValidation = ({navigation}) => {
                   borderColor: error && "red",
                 }}
                 placeholderTextColor={"grey"}
-                placeholder="Enter Member ID"
+                placeholder="Enter Name or Mobile Number"
                 value={member}
+              keyboardType="default"
                 onSubmitEditing={verifyMember}
                 onChangeText={(val) => {
                   setMember(val);

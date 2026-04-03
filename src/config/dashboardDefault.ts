@@ -101,3 +101,24 @@ export const drawerDefault = {
         }
     ]
 };
+export const adminLoginDefault = {
+    version: 1,
+    login_tabs: [
+          {
+            id: 14,
+            name: "Event",
+            subtitle: "Event",
+            icon: "event.png",
+            navigate: "EventAdmin",
+            module_key: "1",
+            layout: "small",
+            position: 1,
+            is_active: true,
+            data_json: null,
+            type: "admin login",
+            created_at: null,
+            updated_at: null
+        },
+     
+    ]
+};

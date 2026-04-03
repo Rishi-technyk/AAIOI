@@ -32,10 +32,7 @@ const NotificationListScreen: React.FC<Props> = ({ navigation, route }) => {
         path: `${ENDPOINT.notification}?page=${pageNumber}&per_page=10`,
         Token: token,
       });
-      console.log(
-        response?.data?.length,
-        '---------------------- response?.data.length ---------------------',
-      );
+     
 
       if (response?.data) {
         if (pageNumber === 1) {
@@ -79,6 +76,7 @@ const NotificationListScreen: React.FC<Props> = ({ navigation, route }) => {
       }
     }
   }, [notificationdata]);
+  console.log( notificationdata, '---------------------- notificationdata ---------------------');
   const renderItem = ({ item }) => (
     <Card
       onPress={() =>

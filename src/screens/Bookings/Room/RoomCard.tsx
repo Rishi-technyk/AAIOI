@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import {PUBLIC_URL} from '@env'
 import { Dropdown } from 'react-native-element-dropdown';
 
 interface Props {
@@ -80,7 +81,7 @@ const RoomCard: React.FC<Props> = ({
   const availableRooms = Number(room?.available_rooms ?? 0);
   const disableIncrease = selectedQty >= availableRooms;
   const disableDecrease = selectedQty <= 0;
-  console.log(room, '---------------------- room ---------------------');
+  console.log(`${PUBLIC_URL}${room.image }`, '---------------------- room ---------------------');
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -88,7 +89,8 @@ const RoomCard: React.FC<Props> = ({
       <View style={styles.card}>
         {/* Header */}
         <View style={{ flexDirection: 'row' }}>
-          <Image source={{ uri: room.image }} style={styles.img} />
+          <Image source={{ uri: `${PUBLIC_URL}${room.image }`}} style={styles.img} />
+          {/* <Image source={{ uri: 'https://st.hzcdn.com/simgs/23d10aba05948770_14-2874/home-design.jpg' }} style={styles.img} /> */}
 
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>{room.name}</Text>

@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {  ENDPOINT } from '../../util/constant';
-import { javascriptPost } from '../../util/api';
+import { javascriptPost, javascriptPostLocal } from '../../util/api';
+import { Toast } from 'react-native-toast-notifications';
 
 /* -----------------------------------
    TYPES
@@ -12,6 +13,9 @@ export interface User {
   name: string;
   email?: string;
   [key: string]: any; // if API returns more fields
+}
+interface WaiterPayload {
+  apiRequestObject: OTPRequestBody;
 }
 
 export interface AuthState {
@@ -102,7 +106,45 @@ export const loginWithOTP = createAsyncThunk<
     }
   }
 );
+export const loginWaiter = createAsyncThunk<
+  AuthResponse,
+  WaiterPayload,
+  { rejectValue: string }
+>(
+  ENDPOINT.verify_signin_otp,
+  async ({ apiRequestObject }, thunkAPI) => {
+    try {
+      const response = await javascriptPostLocal({
+          path: ENDPOINT.staff_verify_signin_otp,
+        body: apiRequestObject.body,
+      });
+      console.log( response, '---------------------- response ---------------------');
+      if (!response?.status) {
+         Toast.show(response.message||'Invalid OTP',{type:'danger'})
+        return thunkAPI.rejectWithValue(
+          response?.message || 'Invalid OTP'
+        );
+      }
 
+      // ✅ NORMALIZATION (KEY FIX)
+      const user: User =
+        Array.isArray(response?.data)
+          ? response.data[0]
+          : response.data;
+
+      const token: string =
+        response?.data?.token || response?.token;
+
+      await AsyncStorage.setItem(
+        'user',
+        JSON.stringify({ user, token })
+      );
+      return { user, token };
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
 /* -----------------------------------
    SLICE
 ------------------------------------*/

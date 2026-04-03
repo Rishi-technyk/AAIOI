@@ -1,10 +1,7 @@
 import {
   Alert,
   Image,
-  Linking,
   Modal,
-  Platform,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -23,20 +20,24 @@ import * as api from '../util/api';
 import {ENDPOINT} from '../util/constant';
 import Header from '../components/Header';
 import { Avatar, Card } from 'react-native-paper';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { AppStackParamList } from '../navigation/AppDrawer';
+import DatePickerComponent from '../components/DatePicker';
 
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
-const AffilatedClubScreen = ({navigation}) => {
+type Porps=NativeStackScreenProps<AppStackParamList,'AffilatedClub'>
+const AffilatedClubScreen:React.FC<Porps> = ({}) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredClubs, setFilteredClubs] = useState();
+  const [filteredClubs, setFilteredClubs] = useState<any[]>();
   const [startdate, setstartDate] = useState('From Date');
   const [enddate, setendDate] = useState('To Date');
   const [visible, setVisible] = useState(false);
   const [clubs, setClubs] = useState([]);
 
-  const handleVisit = name => {
+  // const handleVisit = name => {
 
-    Alert.alert(name,"Feature Coming Soon..")
-  };
+  //   Alert.alert(name,"Feature Coming Soon..")
+  // };
   const fetchClubs = async () => {
     const body={}
     const apiRequestObject = {
@@ -55,14 +56,14 @@ const AffilatedClubScreen = ({navigation}) => {
       
       fetchClubs();
     } else {
-      const filtered = clubs?.filter(club =>
+      const filtered = clubs?.filter((club:any) =>
         club.name.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       setFilteredClubs(filtered); 
     }
   }, [searchQuery, clubs]);
 
-  const Datefrom = (date, type) => {
+  const Datefrom = (date:string, type:string) => {
     type === 'startdate' ? setstartDate(date) : setendDate(date);
   };
 
@@ -77,11 +78,11 @@ const AffilatedClubScreen = ({navigation}) => {
   };
 
  
-  const openGoogleMaps = (latitude, longitude) => {
-   Alert.alert("Please Search On Maps")
-  };
+  // const openGoogleMaps = (latitude, longitude) => {
+  //  Alert.alert("Please Search On Maps")
+  // };
 
-  const renderItems = ({ item }) => (
+  const renderItems = ({ item }:{item:any}) => (
     <Card style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={styles.cardContent}>
@@ -258,14 +259,14 @@ const AffilatedClubScreen = ({navigation}) => {
               </Text>
 
               <View style={styles.dateInputContainer}>
-                <DatePickerComp
+                <DatePickerComponent
                   placeholder={startdate}
                   setResetDate={true}
                   stateDate={date => Datefrom(date, 'startdate')}
                 />
               </View>
               <View style={styles.dateInputContainer}>
-                <DatePickerComp
+                <DatePickerComponent
                   placeholder={enddate}
                   setResetDate={true}
                   stateDate={date => Datefrom(date, 'enddate')}

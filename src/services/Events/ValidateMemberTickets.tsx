@@ -10,15 +10,20 @@ import {
   FlatList,
   Pressable,
   Alert,
+  Image,
 } from "react-native";
-import Header from "../components/Header";
+import Header from "../../components/Header";
 import { useSelector } from "react-redux";
-import { javascriptGet } from "../util/api";
+import { javascriptGet, javascriptPost } from "../../util/api";
 import Icon from "react-native-vector-icons/Entypo";
-import { FONT_FAMILY } from "../util/constant";
 import { Toast } from "react-native-toast-notifications";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AppStackParamList } from "../../navigation/AppDrawer";
+import { FONT_FAMILY } from "../../util/colors";
+import { RootState } from "../../store/store";
+import { DOMAIN } from "../../util/constant";
+import TicketShimmer from "../../components/TicketShimmer";
+
 
 // Enable animation for Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -26,9 +31,10 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 }
 type Props=NativeStackScreenProps<AppStackParamList,'ValidateMemberTickets'>
 const ValidateMemberTickets:React.FC<Props> = ({ route,navigation }) => {
-  const { memberData } = route.params;
-  const userData = useSelector((state) => state.auth.userData);
-
+  const { bookingIDs=[],id } = route.params;
+  const [loading, setLoading] = useState(true);
+  const userData = useSelector((state:RootState) => state.auth);
+const [event, setEvent] = useState("");
   const [bookings, setBookings] = useState([]);
   const [openIndex, setOpenIndex] = useState(null);
 
@@ -52,23 +58,33 @@ const ValidateMemberTickets:React.FC<Props> = ({ route,navigation }) => {
     );
   };
 
-  const fetchBookings = async (nextPage = 1) => {
-    const res = await javascriptGet({
-      path: `event/bookings/${memberData.id}?page=${nextPage}&limit=10`,
-      Token: userData.data.token,
-    });
-   
-    if (res?.status) {
-      if (nextPage === 1) {
-        setBookings(res.data.bookings);
-      } else {
-        setBookings(prev => [...prev, ...res.data.bookings]);
-      }
+const fetchBookings = async (nextPage = 1) => {
+  if (nextPage === 1) setLoading(true);
 
-      setHasMore(nextPage < res.data.pagination.last_page);
+  const res = await javascriptPost({
+    path: `event/bookings/${id}?page=${nextPage}&limit=10`,
+    Token: userData?.token,
+    body: {
+      booking_ids: bookingIDs,
+    },
+  });
+
+  if (res?.status === true) {
+    if (nextPage === 1) {
+      setBookings(res.data.bookings);
+      setEvent(res.data.event);
+    } else {
+      setBookings(prev => [...prev, ...res.data.bookings]);
     }
-  };
 
+    setHasMore(nextPage < res.data.pagination.last_page);
+  }
+
+  setLoading(false);
+};
+
+
+console.log( bookings, '---------------------- event ---------------------');
   useEffect(() => {
     fetchBookings(1);
   }, []);
@@ -85,7 +101,6 @@ const ValidateMemberTickets:React.FC<Props> = ({ route,navigation }) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setOpenIndex(openIndex === index ? null : index);
   };
-
   const handleChangeStatus = (participantId, type, bookingId) => {
     if (!participantId || !type) return;
     if (!["entry", "food", "alcohol", "non_alcohol"].includes(type)) return;
@@ -106,7 +121,7 @@ const ValidateMemberTickets:React.FC<Props> = ({ route,navigation }) => {
   const updateParticipantStatus = async (participantId, type, bookingId) => {
     const res = await javascriptGet({
       path: `event/participant/status/${participantId}/${type}`,
-      Token: userData.data.token,
+      Token: userData?.token,
     });
     if (res?.status) {
       updateLocalParticipant(bookingId, res.participant);
@@ -116,11 +131,11 @@ const ValidateMemberTickets:React.FC<Props> = ({ route,navigation }) => {
     }
   };
 const renderParticipant = (p, bookingId) => {
-  const role = userData.data.data[0].role;
+  const role = userData?.user?.role;
   // permissions matching backend
-  const canEntry = ["Admin", "EventEntry"].includes(role);
-  const canFood = ["Admin", "EventFood"].includes(role);
-  const canDrink = ["Admin", "EventDrinks"].includes(role);
+  const canEntry = ["Event Admin", "EventEntry"].includes(role);
+  const canFood = ["Event Admin", "EventFood"].includes(role);
+  const canDrink = ["Event Admin", "EventDrinks"].includes(role);
 
   // Drink eligibility (must match backend)
   const isSeniorComplimentary =
@@ -236,7 +251,7 @@ const renderParticipant = (p, bookingId) => {
     const isOpen = openIndex === index;
     return (
       <View style={styles.card}>
-    {userData?.data?.data[0]?.role == 'Admin'&&    <Pressable
+    {userData?.user?.role == 'Event Admin'&&    <Pressable
                       onPress={() =>
                         navigation.navigate("EventPasses", { bookingId: item.id })
                       }
@@ -269,6 +284,13 @@ const renderParticipant = (p, bookingId) => {
             ) : (
               <Text style={styles.noData}>No participants</Text>
             )}
+          {
+              item.seats.length > 0 && <View>
+                <Text style={styles.sectionTitle}>Seats :{item.seats.map((s:any)=>s.seat.seat_code).join(', ')}</Text>
+              
+           
+              </View>
+            }
           </View>
         )}
       </View>
@@ -278,15 +300,47 @@ const renderParticipant = (p, bookingId) => {
   return (
     <View style={{ flex: 1 }}>
       <Header title="Validate Member Tickets"/>
+{event ? 
+<View>
+  <View style={{ backgroundColor: "#f6f6f8", padding: 10, alignItems: "center",flexDirection:'row' }}>
+  <Image
+    source={{ uri: `${DOMAIN.IMG}event/${event.image}` }}
+    style={{ width: 100, height: 100, alignSelf: 'center' }}
+  />
+  <View style={{ flex: 1, paddingLeft: 10, justifyContent: "flex-start" ,marginLeft:20}}>
 
-      <FlatList
-        data={bookings}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderBookings}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.4}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      />
+<Text style={{fontSize:16,fontFamily:FONT_FAMILY.bold,marginVertical:10}}>{event.name}</Text>
+<Text style={{fontSize:16,fontFamily:FONT_FAMILY.bold,}}>{event.location}</Text>
+<Text style={{fontSize:14,fontFamily:FONT_FAMILY.normal}}>{new Date(event.event_date).toLocaleString()}</Text>
+  </View>
+  </View>
+  
+</View> : null}
+    {loading ? (
+  <FlatList
+    data={[1,2,3,4,5]}
+    keyExtractor={(item) => item.toString()}
+    renderItem={() => <TicketShimmer />}
+  />
+) : bookings.length === 0 ? (
+  <View style={styles.noBookingContainer}>
+    <Image
+      source={require("../../../assets/images/norecord.png")}
+      style={styles.noBookingImg}
+    />
+    <Text style={styles.noBookingText}>No Bookings Found</Text>
+  </View>
+) : (
+  <FlatList
+    data={bookings}
+    keyExtractor={(item) => item.id.toString()}
+    renderItem={renderBookings}
+    onEndReached={loadMore}
+    onEndReachedThreshold={0.4}
+    contentContainerStyle={{ paddingBottom: 20 }}
+  />
+  
+)}
     </View>
   );
 };
@@ -339,6 +393,25 @@ const styles = StyleSheet.create({
     // justifyContent: "space-between",
     // alignItems: "center",
   },
+  noBookingContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: 60,
+},
+
+noBookingImg: {
+  width: 180,
+  height: 180,
+  resizeMode: "contain",
+  marginBottom: 10,
+},
+
+noBookingText: {
+  fontSize: 16,
+  color: "#777",
+  fontFamily: FONT_FAMILY.bold,
+},
   participentCont:{
     // justifyContent: "space-evenly",
           flexDirection: "row",

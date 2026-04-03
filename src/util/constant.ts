@@ -3,6 +3,7 @@ import {
   APP_NAME,
   API_BASE_URL,
   API_IMAGE_URL,
+  API_LOCAL_URL,
   API_CATEGORY_URL,
   PUSHER_APP_CLUSTER,
   WS_PORT,
@@ -22,6 +23,7 @@ export interface EnvConfig {
   API_BASE_URL: string;
   API_IMAGE_URL: string;
   API_CATEGORY_URL: string;
+  API_LOCAL_URL: string;
   PUSHER_APP_CLUSTER: string;
   WS_PORT: string;
   WS_HOST: string;
@@ -39,9 +41,11 @@ export const ENV: EnvConfig = {
   PUSHER_APP_CLUSTER,
   WS_PORT,
   WS_HOST,
+  API_LOCAL_URL,
   PUSHER_APP_KEY,
   BROADCASTER,
-  PUBLIC_URL
+  PUBLIC_URL,
+  ICON_URL
 };
 
 /* ------------------------------------------------------------------
@@ -51,7 +55,8 @@ export const ENV: EnvConfig = {
 export const DOMAIN = {
   APP_NAME:APP_NAME,
   BASE: API_BASE_URL,
-  API_IMAGE_URL: `https://gvicc.in/gvicc/public/profile_pictures/`,
+  LOCAL:API_LOCAL_URL,
+  API_IMAGE_URL:API_IMAGE_URL,
   PAY_DOMAIN: "https://dsoi.org.in/membersection/mobileAPI/",
   SERVER_DOMAIN: "https://dsoi.org.in/",
   NEW_URL: "https://dsoi.org.in/",
@@ -162,8 +167,9 @@ export const ENDPOINT = {
 
   //Event
   event_setting:'member/events/',
-  admin_event_setting:'event/settings/',
-  event_admin_dashboard:'event/event-summary',
+  all_event:'member/get/events',
+  admin_event_setting:'event/settings',
+  event_admin_dashboard:'event/event-summary?',
   event_admin_payment_type:'event/payment-types',
   ticket_preview:'member/tickets/preview',
   event_booking_detail:'member/event-bookings',
@@ -178,7 +184,23 @@ export const ENDPOINT = {
        //mmr
        get_mmr_settings:'member/get-mmr',
        register_mmr_member:'member/register/mmr-member',
-       mmr_history:'member/mmr-history'
+       mmr_history:'member/mmr-history',
+
+
+       //KOT
+           waiter_login: "waiter/login",
+      staff_verify_signin_otp: "waiter/verify-otp",
+       staff_group_items:'staff/group/items',
+  member_group_items:'member/group/items',
+ waiter_place_order:'staff/place-order',
+  place_order:'member/place-order',
+ get_active_orders:'staff/get-active-orders',
+ get_cart_data:'staff/get-cart-data?',
+ get_kot_reciept:'staff/get-reciept/',
+  get_member_kot_reciept:'member/get-reciept/',
+ complete_kot_order:'staff/complete-order/',
+ modifyKOT:'staff/modify-kot',
+ kot_remarks:'staff/kot-remarks',
 } as const;
 
 // Optional: Export Type for endpoint keys

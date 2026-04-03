@@ -27,6 +27,7 @@ import { FONT_FAMILY } from "../../util/colors";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AppStackParamList } from "../../navigation/AppDrawer";
 import { RootState } from "../../store/store";
+import { Toast } from "react-native-toast-notifications";
 
 
 type Props=NativeStackScreenProps<AppStackParamList,'Event'>
@@ -35,9 +36,8 @@ const Events:React.FC<Props>=({ navigation,route })=> {
   const [waiters, setWaiters] = useState(0);
   const [memberVerifyModal, setMemberVerifyModal] = useState(false);
   const [tickets, setTickets] = useState<any[]>([]);
-  console.log( route, '---------------------- tickets ---------------------');
   const userData = useSelector((state:RootState) => state.auth);
-
+  const [isSeatsAvailable, setIsSeatsAvailable] = useState(false);
   const [member, setMember] = useState("");
   const [error, seterror] = useState("");
   const [event, setEvent] = useState<any>(null);
@@ -55,8 +55,10 @@ const Events:React.FC<Props>=({ navigation,route })=> {
       setTickets(res.tickets);
       setEvent(res.event);
       setLoading(false);
+      setIsSeatsAvailable(res.is_seat_booking_available||false);
     }
   };
+
   useFocusEffect(
     useCallback(() => {
       // Reset state if needed
@@ -90,7 +92,7 @@ const Events:React.FC<Props>=({ navigation,route })=> {
   const totalTickets = Object.values(cart).reduce((a, b) => a + b, 0);
 
   useEffect(() => {
-    if (userData?.user?.role === "Admin") {
+    if (userData?.user?.role === "Event Admin") {
       setMemberVerifyModal(true);
     }
   }, []);
@@ -125,6 +127,8 @@ const Events:React.FC<Props>=({ navigation,route })=> {
       ]).start();
     }
   }, [totalTickets, waiters]);
+
+  console.log( tickets, '---------------------- event ---------------------');
   const verifyMember = async () => {
     setLoading(true);
     const response = await javascriptGet({
@@ -145,9 +149,10 @@ const Events:React.FC<Props>=({ navigation,route })=> {
   return (
     <View style={styles.container}>
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 140 }}
+        contentContainerStyle={{ paddingBottom: 140,backgroundColor:'white' }}
         stickyHeaderIndices={[0]}
         bounces={false}
+
         showsVerticalScrollIndicator={false}
       >
         {event && (
@@ -157,6 +162,7 @@ const Events:React.FC<Props>=({ navigation,route })=> {
                 uri: `${PUBLIC_URL}event/${event.image}`,
               }}
               style={styles.banner}
+                resizeMode="stretch"
             />
             <View style={styles.eventBox}>
               <Text style={styles.title}>{event.name}</Text>
@@ -214,6 +220,84 @@ const Events:React.FC<Props>=({ navigation,route })=> {
             >
               Member Name:{member?.DisplayName}
             </Text>
+          </View>
+        )}
+        {member?.role=== "Event Admin" && (
+          <View>
+           {member.Mobile ?
+           <Text
+              style={{
+                color: "black",
+                fontFamily: FONT_FAMILY.semiBold,
+                marginBottom: 10,
+                marginHorizontal: 10,
+              }}>Mobile Number</Text> 
+           : <Text
+              style={{
+                color: "red",
+                fontFamily: FONT_FAMILY.semiBold,
+                marginBottom: 10,
+                marginHorizontal: 10,
+              }}>Please enter a valid Mobile Number</Text>}
+              <TextInput 
+              style={{
+                backgroundColor: "#f0f0f0",
+                padding: 10,
+                color: "black",
+                borderWidth: error ? 1 : 0,
+                borderColor: error && "red",
+                marginHorizontal: 10,
+                borderRadius: 5,
+              }}
+              maxLength={10}
+              keyboardType="numeric"
+              placeholderTextColor={"grey"}
+              placeholder="Enter Mobile Number"
+              value={member.Mobile}
+              onSubmitEditing={verifyMember}
+              onChangeText={(val) => {
+                setMember((prev) => ({ ...prev, Mobile: val }));
+              }}
+              />
+          </View>
+        )}
+        {member?.role=== "Event Admin" && (
+          <View>
+          {member.DisplayName ?
+          <Text
+              style={{
+                color: "black",
+                fontFamily: FONT_FAMILY.semiBold,
+                marginBottom: 10,
+                marginHorizontal: 10,
+              }}>Name</Text>
+          :  <Text
+              style={{
+                color: "red",
+                fontFamily: FONT_FAMILY.semiBold,
+                marginBottom: 10,
+                marginHorizontal: 10,
+              }}>Please enter a valid Name</Text>}
+              <TextInput 
+              style={{
+                backgroundColor: "#f0f0f0",
+                padding: 10,
+                color: "black",
+                borderWidth: error ? 1 : 0,
+                borderColor: error && "red",
+                marginHorizontal: 10,
+                borderRadius: 5,
+              }}
+              maxLength={50}
+              keyboardType="default"
+              placeholderTextColor={"grey"}
+              placeholder="Enter Name"
+              value={member.DisplayName}
+              onSubmitEditing={verifyMember}
+              onChangeText={(val) => {
+                setMember((prev) => ({ ...prev, DisplayName: val }));
+              }}
+              />
           </View>
         )}
         <Text style={styles.sectionTitle}>Select Tickets</Text>
@@ -344,8 +428,31 @@ const Events:React.FC<Props>=({ navigation,route })=> {
         <Pressable
           style={styles.nextBtn}
           // disabled={totalAmount === 0}
+          
           onPress={() =>
-            navigation.navigate("EventCheckOut", {
+
+         {
+        if(member.role === "Event Admin" && (!member.Mobile || !member.DisplayName)){
+          Toast.show("Please enter valid Guest details", {
+            type:'warning',
+            placement:'top',
+            duration:3000
+          });
+          return;
+        }
+
+          isSeatsAvailable ? navigation.navigate("EventSeats",
+            {
+                event,
+              tickets: tickets, // ✅ IMPORTANT
+              cart,
+              totalAmount,
+              totalTickets,
+              waiters,
+             member:
+                userData?.user?.role === "Event Admin" ? member : undefined,
+            }
+           ) : navigation.navigate("EventCheckOut", {
               event,
               tickets: tickets, // ✅ IMPORTANT
               cart,
@@ -353,11 +460,11 @@ const Events:React.FC<Props>=({ navigation,route })=> {
               totalTickets,
               waiters,
               member:
-                userData?.role === "Admin" ? member : undefined,
-            })
+                userData?.user?.role === "Event Admin" ? member : undefined,
+            })}
           }
         >
-          <Text style={styles.nextTxt}>Check Out</Text>
+          <Text style={styles.nextTxt}>{isSeatsAvailable ? 'Book Seats' : 'Check Out'}</Text>
           <Icon name="keyboard-arrow-right" size={20} color="white" />
         </Pressable>
       </Animated.View>

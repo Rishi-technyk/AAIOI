@@ -36,6 +36,47 @@ export function javascriptPost<T = any>(
     const request: RequestInit = {
       method: 'POST',
       headers: {
+         'Accept': 'application/json',     
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(apiRequestObject.body || {}),
+    };
+
+    const timeoutId = setTimeout(() => {
+      reject("timeout");
+    }, NETWORK_CONSTANTS.connectionTimeout);
+
+    fetch(path, request)
+      .then((response) => {
+        clearTimeout(timeoutId);
+
+        response.json()
+          .then((jsonResponse: ApiResponse<T>) => {
+            resolve(jsonResponse);
+          })
+          .catch(() => {
+            resolve(response as any);
+          });
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
+}
+export function javascriptPostLocal<T = any>(
+  apiRequestObject: ApiRequestObject
+): Promise<ApiResponse<T>> {
+  const path = `${DOMAIN.LOCAL}${apiRequestObject.path}`;
+  console.log(path, "---------------path---------------");
+  console.log(path, "---------", apiRequestObject);
+
+  const token = apiRequestObject.Token ?? "";
+
+  return new Promise((resolve, reject) => {
+    const request: RequestInit = {
+      method: 'POST',
+      headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
@@ -110,90 +151,45 @@ export function javascriptGet<T = any>(
       });
   });
 }
+export function javascriptGetLocal<T = any>(
+  apiRequestObject: ApiRequestObject,
+  mockURL: string = ''
+): Promise<ApiResponse<T>> {
+  let path = `${DOMAIN.LOCAL}${apiRequestObject.path}`;
 
+  if (mockURL.length > 0) {
+    path = mockURL;
+  }
 
-// import { DOMAIN, NETWORK_CONSTANTS } from './constant';
+  const token = apiRequestObject.Token ?? "";
 
-// // import AsyncStorage from '@react-native-community/async-storage';
-// const TAG_API = 'API';
+  return new Promise((resolve, reject) => {
+    const request: RequestInit = {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    };
 
-// /*
-//   * Normal JavaScript POST fetch function
-//   * Not using SSL pinning here
-//   * FORM
-// */
-// export function javascriptPost(apiRequestObject) {
-// 	const path = `${DOMAIN.BASE}${apiRequestObject.path}`;
-// 	console.log(path, "---------------path---------------");
-// 	let token = `${apiRequestObject.Token}`;
-// 	console.log(path,"---------",apiRequestObject)
-// 	return new Promise((resolve, reject) => {
-// 		const request = {
-// 			method: 'post',
-// 			headers: {
-// 				'Content-Type': 'application/json',
-// 				'Authorization': `Bearer ${apiRequestObject.Token}`
-// 			},
-// 			body: JSON.stringify(apiRequestObject.body)
-// 		};
+    const timeoutId = setTimeout(() => {
+      reject("timeout");
+    }, NETWORK_CONSTANTS.connectionTimeout);
 
-// 		const timeoutId = setTimeout(function () {
-// 			reject(("timeout"));
-// 		}, NETWORK_CONSTANTS.connectionTimeout);
+    fetch(path, request)
+      .then((response) => {
+        clearTimeout(timeoutId);
 
-// 		fetch(path, request)
-// 			.then((response) => {
-// 				clearTimeout(timeoutId);
-// 				response.json()
-// 					.then(jsonResponse => {
-// 						resolve(jsonResponse);
-// 					})
-// 					.catch(err => {
-// 						resolve(response);
-// 					});
-// 			})
-// 			.catch((error) => {
-             
-// 				reject(error);
-// 			});
-// 	});
-// }
-
-// /*
-//   * Normal JavaScript GET fetch function
-//   * Not using SSL pinning here
-// */
-// export function javascriptGet(apiRequestObject, mockURL = '') {
-// 	let path = `${DOMAIN.BASE}${apiRequestObject.path}`;
-// 	let token = `${apiRequestObject.Token}`;
-// 	if (mockURL.length > 0) {
-// 		path = mockURL;
-// 	}
-// 	return new Promise((resolve, reject) => {
-// 		const request = {
-// 			method: 'GET',
-// 			headers: {
-// 				"Content-Type": 'application/json',
-// 				"Authorization": `Bearer ${token}`,
-// 			}
-// 		};
-// 		const timeoutId = setTimeout(function () {
-// 			reject(("timeout"));
-// 		}, NETWORK_CONSTANTS.connectionTimeout);
-
-// 		fetch(path, request)
-// 			.then((response) => {
-// 				clearTimeout(timeoutId);
-// 				response.json()
-// 					.then(jsonResponse => {
-// 						resolve(jsonResponse);
-// 					})
-// 					.catch(err => {
-// 						resolve(response);
-// 					});
-// 			})
-// 			.catch((error) => {
-// 				reject(error);
-// 			});
-// 	});
-// }
+        response.json()
+          .then((jsonResponse: ApiResponse<T>) => {
+            resolve(jsonResponse);
+          })
+          .catch(() => {
+            resolve(response as any);
+          });
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
+}

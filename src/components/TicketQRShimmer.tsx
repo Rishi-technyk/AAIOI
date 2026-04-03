@@ -4,16 +4,20 @@ import { View, StyleSheet } from "react-native";
 export default function TicketQRShimmer() {
   return (
     <View style={styles.card}>
+      <View style={[styles.line,{height:50}]} />
+      <View style={[styles.line,{height:10}]}/>
       <View style={styles.qr} />
-      <View style={styles.line} />
-      <View style={styles.lineSmall} />
+      <View style={[styles.line,{height:20}]} />
+      <View style={[styles.line,{height:10,width: 300}]} />
+      <View style={[styles.line,{height:10}]} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
+    justifyContent: "space-evenly",
+   flex:1,
     borderRadius: 14,
     padding: 16,
     marginBottom: 12,
@@ -29,13 +33,14 @@ const styles = StyleSheet.create({
     height: 14,
     backgroundColor: "#e5e7eb",
     borderRadius: 6,
-    marginTop: 16,
+    marginTop: 20,
   },
   lineSmall: {
+    
     height: 12,
     width: "60%",
     backgroundColor: "#e5e7eb",
     borderRadius: 6,
-    marginTop: 8,
+    marginTop: 20,
   },
 });

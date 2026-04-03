@@ -65,7 +65,6 @@ const TeeBookingDetail = ({ navigation, route }) => {
       });
     }
   };
-console.log( details, '---------------------- details ---------------------');
 
 
 const refetchdetails=()=>{

@@ -5,7 +5,6 @@ import { FONT_FAMILY } from "../util/colors";
 
 export default function TicketCard({ data, quantity, onChange,onlyVip }: any) {
 
-  console.log( data, '---------------------- data ---------------------');
 
   return (
     <View style={[styles.card, data.sold_out && styles.disabled]}>

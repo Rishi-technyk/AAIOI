@@ -111,9 +111,9 @@ const [currentTime, setCurrentTime] = useState(Date.now());
 
 const getStatusInfo = useCallback((item: any) => {
   const now = new Date(currentTime);
-  const lockedTill = item.locked_till ? new Date(item.locked_till) : null;
+  const lockedTill = item.locked_till ? new Date(item.locked_till.replace(' ', 'T') + 'Z') : null;
 
-  switch (true) {
+switch (true) {
     case item.is_locked_by_admin === 1:
       return { label: "Reserved", color: "black", backgroundColor: "#e0e0e0" };
 
@@ -148,7 +148,6 @@ const handleToBeReserved = useCallback(async (item) => {
     tee_sheet_id:item.id,
         }
       })
-      console.log( res.locked_till, '---------------------- res.locked_till ---------------------');
       if(res.status == true){
           navigation.navigate("TeeBuddies", {
             data: item,
@@ -187,7 +186,7 @@ const filteredSheets = useMemo(() => {
   const renderTeeSheets = React.useCallback(({ item }) => {
     const statusInfo = getStatusInfo(item);
   const now = new Date(currentTime);
-  const lockedTill = item.locked_till ? new Date(item.locked_till) : null;
+  const lockedTill = item.locked_till ? new Date(item.locked_till.replace(' ', 'T') + 'Z'): null;
 
   const isReservedByOther =
     lockedTill &&

@@ -20,7 +20,7 @@ import TicketShimmer from "../../components/TicketShimmer";
 import RNHTMLtoPDF, { generatePDF } from 'react-native-html-to-pdf';
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AppStackParamList } from "../../navigation/AppDrawer";
-import { FONT_FAMILY ,TICKET_THEME} from "../../util/colors";
+import { FONT_FAMILY ,} from "../../util/colors";
 
 type Props=NativeStackScreenProps<AppStackParamList ,'EventBookingDetails'>
 
@@ -33,18 +33,9 @@ const EventPassDetails:React.FC<Props> = ({ navigation,route }) =>{
   const [loading, setLoading] = useState(true);
   const [loadingShare, setLoadingShare] = useState(false);
   const [booking, setBooking] = useState<any>(null);
-  const getAmountByType = (types: any[], ticketType: number) =>
-    
-  {
-   return  Number(
-      types?.find((t) => Number(t.id) == ticketType)
-        ?.amount || 0
-    );
-  }
 
   const fetchDetails = async () => {
     setLoading(true);
-
     const res = await javascriptGet({
       path: `${ENDPOINT.event_booking_detail}/${bookingId}`,
       Token: userData?.token,
@@ -70,10 +61,12 @@ const EventPassDetails:React.FC<Props> = ({ navigation,route }) =>{
       // setPasses(grouped);
    const grouped = Object.values(
   res.participants.reduce((acc: any, p: any) => {
+
     const key = Number(p.ticket_id);
 
     if (!acc[key]) {
       acc[key] = {
+        amount:p.amount,
         ticket_id: Number(p.ticket_id),
         ticket_type: p.ticket_type,
         title: p.title,
@@ -82,10 +75,12 @@ const EventPassDetails:React.FC<Props> = ({ navigation,route }) =>{
       };
     }
 
+
     acc[key].count += 1;
     return acc;
   }, {})
 );
+
 
 setPasses(grouped);
 
@@ -140,12 +135,15 @@ try {
         height: 50%;
         padding: 10px;
         box-sizing: border-box;
+    
+  );
       }
 
       .ticket-bg {
         width: 100%;
         height: 100%;
         background-size: cover;
+         
         background-position: center;
         display: flex;
         flex-direction: column;
@@ -153,8 +151,18 @@ try {
         align-items: center;
         color: white;
         text-align: center;
+         
       }
-
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.6),
+    rgba(0,0,0,0.3),
+    rgba(0,0,0,0.6)
+  );
+}
       .logo {
         width: 60px;
         height: 60px;
@@ -212,7 +220,7 @@ try {
     const group = bookingParticipants.slice(i, i + 4);
 
     group.forEach((p) => {
-      const bg = TICKET_THEME[p.ticket_type]?.image;
+      const bg = DOMAIN.IMG+'passes/'+ p.image_background;
 
       html += `
         <div class="ticket">
@@ -243,6 +251,7 @@ try {
             <div class="info">${booking.formate.footer2}</div>
             <div class="info">${booking.formate.footer3}</div>
 
+            ${booking.seats.length && booking.seats.map((s: any) => `<div class="info">Seat: ${s.seat_code}</div>`).join("")}
           </div>
         </div>
       `;
@@ -260,7 +269,6 @@ return await generatePDF({
  Alert.alert('Unable to create PDF.') 
 }
 };
-
 const shareAllTickets = async ():Promise<void> => {
   try {
     setLoadingShare(true)
@@ -279,7 +287,8 @@ const shareAllTickets = async ():Promise<void> => {
   }
 };
   const renderItem = ({ item }: any) => {
-    const amount = item.is_complimentary ? 0:getAmountByType(booking?.types, item.ticket_id);
+   
+    const amount = item.is_complimentary ? 0:item.amount;
     const subtotal = amount * item.count;
     // filter participants for this pass
     const relatedParticipants = bookingParticipants.filter(
@@ -363,9 +372,19 @@ const shareAllTickets = async ():Promise<void> => {
             <Text style={styles.value}>₹{booking?.waiter_amount}</Text>
           </View>
         )}
+          {booking?.seats?.length > 0 && (
+        <View
+        style={styles.card}
+       
+      >
+            <Text style={[styles.label,{maxWidth:'80%'}]}>Seat Number: </Text>
+            <Text style={styles.total}> {booking.seats.map((s: any) => s.seat_code).join(", ")}</Text>
+           
+          </View>
+        )}
         </View>
       )}
-      
+    
     {loading?  <TicketShimmer />:  <View style={styles.summaryCard}>
         <View style={styles.row}>
           <Text style={styles.label}>Sub total</Text>
@@ -373,6 +392,12 @@ const shareAllTickets = async ():Promise<void> => {
             ₹{Number(booking?.ticket_subtotal).toFixed(2)}
           </Text>
         </View>
+        {booking.seats && <View style={styles.row}>
+          <Text style={styles.label}>Seat total</Text>
+          <Text style={styles.value}>
+           ₹{booking.seats.reduce((acc, s) => acc + Number(s.amount), 0).toFixed(2)}
+          </Text>
+        </View>}
 
        
 

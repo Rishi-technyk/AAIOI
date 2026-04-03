@@ -133,7 +133,7 @@ const handleNavigation = (item:any) => {
         >
           <Avatar.Image
             size={60}
-            source={{ uri: `https://gvicc.in/gvicc/public/member_profile/${user.profile_image}` }}
+            source={{ uri:user.profile_image? `${DOMAIN.API_IMAGE_URL}${user.profile_image}`:'https://randomuser.me/api/portraits/men/1.jpg' }}
             style={{ backgroundColor: "white" }}
           />
 

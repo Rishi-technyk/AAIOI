@@ -26,6 +26,9 @@ import { RootState } from '../store/store';
 import { useToast } from 'react-native-toast-notifications';
 import InAppUpdate from '../components/InAppUpdate';
 import { getDashboardConfig } from '../config/dashboardConfig';
+import EventModal from '../services/Events/EventModal';
+import { javascriptGet } from '../util/api';
+import MemberOrderTypeModal from '../components/MemberOrderTypeModal';
 
 type MenuItem = {
   name: string;
@@ -44,15 +47,35 @@ type AccountSummary = {
   [key: string]: any;
 };
 
+type DashboardConfig = {
+  top_modules: MenuItem[];
+  modules: MenuItem[];
+};
+
+type BannerResponse = {
+  data: {
+    visible: boolean;
+    image: string;
+    navigation: string;
+    data: any;
+  };
+  [key: string]: any;
+};
+
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
 
   const toast = useToast();
-
+  const [orderType,setOrderType]=useState< boolean>(false); 
   const [screens2, setScreens2] = useState<MenuItem[]>([]);
   const [screens, setScreens] = useState<MenuItem[]>([]);
   const [otpModal, setOTPModal] = useState<boolean>(false);
-
+  const [eventModal, setEventModal] = useState<BannerResponse['data']>({
+    visible: false,
+    image: '',
+    navigation: '',
+    data: null,
+  });
   const auth = useSelector((state: RootState) => state.auth);
 
   const token = auth?.token;
@@ -85,12 +108,36 @@ const HomeScreen: React.FC = () => {
     }
   }, [balanceRes?.data, summaryRes?.data]);
 
+  const loadBanner = async () => {
+    try {
+      const res = await javascriptGet({
+        path: 'member/banner',
+        Token: token ?? '',
+      });
+     if(res?.data?.data) {
+      const { image, navigation, data } = res.data;
+      if (image && navigation) {
+        setEventModal({
+          visible: true,
+          image,
+          navigation,
+          data,
+        });
+      }
+
+     }
+   
+    }catch{
+
+    }
+  }
   // Fetch menu items
   useEffect(() => {
     loadDashboard()
+    loadBanner();
   }, []);
   const loadDashboard = async () => {
-  const config = await getDashboardConfig();
+  const config = await getDashboardConfig<DashboardConfig>();
   setScreens2(config.modules);
   setScreens(config.top_modules)
 };
@@ -152,11 +199,18 @@ if (group.length === 2 ) {
     <Pressable
       style={styles.bigCard}
       onPress={() =>
-        navigation.navigate(item.navigate ?? 'Home', {
+
+      {
+         if (item.navigate ==='FoodOrder') {
+          setOrderType(true);
+          return;
+        }else{
+ navigation.navigate(item.navigate ?? 'Home', {
           url: item.data,
             data: item.data,
           name: item.name ?? '',
         })
+        } }
       }
     >
       <Text style={styles.bigTitle}>{item.name}</Text>
@@ -172,10 +226,15 @@ if (group.length === 2 ) {
     <Pressable
       style={styles.smallCard}
       onPress={() =>
+         {
+         if (item.navigate ==='FoodOrder') {
+          setOrderType(true);
+          return;
+        }else{
         navigation.navigate(item.navigate ?? 'Home', {
           url: item.data,
           name: item.name ?? '',
-        })
+        })}}
       }
     >
       <Text style={styles.smallTitle}>{item.name}</Text>
@@ -235,6 +294,7 @@ if (group.length === 2 ) {
 
   return (
     <View style={styles.container}>
+      <EventModal eventModal={eventModal} setEventModal={setEventModal} />
       <ScrollView
         showsVerticalScrollIndicator={false}
        
@@ -336,6 +396,7 @@ if (group.length === 2 ) {
       {/* OTP Modal */}
       <OTPModal visible={otpModal} setVisible={setOTPModal} />
       <InAppUpdate />
+       <MemberOrderTypeModal showTypes={orderType} setShowType={setOrderType} />
     </View>
   );
 };
@@ -536,8 +597,8 @@ const styles = StyleSheet.create({
   /* BIG CARD */
 
   bigCard: {
-    flex: 2,
-    height: 130,
+    flex: 1,
+    // height: 170,
     margin: 6,
     borderRadius: 24,
     padding: 18,
@@ -552,7 +613,7 @@ borderColor:'#ded7d75e',
   },
 
   bigTitle: {
-    fontSize: 17,
+    fontSize: 14,
     fontFamily: FONT_FAMILY.bold,
     color: DARK_BLUE,
   },
@@ -577,7 +638,7 @@ borderColor:'#ded7d75e',
   /* SMALL CARD */
 
   smallCard: {
-    height: 80,
+    // height: 80,
     margin: 6,
     borderRadius: 18,
     padding: 14,
@@ -586,7 +647,6 @@ borderColor:'#ded7d75e',
     backgroundColor: '#ffffff',
     flexDirection: 'row',
     alignItems: 'center',
-
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -595,7 +655,7 @@ borderColor:'#ded7d75e',
   },
 
   smallTitle: {
-    fontSize: 13,
+    fontSize: 16,
     fontFamily: FONT_FAMILY.bold,
     color: DARK_BLUE,
     width: '70%',
@@ -604,10 +664,7 @@ borderColor:'#ded7d75e',
   smallIcon: {
     width: 42,
     height: 42,
-    position: 'absolute',
-    right: 10,
-    bottom: 10,
-    opacity: 0.9,
+
   },
 });
 

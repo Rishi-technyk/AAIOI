@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   TextInput,
 } from "react-native";
+import {ICON_URL} from '@env'
 import Icon from "react-native-vector-icons/MaterialIcons";
 import RazorpayCheckout from "react-native-razorpay";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -20,22 +21,29 @@ import { Toast } from "react-native-toast-notifications";
 import { ICONS } from "../../../assets/icons.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import { RootState } from "../../store/store.tsx";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { AppStackParamList } from "../../navigation/AppDrawer.tsx";
 
-const  EventCheckOut:React.FC=()=> {
+type Props = NativeStackScreenProps<AppStackParamList,'EventCheckOut'>;
+const  EventCheckOut:React.FC<Props>=()=> {
   const route = useRoute<any>();
+  const paymentProcessing = useRef(false);
+const paymentHandled = useRef(false);
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const [loading,setLoading]=useState(false)
   const userData = useSelector((state:RootState) => state.auth);
   const [selectedPayment, setSelectedPayment] = useState(null);
-    const [settings, setSettings] = useState<null | []>(null);
-  const { event, tickets, cart, totalAmount,waiters,member } = route.params;
+    const [settings, setSettings] = useState<null | []>(null); 
+  const { event, tickets, cart, totalAmount,waiters,member ,selectedSeats=[]} = route.params;
   const [referenceNo, setReferenceNo] = useState('');
 const waiterAmount =
   event.waiter ? waiters * event.waiter.price : 0;
   const selectedTickets = tickets.filter(
     (t: any) => cart[t.id] > 0
-  );const serviceChargePercent = Number(event?.service_charge || 0);
+  );
+
+  const serviceChargePercent = Number(event?.service_charge || 0);
 const gstPercent = Number(event?.gst || 0);
 
 const serviceChargeAmount =
@@ -44,77 +52,103 @@ const serviceChargeAmount =
 const gstAmount =
   (totalAmount * gstPercent) / 100;
 
-const grandTotal =
-  totalAmount + serviceChargeAmount + gstAmount;
-const handlePaymentSuccess = async (paymentData) => {
-  const payload = {
-    event_id: event.id,
-    is_free: false,
-    waiters,
-    razorpay_order_id: paymentData.razorpay_order_id,
-    razorpay_payment_id: paymentData.razorpay_payment_id,
-    razorpay_signature: paymentData.razorpay_signature,
-    tickets: selectedTickets.map((t) => ({
-      id: t.id,
-      type: t.type,
-      quantity: cart[t.id],
-    })),
-  };
 
-  const res = await javascriptPost({
-    path: ENDPOINT.process_event_payment,
-    Token: userData.token,
-    body: payload,
-  });
 
-  setLoading(false);
+const handlePaymentSuccess = async (paymentData: any) => {
+  if (paymentHandled.current) return;
 
-  if (res?.status) {
-    navigation.replace("EventBookingDetails", {
-      bookingId: res.booking_id,
+  paymentHandled.current = true;
+  setLoading(true);
+
+  try {
+    const payload = {
+      event_id: event.id,
+      is_free: false,
+      waiters,
+      razorpay_order_id: paymentData.razorpay_order_id,
+      razorpay_payment_id: paymentData.razorpay_payment_id,
+      razorpay_signature: paymentData.razorpay_signature,
+      tickets: selectedTickets.map((t: any) => ({
+        id: t.id,
+        type: t.type,
+        quantity: cart[t.id],
+      })),
+      seatGroups,
+    };
+
+    const res = await javascriptPost({
+      path: ENDPOINT.process_event_payment,
+      Token: userData.token,
+      body: payload,
     });
+
+    if (res?.status) {
+      navigation.replace("EventBookingDetails", {
+        bookingId: res.booking_id,
+      });
+    } else {
+      Alert.alert("Payment Verification Failed", res?.message || "Try again");
+    }
+  } catch (error) {
+    Alert.alert("Payment Error", "Unable to verify payment.");
+  } finally {
+    setLoading(false);
+    paymentProcessing.current = false;
   }
 };
-
-
-const openRazorpay = (orderId: string, amount: number,key:string) => {
+const openRazorpay = async (orderId: string, amount: number, key: string) => {
   const options = {
-      image:'	https://holidayclub.in/wp-content/uploads/2025/07/Holiday-Club-logos.png', 
-    key: key,
+    key,
     order_id: orderId,
     amount: amount * 100,
     currency: "INR",
     name: event.name,
     description: "Event Ticket Booking",
+    image:
+     ICON_URL,
     prefill: {
       name: userData?.user?.DisplayName,
       email: userData?.user?.Email,
-      contact:  userData?.user?.Mobile,
+      contact: userData?.user?.Mobile,
     },
     theme: { color: DARK_BLUE },
+    notes: {
+      MemberID: userData?.user?.MemberID || "",
+      SC_ID: userData?.user?.SC_ID || "",
+      BookingType: "Event Booking",
+      MemberName: userData?.user?.DisplayName || "",
+    },
   };
 
-RazorpayCheckout.open(options)
-  .then(data => {
-    handlePaymentSuccess(data);
-  })
-  .catch(async (error) => {
+  try {
+    const data = await RazorpayCheckout.open(options);
+
+    await handlePaymentSuccess(data);
+  } catch (error: any) {
+    /**
+     * iOS sometimes fires cancel even after success
+     * so ignore if success already handled
+     */
+    if (paymentHandled.current) return;
+
     Toast.show("Payment cancelled", { type: "danger" });
 
-    // 🔥 Notify backend
-   const resCancel= await javascriptPost({
-      path: ENDPOINT.event_payment_failed,
-      Token: userData.token,
-      body: {
-        event_id: event.id,
-        razorpay_order_id: orderId,
-        reason: error?.description || "User cancelled payment",
-        total_amount:totalAmount
-      },
-    });
-  setLoading(false);
-  });
+    try {
+      await javascriptPost({
+        path: ENDPOINT.event_payment_failed,
+        Token: userData.token,
+        body: {
+          event_id: event.id,
+          razorpay_order_id: orderId,
+          reason: error?.description || "User cancelled payment",
+          total_amount: totalAmount,
+        },
+      });
+    } catch {}
 
+    setLoading(false);
+    paymentProcessing.current = false;
+  }
 };
 const handleFreeBooking = async () => {
   const payload = {
@@ -126,6 +160,7 @@ const handleFreeBooking = async () => {
       type: t.type,
       quantity: cart[t.id],
     })),
+    seatGroups
   };
 
   const res = await javascriptPost({
@@ -133,7 +168,7 @@ const handleFreeBooking = async () => {
     Token: userData.token,
     body: payload,
   });
-
+console.log( res, '---------------------- res --from APio-------------------');
   setLoading(false);
 
   if (res?.status) {
@@ -158,121 +193,141 @@ const handleFreeBooking = async () => {
     }
   };
 useEffect(()=>{
-  if (userData?.user?.role === "Admin") {
+  if (userData?.user?.role === "Event Admin") {
     fetchSettings()
   }
 },[])
+const groupedSeats = selectedSeats.reduce((acc: any, seat: any) => {
 
- const bookTickets = async () => {
- if (userData?.user?.role === "Admin") {
+  const type = seat.category?.seat_type || 'other'
+
+  if (!acc[type]) {
+    acc[type] = {
+      type,
+      price: Number(seat.category?.price || 0),
+      seats: []
+    }
+  }
+
+  acc[type].seats.push(seat)
+
+  return acc
+
+}, {})
+const seatGroups = Object.values(groupedSeats)
+
+const bookTickets = async () => {
+  if (paymentProcessing.current) return;
+
+  paymentProcessing.current = true;
 
   try {
-    // ⭐ 1. Validate payment type
-    
-    if (!selectedPayment.id) {
-      Alert.alert("Missing Payment Type", "Please select a payment type.");
-      return;
-    }
-      if (selectedPayment.ref_no && referenceNo.trim()==='') {
-      Alert.alert("Missing Payment Type", "Please select a payment type.");
-      return;
-    }
-    console.log( event.id, '---------------------- event.id ---------here------------');
-    // ⭐ 2. Build payload
-    const payload = {
-      event_id: event.id,
-      tickets:
-        selectedTickets?.map((t) => ({
+    if (userData?.user?.role === "Event Admin") {
+      if (!selectedPayment?.id) {
+        Alert.alert("Missing Payment Type", "Please select a payment type.");
+        paymentProcessing.current = false;
+        return;
+      }
+
+      if (selectedPayment?.ref_no && referenceNo.trim() === "") {
+        Alert.alert("Reference Required", "Please enter reference number.");
+        paymentProcessing.current = false;
+        return;
+      }
+      setLoading(true);
+      const payload = {
+        event_id: event.id,
+        tickets: selectedTickets.map((t: any) => ({
           id: t.id,
           quantity: cart[t.id],
-        })) || [],
-      waiters: waiters,
-      member: member.id,
-      payment_type: settings?.find(i=>i.id==selectedPayment.id)?.name,
-      reference_no:referenceNo||'N/A',
+        })),
+        waiters,
+        member: member,
+        
+        payment_type: settings?.find(i => i.id === selectedPayment.id)?.name,
+        reference_no: referenceNo || "N/A",
+        seatGroups
+      };
+      const res = await javascriptPost({
+        path: ENDPOINT.process_admin_payment,
+        Token: userData.token,
+        body: payload,
+      });
 
-    };
+      setLoading(false);
+      paymentProcessing.current = false;
+
+      if (!res?.status) {
+        Alert.alert("Booking Failed", res?.message || "Something went wrong.");
+        return;
+      }
+
+      await queryClient.invalidateQueries(["eventAdminDashboard"]);
+
+      navigation.replace("EventBookingDetails", {
+        bookingId: res.booking_id,
+      });
+
+      return;
+    }
+
+    /**
+     * MEMBER FLOW
+     */
 
     setLoading(true);
 
-    // ⭐ 3. API request
+    const payload = {
+      event_id: event.id,
+      tickets: selectedTickets.map((t: any) => ({
+        id: t.id,
+        quantity: cart[t.id],
+      })),
+      waiters,
+      seatGroups
+    };
+   
     const res = await javascriptPost({
-      path: ENDPOINT.process_admin_payment,
+      path: ENDPOINT.ticket_preview,
       Token: userData.token,
       body: payload,
     });
-    setLoading(false);
 
-    // ⭐ 4. API returned no status? show fallback error.
-    if (!res) {
-      Alert.alert("Error", "No response from server. Try again.");
+    if (res?.status !==true) {
+      setLoading(false);
+      paymentProcessing.current = false;
+      Alert.alert(res.message || "Payment initiation failed");
       return;
     }
 
-    // ⭐ 5. Backend validation failure
-    if (!res.status) {
-      Alert.alert("Booking Failed", res.message || "Something went wrong.");
+    /**
+     * FREE BOOKING
+     */
+    if (res.is_free) {
+      await handleFreeBooking();
+      paymentProcessing.current = false;
       return;
     }
-
-    // ⭐ 6. Success → Navigate
-      await queryClient.invalidateQueries(["eventAdminDashboard"]);
-    Alert.alert("Success", "Booking created successfully!", [
-      {
-        text: "OK",
-        onPress: () => {
-          navigation.replace("EventBookingDetails", {
-            bookingId: res.booking_id,
-          });
-        },
-      },
-    ]);
-  } catch (error) {
+    /**
+     * PAID BOOKING
+     */
+    await openRazorpay(res.order_id, res.amount, res.razorpay_key);
+  } catch (error: any) {
     setLoading(false);
+    paymentProcessing.current = false;
 
-    // ⭐ 7. Handle network or unexpected errors
-    console.log("Admin Booking Error:", error);
-
-    Alert.alert(
-      "Error",
-      error?.message || "Something went wrong. Please try again."
-    );
+    Alert.alert("Error", error?.message || "Something went wrong.");
   }
-}else{
-const payload = {
-    event_id: event.id,
-    tickets: selectedTickets?.map((t) => ({
-      id: t.id,
-      quantity: cart[t.id],
-    }))||[],
-    waiters:waiters,
-  };
-
-  setLoading(true);
-
-  const res = await javascriptPost({
-    path: ENDPOINT.ticket_preview,
-    Token: userData?.token,
-    body: payload,
-  });
-  if (!res?.status) {
-    Alert.alert(res.message || "Failed to initiate payment");
-    setLoading(false);
-    return;
-  }
-
-  // ✅ FREE BOOKING (NO RAZORPAY)
-  if (res.is_free) {
-    await handleFreeBooking();
-    return;
-  }
-  // ✅ PAID BOOKING
-  openRazorpay(res.order_id, res.amount, res.razorpay_key);
- }
-  
 };
 
-
+const calculateSeatsTotal = () => {
+  return selectedSeats.reduce((total: number, seat: any) => {
+    const price = Number(seat.category?.price || 0);
+    return total + price;
+  }, 0);
+}
+const grandTotal =
+  totalAmount + serviceChargeAmount + gstAmount + calculateSeatsTotal();
   return (
     <View style={styles.container}>
       {/* 🔹 Header */}
@@ -332,12 +387,39 @@ const payload = {
   </View>
 )}
 
+{seatGroups.map((group: any) => (
+
+  <View key={group.type} style={[styles.waiterItem,]}>
+    <View style={[styles.rowBetween,]}>
+  <Text   style={[styles.grayText,{maxWidth:'80%'}]}>
+        {group.type.toUpperCase()} ({group.seats.length})
+        {" "}
+        {group.seats.map((s:any)=>s.seat_code).join(', ')}
+      </Text>
+    
+
+      <Text style={styles.grayText}>
+        ₹{(group.seats.length * group.price).toFixed(2)}
+      </Text>
+
+    </View>
+  </View>
+
+))}
+
         {/* 🔹 Price Breakdown */}
   <View style={styles.breakdown}>
   <View style={styles.rowBetween}>
     <Text style={styles.grayText}>Subtotal</Text>
+    
     <Text style={styles.grayText}>₹{totalAmount.toFixed(2)}</Text>
   </View>
+ {seatGroups.length > 0 && (
+<View style={styles.rowBetween}>
+    <Text style={styles.grayText}>Seats Total</Text>
+    
+    <Text style={styles.grayText}>₹{calculateSeatsTotal().toFixed(2)}</Text>
+  </View>)}
 
   {serviceChargePercent > 0 && (
     <View style={styles.rowBetween}>
@@ -366,22 +448,17 @@ const payload = {
   <View style={styles.rowBetween}>
     <Text style={styles.totalText}>Total</Text>
     <Text style={styles.totalAmount}>
-      ₹{grandTotal.toFixed(2)}
+      ₹{grandTotal .toFixed(2)}
     </Text>
   </View>
 </View>
 {/* 🔹 Payment Type Selection (Only for EventAdmin) */}
-{userData?.user?.role === "Admin" && settings && (
+{userData?.user?.role === "Event Admin" && settings && (
   <View style={styles.paymentSection}>
 
     <Text style={styles.sectionTitle}>Select Payment Method</Text>
 
-    {/* {settings?.find(i=>i.id==-selectedPayment).ref_no &&(
-      <View style={styles.rowBetween}>
-        <Text style={styles.grayText}>Reference No:</Text>
-        <Text style={styles.grayText}>{settings?.find(i=>i.id==selectedPayment).ref_no}</Text>
-      </View>
-    )}     */}
+ 
 {selectedPayment?.ref_no  &&(
           <View style={{flex:1,marginBottom:12,}}>
             <Text style={styles.grayText}>Reference No:</Text>
@@ -430,14 +507,11 @@ const payload = {
 
       {/* 🔹 Bottom Pay Button */}
       <View style={styles.footer}>
-       <Pressable
-       
-       onPress={bookTickets}
-  style={[
-    styles.payBtn,
-    // grandTotal === 0 && { opacity: 0.6 }
-  ]}
+      <Pressable
+  onPress={bookTickets}
   disabled={loading}
+  style={[styles.payBtn, loading && { opacity: 0.6 }]}
+
 >{loading&&<ActivityIndicator size={'small'} color={'white'} />}
           <Text style={styles.payText}>Pay Now</Text>
           <Icon name="arrow-forward" size={20} color="white" />

@@ -1,70 +1,200 @@
 {
-    "id": 1330,
-    "tee_booking_id": 16,
-    "tee_time": "06:07",
-    "session_id": 2,
-    "slot_interval": 7,
-    "tee_off_hole_id": 1,
-    "is_active": 1,
-    "is_locked_by_admin": 0,
-    "created_at": "2026-02-10T05:59:35.000000Z",
-    "created_by": null,
-    "updated_at": "2026-02-10T23:21:08.000000Z",
-    "updated_by": null,
-    "hole_number": 1,
-    "is_booked": 0
+    "id": 601,
+    "event_id": 3,
+    "member_id": 3067,
+    "booking_no": "EVT-69AF9F86D25A3",
+    "total_amount": 1610,
+    "payment_status": "admin",
+    "razorpay_order_id": null,
+    "razorpay_payment_id": "N\/A",
+    "payment_type": "Cash",
+    "admin_id": 3067,
+    "Mobile": "9251524400",
+    "Name": "Suresh",
+    "created_at": "2026-03-10T04:35:18.000000Z",
+    "updated_at": "2026-03-10T04:35:18.000000Z",
+    "member": {
+        "id": 3067,
+        "Email": "event@admin.com",
+        "DisplayName": "Event Admin",
+        "SC_ID": "Event Admin",
+        "MemberId": "Event Admin"
+    },
+    "participants": [
+        {
+            "id": 1511,
+            "booking_id": 601,
+            "ticket_type": {
+                "id": 129,
+                "name": "Guest",
+                "event_id": 3,
+                "type": "guest",
+                "amount": 500,
+                "max_per_member": 100,
+                "image_background": "1772446807_vivid-blurred-colorful-background.jpg",
+                "created_at": "2026-03-02T10:20:07.000000Z",
+                "updated_at": "2026-03-02T10:39:58.000000Z",
+                "status": 1
+            },
+            "ticket_id": 129,
+            "name": "Suresh",
+            "mobile": "9251520000",
+            "email": "event@admin.com",
+            "relation": null,
+            "qr_code": "eyJpdiI6IlZaaDgxMDZkQ29DVXQ3TUN0NHQ3NWc9PSIsInZhbHVlIjoicGc4YVZxbVloMTNITXVRdGlteGo1LzVGVys1TGtEbkVCTVVoYzNzdXloQnNpNUR2TjRvRGdjeFJsVk1CVTJLeGt5RDBFVHVxR2h1TVZqbndMdU05bGVGNmMrc0NTRmt0VForRlk0Vk5zVENVQ2ErVGdRdEs1WVEvc3NwM3NrbUhoakJaZE5nTVByemlpZVNHZE1iVUV",
+            "entry_status": false,
+            "food_status": false,
+            "consumed_alcohol": 0,
+            "consumed_non_alcohol": 0,
+            "amount": "500.00",
+            "entry_at": null,
+            "food_at": null,
+            "is_complimentary": 0,
+            "created_at": "2026-03-10T04:35:18.000000Z",
+            "updated_at": "2026-03-10T04:35:18.000000Z"
+        },
+        {
+            "id": 1512,
+            "booking_id": 601,
+            "ticket_type": {
+                "id": 129,
+                "name": "Guest",
+                "event_id": 3,
+                "type": "guest",
+                "amount": 500,
+                "max_per_member": 100,
+                "image_background": "1772446807_vivid-blurred-colorful-background.jpg",
+                "created_at": "2026-03-02T10:20:07.000000Z",
+                "updated_at": "2026-03-02T10:39:58.000000Z",
+                "status": 1
+            },
+            "ticket_id": 129,
+            "name": "Suresh",
+            "mobile": "9251520000",
+            "email": "event@admin.com",
+            "relation": null,
+            "qr_code": "eyJpdiI6IkxwamwvS0pVR1B4QlVHVmZTLzJuMXc9PSIsInZhbHVlIjoiRW93eDZkVEtuMXZwN2g4ZklYOGhXM09DM0U5QnZuLzhkcGFWaVo2ZEovYUFuVGM4d2gyUy9FYXdjcDBPZXBORGNRc0lYM3ZnaitCK1g0YlVzMmtmdjJtb2c5Y0QyaGIrcjVMY0Y2Rncvbi9SaXdVOXhnVExGYmtzeHhucWEzVFIvV2h5eDR5bGpnVlF5R0x4ZWRJM09",
+            "entry_status": false,
+            "food_status": false,
+            "consumed_alcohol": 0,
+            "consumed_non_alcohol": 0,
+            "amount": "500.00",
+            "entry_at": null,
+            "food_at": null,
+            "is_complimentary": 0,
+            "created_at": "2026-03-10T04:35:18.000000Z",
+            "updated_at": "2026-03-10T04:35:18.000000Z"
+        },
+        {
+            "id": 1513,
+            "booking_id": 601,
+            "ticket_type": {
+                "id": 130,
+                "name": "Services",
+                "event_id": 3,
+                "type": "guest",
+                "amount": 500,
+                "max_per_member": 11,
+                "image_background": "1772605116_wintertambola.jpg",
+                "created_at": "2026-03-04T06:18:36.000000Z",
+                "updated_at": "2026-03-04T06:18:44.000000Z",
+                "status": 1
+            },
+            "ticket_id": 130,
+            "name": "Suresh",
+            "mobile": "9251520000",
+            "email": "event@admin.com",
+            "relation": null,
+            "qr_code": "eyJpdiI6IjFzL3czZElxd1VueEhJdm12UG1hc1E9PSIsInZhbHVlIjoidzdGZEhRNElKVmJIV3l6dkt4TmlRZ1lpL0ZBL2NTbGxlRWdFa2d3bVdXUW13SmZ2SVoraGtLNXNvUE0zNGZOVE14SGNZK1U1NUJPeFRqVGJBTWs1MDJWNUs3b05oZHFnL1BuRXZ6TlRITUdiSzJYbFl5LzVBaWk4ZWQ4NG9scmVFM3JLVE04enU0T1k1a05PWTl4S3B",
+            "entry_status": false,
+            "food_status": false,
+            "consumed_alcohol": 0,
+            "consumed_non_alcohol": 0,
+            "amount": "500.00",
+            "entry_at": null,
+            "food_at": null,
+            "is_complimentary": 0,
+            "created_at": "2026-03-10T04:35:18.000000Z",
+            "updated_at": "2026-03-10T04:35:18.000000Z"
+        }
+    ],
+    "waiter_booking": {
+        "id": 47,
+        "event_id": 3,
+        "booking_id": 601,
+        "member_id": 3067,
+        "quantity": 1,
+        "price": 110,
+        "total_amount": 110,
+        "created_at": "2026-03-10T04:35:18.000000Z",
+        "updated_at": "2026-03-09T23:05:18.000000Z"
+    },
+    "seats": [
+        {
+            "id": 18,
+            "booking_id": 601,
+            "seat_id": 23,
+            "amount": "100.00",
+            "created_at": "2026-03-10T04:35:18.000000Z",
+            "updated_at": "2026-03-10T04:35:18.000000Z",
+            "seat": {
+                "id": 23,
+                "event_id": 3,
+                "layout_id": 1,
+                "category_id": 1,
+                "row_label": "C",
+                "seat_number": 5,
+                "seat_code": "C5",
+                "pos_x": 5,
+                "pos_y": 3,
+                "status": "booked",
+                "created_at": "2026-03-09T09:54:41.000000Z",
+                "updated_at": "2026-03-10T04:35:18.000000Z"
+            }
+        },
+        {
+            "id": 19,
+            "booking_id": 601,
+            "seat_id": 24,
+            "amount": "100.00",
+            "created_at": "2026-03-10T04:35:18.000000Z",
+            "updated_at": "2026-03-10T04:35:18.000000Z",
+            "seat": {
+                "id": 24,
+                "event_id": 3,
+                "layout_id": 1,
+                "category_id": 1,
+                "row_label": "C",
+                "seat_number": 6,
+                "seat_code": "C6",
+                "pos_x": 6,
+                "pos_y": 3,
+                "status": "booked",
+                "created_at": "2026-03-09T09:54:41.000000Z",
+                "updated_at": "2026-03-10T04:35:18.000000Z"
+            }
+        },
+        {
+            "id": 20,
+            "booking_id": 601,
+            "seat_id": 25,
+            "amount": "100.00",
+            "created_at": "2026-03-10T04:35:18.000000Z",
+            "updated_at": "2026-03-10T04:35:18.000000Z",
+            "seat": {
+                "id": 25,
+                "event_id": 3,
+                "layout_id": 1,
+                "category_id": 1,
+                "row_label": "C",
+                "seat_number": 7,
+                "seat_code": "C7",
+                "pos_x": 7,
+                "pos_y": 3,
+                "status": "booked",
+                "created_at": "2026-03-09T09:54:41.000000Z",
+                "updated_at": "2026-03-10T04:35:18.000000Z"
+            }
+        }
+    ]
 }
-
-
-// # Resolve react_native_pods.rb with node to allow for hoisting
-// require Pod::Executable.execute_command('node', ['-p',
-//   'require.resolve(
-//     "react-native/scripts/react_native_pods.rb",
-//     {paths: [process.argv[1]]},
-//   )', __dir__]).strip
-
-// platform :ios, min_ios_version_supported
-// prepare_react_native_project!
-
-// linkage = ENV['USE_FRAMEWORKS']
-// if linkage != nil
-//   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-//   use_frameworks! :linkage => linkage.to_sym
-// end
-
-// target 'GVIClub' do
-//   config = use_native_modules!
-//   use_frameworks! :linkage => :static
-//   $RNFirebaseAsStaticFramework = true
-//   pod 'FirebaseCoreInternal', :modular_headers => true
-//   pod 'GoogleUtilities', :modular_headers => true
-//   pod 'FirebaseCore', :modular_headers => true
-//   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
-//   use_react_native!(
-//     :path => config[:reactNativePath],
-//     # An absolute path to your application root.
-//     :app_path => "#{Pod::Config.instance.installation_root}/.."
-//   )
-
-//   post_install do |installer|
-//     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
-//     react_native_post_install(
-//       installer,
-//       config[:reactNativePath],
-//       :mac_catalyst_enabled => false,
-//       # :ccache_enabled => true
-//     )
-
-//     installer.pods_project.targets.each do |target|
-//     target.build_configurations.each do |config|
-//       # Use GNU++20 to support unordered_map::contains
-//       config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++20'
-//       config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
-
-//       # Remove duplicate linker flags (RN quirk)
-//       flags = config.build_settings['OTHER_LDFLAGS']
-//       config.build_settings['OTHER_LDFLAGS'] = flags.uniq if flags.is_a?(Array)
-//     end
-//   end
-//   end
-// end

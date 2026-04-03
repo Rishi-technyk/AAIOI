@@ -2,21 +2,21 @@ import {
   StyleSheet,
   Text,
   View,
-  TextInput,
   Pressable,
-  KeyboardAvoidingView,
-  Keyboard,
   FlatList,
-  Alert,
 } from 'react-native';
 import React from 'react';
 import RNModal from 'react-native-modal';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {Dialog, Portal} from 'react-native-paper';
-import {useNavigation} from '@react-navigation/native';
 import { FONT_FAMILY, LIGHT_BLUE, SECONDARY_COLOR } from '../util/colors';
+interface VenueModalProps {
+  visible: boolean;
+  onDismiss: () => void;
+  venues?: any[];
+  charge?: any;
+}
 
-const VenueModal = ({visible, onDismiss, venues, charge}) => {
+const VenueModal:React.FC<VenueModalProps> = ({visible, onDismiss, venues, charge}) => {
   return (
     <RNModal
       isVisible={visible}

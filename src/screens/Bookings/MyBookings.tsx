@@ -8,7 +8,6 @@ import {
   StyleSheet,
   Pressable,
 } from 'react-native';
-import {PUBLIC_URL} from '@env' 
 import { FONT_FAMILY, LIGHT_GREEN, LIGHT_RED, SECONDARY_COLOR } from '../../util/colors';
 import * as api from '../../util/api';
 import { useSelector } from 'react-redux';
@@ -17,7 +16,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import moment from 'moment';
 import Header from '../../components/Header';
 import { ScrollView } from 'react-native-gesture-handler';
-import { ENDPOINT } from '../../util/constant';
+import { DOMAIN, ENDPOINT } from '../../util/constant';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../../navigation/AppDrawer';
 import { RootState } from '../../store/store';
@@ -355,7 +354,8 @@ const renderTableItem = ({ item }: { item: any }) => {
       </View>
     </TouchableOpacity>
   );
-  const renderTeeItems = ({ item }: { item: any }) => (
+  const renderTeeItems = ({ item }: { item: any }) => {
+    return(
     <TouchableOpacity
       style={styles.card}
       onPress={() =>
@@ -372,7 +372,7 @@ const renderTableItem = ({ item }: { item: any }) => {
           style={[
             styles.badge,
             {
-              backgroundColor: item.is_cancelled
+              backgroundColor: Number(item.is_cancelled)
                 ? '#F0AD4E'
                 : item.is_active
                 ? '#28A745'
@@ -381,7 +381,7 @@ const renderTableItem = ({ item }: { item: any }) => {
           ]}
         >
           <Text style={styles.badgeText}>
-            {item.is_cancelled
+            {Number(item.is_cancelled)
               ? 'Cancelled'
               : item.is_active
               ? 'Active'
@@ -434,7 +434,7 @@ const renderTableItem = ({ item }: { item: any }) => {
         <Text style={styles.linkText}>View Details →</Text>
       </View>
     </TouchableOpacity>
-  );
+  );}
 
   const renderEventItems = ({ item }: { item: any }) => {
     return (
@@ -449,7 +449,7 @@ const renderTableItem = ({ item }: { item: any }) => {
       >
         <Image
           source={{
-            uri: `${PUBLIC_URL}event/${item.event_image}`,
+            uri: `${DOMAIN.IMG}event/${item.event_image}`,
           }}
           style={styles.image}
         />

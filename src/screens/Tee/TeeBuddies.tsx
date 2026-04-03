@@ -65,10 +65,9 @@ const TeeBuddies = ({ navigation, route }) => {
 
     return () => clearTimeout(handler);
   }, [buddy]);
-console.log( route.params, '---------------------- route.params ---------------------');
   useEffect(() => {
     const existing = route.params?.data;
-    setTimer(route.params.timer ||300)
+    setTimer(route.params.timer ||60)
     if (existing?.bookingId) {
       setSelectedBuddy([{ id: existing?.player1_id, DisplayName: existing?.player1_name ,MemberID:existing?.player1_member_id},
       { id: existing?.player2_id, DisplayName: existing?.player2_name, MemberID:existing?.player2_member_id},

@@ -38,12 +38,7 @@ const OTPModal: React.FC<OTPModalProps> = ({ visible, setVisible }) => {
 
   const token = useSelector((state: RootState) => state.auth?.token);
 
-  // Debug Log
-  console.log(
-    "\x1b[34m%s\x1b[0m",
-    OTP,
-    "---------------------- OTP ---------------------"
-  );
+
 
   /* ---------------------------------------------------------
      API CALL
@@ -58,7 +53,8 @@ const OTPModal: React.FC<OTPModalProps> = ({ visible, setVisible }) => {
 
       setLoader(true);
 
-      const response: ApiResponse<OTPResponse> = await javascriptGet(
+      const response: ApiResponse<OTPResponse> = 
+      await javascriptGet(
         apiRequestObject
       );
 

@@ -17,32 +17,36 @@ import { ENDPOINT } from "../../util/constant";
 import { FONT_FAMILY } from "../../util/colors";
 import {  AppStackParamList } from "../../navigation/AppDrawer";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useQuery,  } from "@tanstack/react-query";
+import { Dropdown } from "react-native-element-dropdown";
 
 type Props = NativeStackScreenProps<AppStackParamList,'EventBooking'>
 const EventBooking :React.FC<Props> = ({navigation})=> {
-  const userData = useSelector((state: any) => state.auth.userData);
+  const userData = useSelector((state: any) => state.auth);
+  const [SelectedEvent, setselectedEvent] = useState<any>(null);
+
+const { data: Events } = useQuery({
+  queryKey: ['all-event'],
+  enabled: false,   // ❌ prevents refetch
+});
+
+useEffect(() => {
+  if (Events?.length && !SelectedEvent) {
+    setselectedEvent(Events[0]); // auto select first event
+  }
+}, [Events]);
 
   const [type, setType] = useState<"upcoming" | "past">("upcoming");
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const fetchBookings = async () => {
-    setLoading(true);
-    const res = await javascriptGet({
-      path: `${ENDPOINT.event_bookings}?type=${type}`,
-      Token: userData.data.token,
-    });
-    if (res?.status) {
-      setBookings(res.data);
-    }
-    setLoading(false);
-  };
+
   const fetchBookingsAdmin = async () => {
     setLoading(true);
     const res = await javascriptGet({
-      path: `${ENDPOINT.event_admin_bookings}?type=${type}`,
-      Token: userData.data.token,
+      path: `${ENDPOINT.event_admin_bookings}?type=${type}&id=${SelectedEvent?.id}`,
+      Token: userData?.token,
     });
-
+console.log( res, '---------------------- res ---------------------');
     if (res?.status) {
       setBookings(res.data);
     }
@@ -52,12 +56,10 @@ const EventBooking :React.FC<Props> = ({navigation})=> {
 
 
   useEffect(() => {
-      if (userData.data.data[0].role === "Admin") {
-      fetchBookingsAdmin(true);
-    }else{
-    fetchBookings();
-    }
-  }, [type]);
+     
+      fetchBookingsAdmin();
+ 
+  }, [type, SelectedEvent]);
 
   const renderItem = ({ item }: any) => {
     return(
@@ -134,7 +136,21 @@ const EventBooking :React.FC<Props> = ({navigation})=> {
           <Text style={styles.segText}>Past</Text>
         </Pressable>
       </View>
-
+  <Dropdown
+            data={Events || []}
+            labelField="name"
+            valueField="id"
+            placeholder="Choose Event"
+            value={SelectedEvent}
+            onChange={setselectedEvent}
+            style={styles.dropdown}
+            placeholderStyle={{ color: '#999' }}
+          />
+          {!SelectedEvent && (
+            <Text style={{ textAlign: 'center', marginTop: 10, color: '#999' }}>
+              Please select an event to view dashboard
+            </Text>
+          )}
       <FlatList
       showsVerticalScrollIndicator={false}
         data={bookings}
@@ -264,4 +280,11 @@ const styles = StyleSheet.create({
     fontFamily: FONT_FAMILY.bold,
     color: "#065f46",
   },
+   dropdown: {
+    backgroundColor: '#f4f6fa',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 50,
+  },
+
 });

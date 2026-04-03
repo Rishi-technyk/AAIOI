@@ -147,7 +147,7 @@ const LoginScreen = ({ navigation }) => {
         onPress={() => navigation.navigate('SigninWithOTP')}
       />
     </AuthScreenLayout>
-           <Pressable
+           {/* <Pressable
       onPress={() => navigation.navigate("StaffLogin")}
         style={{
           alignItems: "center",
@@ -163,7 +163,7 @@ const LoginScreen = ({ navigation }) => {
           color="white"
           style={{ paddingHorizontal: 10 }}
         />
-      </Pressable> 
+      </Pressable>  */}
       </>
   );
 };

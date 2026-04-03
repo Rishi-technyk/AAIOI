@@ -32,6 +32,8 @@ import { javascriptGet } from "../../util/api";
 import { DARK_BLUE, FONT_FAMILY, SECONDARY_COLOR } from "../../util/colors";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AppStackParamList } from "../../navigation/AppDrawer";
+import { addToCart, removeFromCart } from "../../store/actions/cartActions";
+import ModifierModal from "../../components/ModifierModal";
 
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 type Props=NativeStackScreenProps<AppStackParamList,'FoodOrder'>
@@ -49,7 +51,8 @@ const FoodOrder :React.FC<Props> = ({ navigation,route }) => {
   const [modifierModalItem, setModifierModalItem] = useState(null);
   const cart = useSelector(
     (state) =>
-      state?.cart?.cart[`${groups?.member?.MemberId}/Order/Online`] || [],
+      state?.cart[`${groups?.member?.MemberId}/Order/Online`] ||
+     [],
     shallowEqual
   );
   const totalItems = useMemo(

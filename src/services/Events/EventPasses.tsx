@@ -19,7 +19,7 @@ import { SvgXml } from "react-native-svg";
 import { FlatList } from "react-native-gesture-handler";
 import moment from "moment";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { FONT_FAMILY, TICKET_THEME } from "../../util/colors";
+import { FONT_FAMILY, } from "../../util/colors";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AppStackParamList } from "../../navigation/AppDrawer";
 import { generatePDF } from "react-native-html-to-pdf";
@@ -42,6 +42,7 @@ const  EventPasses:React.FC<Props> = ({ navigation }) => {
     });
 
     if (res?.status) {
+   
       setParticipants(res.participants);
       setBooking(res.booking);
     }
@@ -57,7 +58,7 @@ const generatePDF1 = async (item: any): Promise<void> => {
     if (!item || !booking) return;
 
     const LOGO = DOMAIN.ICON_URL;
-    const bg = TICKET_THEME[item.ticket_type]?.image;
+    const bg = DOMAIN.IMG+'passes/'+ item.image_background;
 
     const html = `
     <html>
@@ -87,9 +88,24 @@ const generatePDF1 = async (item: any): Promise<void> => {
   background-position: center;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: space-evenly;
   padding: 20px;
   color: white;
+  text-align: center;
+}
+  .overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45); /* adjust 0.3 – 0.6 */
+}
+  .content {
+  position: relative;
+  z-index: 2;
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
   text-align: center;
 }
         .top {
@@ -132,7 +148,7 @@ const generatePDF1 = async (item: any): Promise<void> => {
         }
 
         .middle {
-          margin-top: 20px;
+          margin-top: 0px;
         }
 
         .qr-box {
@@ -148,7 +164,7 @@ const generatePDF1 = async (item: any): Promise<void> => {
         }
 
         .bottom {
-          margin-bottom: 15px;
+          margin-bottom: 0px;
         }
 
         .info {
@@ -161,7 +177,8 @@ const generatePDF1 = async (item: any): Promise<void> => {
 
     <body>
       <div class="ticket">
-
+  <div class="overlay"></div>
+    <div class="content">
         <div class="top">
           <img src="${LOGO}" class="logo" />
           <div class="club-name">${booking.formate.heading}</div>
@@ -194,14 +211,7 @@ const generatePDF1 = async (item: any): Promise<void> => {
         </div>
 
         <div class="bottom">
-          <div class="info">
-            ${
-              Number(item.is_complimentary) === 1 &&
-              ["MEMBER", "SPOUSE"].includes(item.ticket_type.toUpperCase())
-                ? booking.formate.complimentary_footer1
-                : booking.formate.footer1
-            }
-          </div>
+         
 
           <div class="info">${booking.booking_no}-${item.id}</div>
 
@@ -212,11 +222,19 @@ const generatePDF1 = async (item: any): Promise<void> => {
                 : booking.memberId ?? ""
             }
           </div>
-
+ <div class="info">
+            ${
+              Number(item.is_complimentary) === 1 &&
+              ["MEMBER", "SPOUSE"].includes(item.ticket_type.toUpperCase())
+                ? booking.formate.complimentary_footer1
+                : booking.formate.footer1
+            }
+          </div>
           <div class="info">${booking.formate.footer2}</div>
           <div class="info">${booking.formate.footer3}</div>
         </div>
-
+        ${booking.seats.length && booking.seats.map((s: any) => `<div class="info">Seat: ${s.seat_code}</div>`).join("")}
+  </div>
       </div>
     </body>
     </html>
@@ -254,7 +272,6 @@ const generatePDF1 = async (item: any): Promise<void> => {
   const TicketItem = ({ item, booking }) => {
     const ref = useRef(null);
 
-    const theme = TICKET_THEME[item.ticket_type] || TICKET_THEME.Member;
     return (
       <View style={{ width, height }}>
 
@@ -267,10 +284,11 @@ const generatePDF1 = async (item: any): Promise<void> => {
           style={{ flex: 1 }}
         >
           <ImageBackground
-            source={{ uri: theme.image }}
+            source={{ uri: DOMAIN.IMG+'passes/'+ item.image_background }}
             style={styles.card}
             imageStyle={styles.bgImage}
           >
+             <View style={styles.overlay} />
             <View style={styles.qrBox}>
                 <Image
                   source={require("../../../assets/images/Logo.png")}
@@ -308,7 +326,6 @@ const generatePDF1 = async (item: any): Promise<void> => {
               </View>
             </View>
 
-            <Text style={styles.name}>{Number(item.is_complimentary)=== 1  && (item.ticket_type.toUpperCase() ==="MEMBER"||item.ticket_type.toUpperCase() ==='SPOUSE') ? booking.formate.complimentary_footer1 :booking.formate.footer1 }</Text>
 
             <Text style={styles.name}>
               Member:{" "}
@@ -316,6 +333,8 @@ const generatePDF1 = async (item: any): Promise<void> => {
                 ? "Special Invitee"
                 : booking.memberId}
             </Text>
+            
+            <Text style={styles.name}>{Number(item.is_complimentary)=== 1  && (item.ticket_type.toUpperCase() ==="MEMBER"||item.ticket_type.toUpperCase() ==='SPOUSE') ? booking.formate.complimentary_footer1 :booking.formate.footer1 }</Text>
 
             <Text style={styles.name}>
               {booking.booking_no}-{item.id}
@@ -326,8 +345,15 @@ const generatePDF1 = async (item: any): Promise<void> => {
             <Text style={styles.name}>
               {booking.formate.footer3}
             </Text>
-
+            {booking.seats.length > 0 && (
+              <View>
+                <Text style={styles.name}>
+                  Seat: {booking.seats.map((s: any) => s.seat_code).join(", ")}
+                </Text>
+              </View>
+            )}
             <Text style={styles.footer}>Swipe → for next ticket</Text>
+            <View/>
           </ImageBackground>
         </View>
       </View>
@@ -348,14 +374,16 @@ const generatePDF1 = async (item: any): Promise<void> => {
       </TouchableOpacity>
 
       <FlatList
-        data={loading ? [1, 2, 3] : participants}
+        data={loading ? [1] : participants}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item, i) => i.toString()}
         renderItem={({ item }) =>
-          loading ? (
+        loading ? (
+          <View style={{ width, height, alignItems: "center", justifyContent: "center",backgroundColor:'white' }}>
             <TicketQRShimmer />
+            </View>
           ) : (
             <TicketItem item={item} booking={booking} />
           )
@@ -381,6 +409,10 @@ const styles = StyleSheet.create({
     color: "white",
     marginLeft: 10,
   },
+  overlay: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.4)", // adjust 0.3 - 0.6
+},
   eventName: {
     fontFamily: FONT_FAMILY.bold,
     fontSize: 22,

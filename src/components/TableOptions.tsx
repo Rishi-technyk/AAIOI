@@ -9,6 +9,7 @@ import {
   Alert,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import NfcManager, { NfcTech } from "react-native-nfc-manager";
 import { Modal } from "react-native-paper";
@@ -39,7 +40,7 @@ const getOptions = (
   {
     key: "otp",
     label: "Verify OTP",
-    icon: DOMAIN.BASE + "icon/memberotp.webp",
+    icon: DOMAIN.LOCAL + "icon/memberotp.webp",
 
     render: () => (
       <View>
@@ -107,10 +108,10 @@ const getOptions = (
     ),
   },
 
-  {
+  Platform.OS==='android'&&{
     key: "card",
     label: "Tap Card",
-    icon: DOMAIN.BASE + "icon/tap.webp",
+    icon: DOMAIN.LOCAL + "icon/tap.webp",
     render: () => (
       <View style={{ alignItems: "center", justifyContent: "center" }}>
        {loading ?<ActivityIndicator size={'large'} color={'green'}/>: <LottieView
@@ -340,7 +341,7 @@ const TableOptions = ({
                   style={styles.button}
                   onPress={() => {
                     setActiveOption(opt.key);
-                    if (opt.key === "card") handleTapCard();
+                    if (opt.key === "card" && Platform.OS==='android') handleTapCard();
 
                     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                   }}

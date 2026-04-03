@@ -46,7 +46,7 @@ const EventsList: React.FC<Props> = ({ navigation }) => {
           />
           <View style={{ marginLeft: 10 }}>
             <View style={styles.rowstart}>
-              <Text style={styles.price}>{item.name}</Text>
+              <Text style={styles.price} numberOfLines={2}>{item.name}</Text>
             </View>
             <View style={[styles.rowstart, { marginTop: 5 }]}>
               <Icon

@@ -7,7 +7,6 @@ import { javascriptGet, javascriptPost } from "../util/api";
 const fetchTeeData=async({queryKey}:{queryKey:any[]})=>{
 const [,token,tempStartDate,session]=queryKey
 
-console.log('REFECTChing----------')
     const apiObj={
         path:ENDPOINT.tee_settings,
         Token:token,

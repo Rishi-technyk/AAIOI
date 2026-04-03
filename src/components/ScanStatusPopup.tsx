@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, View, Text, StyleSheet, Pressable } from "react-native";
 import LottieView from "lottie-react-native";
-import { FONT_FAMILY } from "../util/constant";
+import { FONT_FAMILY } from "../util/colors";
 
 export default function ScanStatusPopup({ visible, type, message, onClose }) {
   const showButton = type === "success" || type === "fail";
@@ -13,7 +13,7 @@ export default function ScanStatusPopup({ visible, type, message, onClose }) {
           {/* 🔄 Loading Animation */}
           {type === "loading" && (
             <LottieView
-              source={require("../assets/animations/wave_animation.json")}
+              source={require("../screens/Animations/wave_animation.json")}
               autoPlay
               loop
                style={styles.animationContainer}
@@ -23,7 +23,7 @@ export default function ScanStatusPopup({ visible, type, message, onClose }) {
           {/* ✔ Success */}
           {type === "success" && (
             <LottieView
-              source={require("../assets/animations/Success.json")}
+              source={require("../screens/Animations/Success.json")}
               autoPlay
               loop={false}
                style={styles.animationContainer}
@@ -33,7 +33,7 @@ export default function ScanStatusPopup({ visible, type, message, onClose }) {
           {/* ❌ Failed */}
           {type === "fail" && (
             <LottieView
-              source={require("../assets/animations/Cross_loop.json")}
+              source={require("../screens/Animations/Cross_loop.json")}
               autoPlay
               loop={false}
               style={styles.animationContainer}
