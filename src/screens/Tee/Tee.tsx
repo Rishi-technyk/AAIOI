@@ -1,6 +1,7 @@
 import {
   Alert,
   FlatList,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -27,10 +28,14 @@ import LinearGradient from "react-native-linear-gradient";
 import { useTee } from "../../services/TeeService";
 import CalendarStrip from "../../components/CalendarStrip";
 import { javascriptPost } from "../../util/api";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { AppStackParamList } from "../../navigation/AppDrawer";
+import { RootState } from "../../store/store";
 
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
-const Tee = ({ navigation }) => {
-  const userData = useSelector((state) => state.auth);
+type Props = NativeStackScreenProps<AppStackParamList, 'Tee'>;
+const Tee: React.FC<Props> = ({ navigation }) => {
+  const userData = useSelector((state:RootState) => state.auth);
 const [currentTime, setCurrentTime] = useState(Date.now());
 
   const [session, setSession] = useState({ id: 0 });
@@ -39,13 +44,12 @@ const [currentTime, setCurrentTime] = useState(Date.now());
   const [loading, setLoading] = useState(false);
   const [isSwitchEnabled, setIsSwitchEnabled] = useState(false);
   const [tempStartDate, setTempStartDate] = useState(
-    moment().format("YYYY-MM-DD")
+    moment().add(1, "days").format("YYYY-MM-DD")
   );
   const [remainingTime, setRemainingTime] = useState(null);
   const [windowStatus, setWindowStatus] = useState("closed");
   const { data, isLoading, refetch } = useTee(userData, tempStartDate,session);
 
-  
   // normalize API response → so UI stays the same
   const normalizedData = React.useMemo(() => {
     if (!data) return {};
@@ -111,8 +115,9 @@ const [currentTime, setCurrentTime] = useState(Date.now());
 
 const getStatusInfo = useCallback((item: any) => {
   const now = new Date(currentTime);
-  const lockedTill = item.locked_till ? new Date(item.locked_till.replace(' ', 'T') + 'Z') : null;
-
+const lockedTill = item.locked_till
+  ? moment(item.locked_till, "YYYY-MM-DD HH:mm:ss").toDate()
+  : null;
 switch (true) {
     case item.is_locked_by_admin === 1:
       return { label: "Reserved", color: "black", backgroundColor: "#e0e0e0" };
@@ -130,7 +135,7 @@ switch (true) {
       return { label: "Available", color: SECONDARY_COLOR, backgroundColor: LIGHT_GREEN };
   } 
 }, [userData?.user?.id, currentTime]);
-
+console.log( data, '---------------------- data ---------------------');
 
  useEffect(() => {
     checkBookingWindow();
@@ -186,8 +191,9 @@ const filteredSheets = useMemo(() => {
   const renderTeeSheets = React.useCallback(({ item }) => {
     const statusInfo = getStatusInfo(item);
   const now = new Date(currentTime);
-  const lockedTill = item.locked_till ? new Date(item.locked_till.replace(' ', 'T') + 'Z'): null;
-
+ const lockedTill = item.locked_till
+  ? moment(item.locked_till, "YYYY-MM-DD HH:mm:ss").toDate()
+  : null;
   const isReservedByOther =
     lockedTill &&
     lockedTill > now &&
@@ -413,6 +419,7 @@ const filteredSheets = useMemo(() => {
               flexDirection: "row",
               alignItems: "center",
               flexWrap: "wrap",
+              // justifyContent: "space-between",
             }}
           >
             <Text style={styles.normaltext}>Show Active Only</Text>
@@ -420,21 +427,9 @@ const filteredSheets = useMemo(() => {
               value={isSwitchEnabled}
               onValueChange={setIsSwitchEnabled}
               color={ '#012970' }
+              style={{ marginLeft: 10 }}
             />
           </View>
-          {/* {status.map((item) => (
-            <View
-              key={item.id}
-              style={{
-                backgroundColor: item.backgroundColor,
-                padding: 5,
-                borderRadius: 5,
-                 flexWrap: "wrap",
-              }}
-            >
-              <Text style={{ color: item.color }}>{item.label}</Text>
-            </View>
-          ))} */}
         </View>
         <FlatList
           data={
@@ -450,14 +445,14 @@ const filteredSheets = useMemo(() => {
         />
         {windowStatus == "closed" && !isLoading && (
           <View style={styles.noNotificationContainer}>
-            {/* <Image
-              height={200}
-              width={200}
-              style={{ height: 100, width: 100 }}
-              source={require("../../assets/images/8669399.png")}
-            /> */}
+            <Image
+              height={100}
+              width={100}
+              style={{ height: 100, width: 100 ,marginBottom:10,borderRadius:10}}
+              source={require("../../../assets/images/53139.png")}
+            />
             <Text style={{ fontFamily: FONT_FAMILY.normal, color: "red" }}>
-              Window is closed.
+             {data?.notes || 'Booking window is closed. Please check back later.'}
             </Text>
           </View>
         )}

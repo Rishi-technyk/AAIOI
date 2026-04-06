@@ -57,7 +57,7 @@ const [,token,]=queryKey
     }
     try {
      const response= await javascriptGet(apiObj);
-     console.log('\x1b[36m%s\x1b[0m', response, '---------------------- response ---------------------');
+  
       if(response.status){
 
          return response

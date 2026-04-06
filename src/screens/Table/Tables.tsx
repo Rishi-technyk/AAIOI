@@ -25,7 +25,7 @@ const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 const Tables = ({navigation}) => {
   const userData = useSelector((state: RootState) => state.auth);
 
-  const today = moment().format('YYYY-MM-DD');
+  const today = moment().add(1,'days').format('YYYY-MM-DD');
 
   const [selectedDate, setSelectedDate] = useState(today);
   const [selectedMeal, setSelectedMeal] = useState<any>(null);

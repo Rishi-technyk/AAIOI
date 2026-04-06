@@ -8,7 +8,7 @@ import moment, { Moment } from "moment";
 import { FONT_FAMILY } from "../util/colors";
 import { FlatList } from "react-native-gesture-handler";
 
-const today = moment();
+const today = moment().add(1, "days").startOf("day"); // Start from tomorrow
 
 interface CalendarStripProps {
   dayOpenBooking: number;

@@ -71,6 +71,7 @@ const refetchdetails=()=>{
     route?.params?.refetch()
     fetchBookingDetails()
 }
+console.log(    details?.created_by , userData?.user?.id, '----------------------   details?.is_cancelled == 0 && details?.created_by == userData?.user?.id ---------------------');
 return (
   <View style={{ flex: 1, backgroundColor: "#f5f6fa" }}>
     <Header title="Booking Details" />
@@ -92,14 +93,16 @@ return (
                         `${details?.booking_date} ${details?.tee_time}`
                       ).isAfter(moment())
                     ? "#28A745"
-                    : "#F0AD4E",
+                    : moment(
+                        `${details?.booking_date} ${details?.tee_time}`).isBefore(moment()) ? "#6c757d" : "#F0AD4E",
               },
             ]}
           >
             <Text style={styles.badgeText}>
               {details?.is_cancelled === 1
                 ? "Cancelled"
-                : "Active"}
+                : moment(
+                        `${details?.booking_date} ${details?.tee_time}`).isBefore(moment())?'Completed': "Active"}
             </Text>
           </View>
         </View>
@@ -157,7 +160,7 @@ return (
         {moment(
           `${details?.booking_date} ${details?.tee_time}`
         ).isAfter(moment()) &&
-          details?.is_cancelled === 0 && details?.created_by === userData?.user?.id  && (
+          details?.is_cancelled == 0 && details?.created_by == userData?.user?.id  && (
             <View style={{flexDirection:'row',justifyContent:'space-around'}}>
               <Pressable
                 style={[styles.editBtn,{backgroundColor:LIGHT_BLUE}]}

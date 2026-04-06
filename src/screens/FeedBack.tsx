@@ -61,7 +61,7 @@ const FeedbackScreen: React.FC = () => {
         body: {},
         Token: userData?.token,
       });
-
+console.log( response, '---------------------- response ---------------------');
       if (response?.status) {
         setFeedbackTypes(response.data);
         setSelectedType(response.data?.[0]?.id ?? null);
@@ -132,7 +132,7 @@ const FeedbackScreen: React.FC = () => {
             {/* Feedback Type */}
             <Dropdown
               style={styles.dropdown}
-              data={feedbackTypes.map(t => ({
+              data={feedbackTypes?.map(t => ({
                 label: t.name.toUpperCase(),
                 value: t.id,
               }))}
