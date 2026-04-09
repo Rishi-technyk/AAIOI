@@ -54,7 +54,8 @@ export const ENV: EnvConfig = {
 
 export const DOMAIN = {
   APP_NAME:APP_NAME,
-  BASE: API_BASE_URL,
+  // BASE: API_BASE_URL,
+  BASE: 'https://www.lgc.in/MemberPortal/api/',
   LOCAL:API_LOCAL_URL,
   API_IMAGE_URL:API_IMAGE_URL,
   PAY_DOMAIN: "https://dsoi.org.in/membersection/mobileAPI/",

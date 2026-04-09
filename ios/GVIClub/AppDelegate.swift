@@ -31,7 +31,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "AFSC",
+      withModuleName: "LGC",
       in: window,
       launchOptions: launchOptions
     )

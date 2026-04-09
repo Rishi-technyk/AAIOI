@@ -1,4 +1,4 @@
-package com.technyk.afsc
+package com.technyk.lgc
 
 import android.app.Application
 import com.facebook.react.PackageList

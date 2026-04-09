@@ -79,9 +79,9 @@ android {
     project.ext.vectoricons = [
     iconFontNames: [ 'MaterialIcons.ttf', 'Ionicons.ttf', 'FontAwesome.ttf' ]
 ]
-    namespace "com.technyk.afsc"
+    namespace "com.technyk.lgc"
     defaultConfig {
-        applicationId "com.technyk.afsc"
+        applicationId "com.technyk.lgc"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 2

@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "303150584421",
-    "project_id": "afsc-80444",
-    "storage_bucket": "afsc-80444.firebasestorage.app"
+    "project_number": "807192683712",
+    "project_id": "lg-club-f65c3",
+    "storage_bucket": "lg-club-f65c3.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:303150584421:android:d7751b151f3ac3fb1f6c8c",
+        "mobilesdk_app_id": "1:807192683712:android:50baa00622b584968eb925",
         "android_client_info": {
-          "package_name": "com.technyk.afsc"
+          "package_name": "com.technyk.lgc"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBAH87BGhBP3wVG7gzmaNKesj32RCQBCAs"
+          "current_key": "AIzaSyCz8ru12GPgUJLeo9sTl81hke8vtKmmjJc"
         }
       ],
       "services": {
