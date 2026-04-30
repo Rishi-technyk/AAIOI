@@ -1,429 +1,906 @@
-import { useEffect, useState } from 'react';
-import { DOMAIN } from '../../util/constant';
-import { javascriptPost } from '../../util/api';
-import { Toast } from 'react-native-toast-notifications';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Linking,
+  Pressable,
+  RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { APP_NAME } from '@env';
-import RazorpayCheckout from 'react-native-razorpay';
+import LottieView from 'lottie-react-native';
+import InAppBrowser from 'react-native-inappbrowser-reborn';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppStackParamList } from '../../navigation/AppDrawer';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
-import Header from '../../components/Header';
-import { DARK_BLUE } from '../../util/colors';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-  withSequence,
-} from 'react-native-reanimated';
-import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
-import LinearGradient from 'react-native-linear-gradient';
+import { Toast } from 'react-native-toast-notifications';
 import { useQueryClient } from '@tanstack/react-query';
 
-const Shimmer = createShimmerPlaceholder(LinearGradient);
+import Header from '../../components/Header';
+import DetailSection from '../../components/booking/DetailSection';
+import PaymentSummaryCard from '../../components/payment/PaymentSummaryCard';
+import StatusTimeline from '../../components/timeline/StatusTimeline';
+import EmptyStateCard from '../../components/booking/EmptyStateCard';
+import { AppStackParamList } from '../../navigation/AppDrawer';
+import { RootState } from '../../store/store';
+import { useAppTheme } from '../../theme/AppThemeProvider';
+import { FONT_FAMILY } from '../../util/colors';
+import { ENDPOINT } from '../../util/constant';
+import { javascriptGet, javascriptPost } from '../../util/api';
+import { usePaymentStatus } from '../../hooks/usePaymentStatus';
+
 type Props = NativeStackScreenProps<AppStackParamList, 'UniversalPayment'>;
-const UniversalPaymentScreen: React.FC<Props> = ({ route }) => {
-  const { orderData, type } = route.params;
-  const userData = useSelector((state: RootState) => state.auth);
- const queryClient = useQueryClient();
-  const [paymentResult, setPaymentResult] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<'processing' | 'success' | 'failed'>(
-    'processing',
+type PaymentUiStatus = 'processing' | 'success' | 'failed' | 'pending';
+
+const POLL_INTERVAL_MS = 2200;
+const POLL_ATTEMPTS = 7;
+
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const isTerminalStatus = (status?: string | null) => {
+  const normalized = String(status || '').toLowerCase();
+  return (
+    normalized.includes('success') ||
+    normalized.includes('paid') ||
+    normalized.includes('failed') ||
+    normalized.includes('cancel') ||
+    normalized.includes('refund')
   );
-  const scale = useSharedValue(0);
+};
+
+const mapStatusToUi = (status?: string | null): PaymentUiStatus => {
+  const normalized = String(status || '').toLowerCase();
+
+  if (normalized.includes('success') || normalized.includes('paid')) {
+    return 'success';
+  }
+
+  if (normalized.includes('cancel')) {
+    return 'failed';
+  }
+
+  if (normalized.includes('fail')) {
+    return 'failed';
+  }
+
+  if (normalized.includes('pending') || normalized.includes('process') || normalized.includes('initiat')) {
+    return 'pending';
+  }
+
+  return 'processing';
+};
+
+const UniversalPaymentScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { colors } = useAppTheme();
+  const { buildPaymentTimeline, resolveTone } = usePaymentStatus();
+  const queryClient = useQueryClient();
+  const userData = useSelector((state: RootState) => state.auth);
+  const { orderData, type } = route.params;
+
+  const startedRef = useRef(false);
+  const pollingRef = useRef(false);
+  const scale = useSharedValue(0.92);
   const opacity = useSharedValue(0);
-  const translateY = useSharedValue(40);
+  const translateY = useSharedValue(18);
   const shake = useSharedValue(0);
-  useEffect(() => {
-    if (status === 'success') {
-      scale.value = withSpring(1, { damping: 8 });
-      opacity.value = withTiming(1, { duration: 400 });
-      translateY.value = withTiming(0, { duration: 500 });
+
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+  const [phase, setPhase] = useState('Preparing secure checkout');
+  const [status, setStatus] = useState<PaymentUiStatus>('processing');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [paymentResult, setPaymentResult] = useState<any>(null);
+  const [statusPayload, setStatusPayload] = useState<any>(null);
+
+  const paymentConfig = useMemo(() => {
+    const gateway = orderData?.gateway ?? {};
+    const checkout = orderData?.checkout ?? {};
+    const statusReference =
+      orderData?.status_reference ||
+      orderData?.merchant_order_id ||
+      orderData?.txnid ||
+      orderData?.order_id;
+
+    return {
+      amount: Number(orderData?.amount || 0),
+      orderId: orderData?.order_id,
+      merchantOrderId: orderData?.merchant_order_id || orderData?.txnid || null,
+      transactionId: orderData?.transaction_id || null,
+      checkoutType: checkout?.type || (orderData?.razorpayKey ? 'native' : 'hosted'),
+      checkoutUrl: checkout?.payment_url || orderData?.payment_url || null,
+      gatewayName: gateway?.name || checkout?.provider || (orderData?.razorpayKey ? 'Razorpay' : 'Payment Gateway'),
+      gatewaySlug: gateway?.slug || checkout?.provider || (orderData?.razorpayKey ? 'razorpay' : null),
+      environment: gateway?.environment || checkout?.environment || 'test',
+      brandColor: gateway?.branding?.primary || colors.primary,
+      razorpayKey: checkout?.key || orderData?.razorpayKey || null,
+      statusReference,
+      statusEndpoint:
+        orderData?.status_endpoint ||
+        (statusReference ? `${ENDPOINT.centralized_payment_status}${statusReference}` : null),
+      retryEndpoint:
+        orderData?.retry_endpoint ||
+        (statusReference ? `${ENDPOINT.centralized_payment_retry}${statusReference}` : null),
+      verifyEndpoint: orderData?.verify_endpoint || orderData?.end_point || null,
+      isCentralized: Boolean(orderData?.status_reference || orderData?.gateway || orderData?.checkout),
+    };
+  }, [colors.primary, orderData]);
+
+  const invalidateRelatedQueries = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['transactions'] });
+
+    if (type === 'Recharge') {
+      queryClient.invalidateQueries({ queryKey: ['card_balance'] });
+      queryClient.invalidateQueries({ queryKey: ['recharge_dashboard'] });
     }
 
-    if (status === 'failed') {
-      shake.value = withSequence(
-        withTiming(-10, { duration: 60 }),
-        withTiming(10, { duration: 60 }),
-        withTiming(-8, { duration: 60 }),
-        withTiming(8, { duration: 60 }),
-        withTiming(0, { duration: 60 }),
-      );
-
-      opacity.value = withTiming(1, { duration: 300 });
+    if (type === 'Bill') {
+      queryClient.invalidateQueries({ queryKey: ['statements'] });
+      queryClient.invalidateQueries({ queryKey: ['statement_dashboard'] });
     }
-  }, [status]);
-  const iconAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }, { translateX: shake.value }],
-  }));
 
-  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    if (type.includes('Booking') || type === 'Activity') {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+    }
+  }, [queryClient, type]);
+
+  const setOutcomeState = useCallback(
+    (nextStatus: PaymentUiStatus, nextPhase?: string) => {
+      setStatus(nextStatus);
+      if (nextPhase) {
+        setPhase(nextPhase);
+      }
+
+      if (nextStatus === 'success') {
+        scale.value = withSpring(1, { damping: 9, stiffness: 120 });
+        opacity.value = withTiming(1, { duration: 320 });
+        translateY.value = withTiming(0, { duration: 360 });
+      }
+
+      if (nextStatus === 'failed') {
+        opacity.value = withTiming(1, { duration: 260 });
+        shake.value = withSequence(
+          withTiming(-10, { duration: 55 }),
+          withTiming(10, { duration: 55 }),
+          withTiming(-8, { duration: 55 }),
+          withTiming(8, { duration: 55 }),
+          withTiming(0, { duration: 55 }),
+        );
+      }
+    },
+    [opacity, scale, shake, translateY],
+  );
+
+  const animatedCardStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
   }));
 
-  useEffect(() => {
-   
-      setTimeout(
-        ()=> startPayment()
-      , 400);
-  }, []);
+  const animatedIconStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }, { translateX: shake.value }],
+  }));
 
-  const startPayment = () => {
+  const syncLegacyFailure = useCallback(
+    async (reason?: string) => {
+      if (!paymentConfig.verifyEndpoint || paymentConfig.isCentralized) {
+        return;
+      }
+
+      try {
+        await javascriptPost({
+          path: paymentConfig.verifyEndpoint,
+          body: {
+            razorpay_order_id: paymentConfig.orderId,
+            razorpay_payment_id: null,
+            razorpay_signature: null,
+            status: false,
+            failure_reason: reason || 'Payment failed',
+          },
+          Token: userData?.token,
+        });
+      } catch (error) {
+        console.log('Failure sync error', error);
+      }
+    },
+    [paymentConfig, userData?.token],
+  );
+
+  const applyStatusPayload = useCallback(
+    (payload?: any) => {
+      if (!payload) {
+        return false;
+      }
+
+      setStatusPayload(payload);
+
+      const nextUiStatus = mapStatusToUi(
+        payload?.payment_status_code || payload?.payment_status,
+      );
+      const nextPhase =
+        nextUiStatus === 'success'
+          ? 'Payment verified successfully'
+          : nextUiStatus === 'failed'
+          ? 'Payment could not be completed'
+          : 'Payment is waiting for final confirmation';
+
+      setOutcomeState(nextUiStatus, nextPhase);
+      setLoading(false);
+      setRefreshing(false);
+
+      if (nextUiStatus === 'success') {
+        invalidateRelatedQueries();
+      }
+
+      return isTerminalStatus(payload?.payment_status_code || payload?.payment_status);
+    },
+    [invalidateRelatedQueries, setOutcomeState],
+  );
+
+  const fetchTransactionStatus = useCallback(async () => {
+    if (!paymentConfig.statusEndpoint) {
+      return null;
+    }
+
+    const response = await javascriptGet({
+      path: paymentConfig.statusEndpoint,
+      Token: userData?.token,
+    });
+
+    if (response?.status && response?.data) {
+      applyStatusPayload(response.data);
+    }
+
+    return response;
+  }, [applyStatusPayload, paymentConfig.statusEndpoint, userData?.token]);
+
+  const routeAfterSuccess = useCallback(
+    (response?: any) => {
+      const bookingId = response?.booking_id || response?.data?.booking_id;
+
+      if (bookingId) {
+        navigation.replace('EventBookingDetails', { bookingId });
+      }
+    },
+    [navigation],
+  );
+
+  const finalizeThroughEndpoint = useCallback(
+    async (payload: Record<string, any> = {}) => {
+      if (!paymentConfig.verifyEndpoint) {
+        return null;
+      }
+
+      const apiRes = await javascriptPost({
+        path: paymentConfig.verifyEndpoint,
+        body: {
+          transaction_id: paymentConfig.transactionId,
+          merchant_order_id: paymentConfig.merchantOrderId,
+          gateway_order_id: paymentConfig.orderId,
+          order_id: paymentConfig.orderId,
+          status_reference: paymentConfig.statusReference,
+          ...payload,
+        },
+        Token: userData?.token,
+      });
+
+      setPaymentResult(apiRes?.data || apiRes || null);
+
+      if (apiRes?.success || apiRes?.status) {
+        setOutcomeState('success', 'Payment verified successfully');
+        invalidateRelatedQueries();
+        routeAfterSuccess(apiRes);
+      } else {
+        setOutcomeState('failed', apiRes?.message || 'Payment verification failed');
+        setErrorMessage(apiRes?.message || 'Payment verification failed');
+      }
+
+      setLoading(false);
+      return apiRes;
+    },
+    [
+      invalidateRelatedQueries,
+      paymentConfig.orderId,
+      paymentConfig.merchantOrderId,
+      paymentConfig.statusReference,
+      paymentConfig.transactionId,
+      paymentConfig.verifyEndpoint,
+      routeAfterSuccess,
+      setOutcomeState,
+      userData?.token,
+    ],
+  );
+
+  const verifyThroughEndpoint = useCallback(
+    async (payload: Record<string, any>) => {
+      if (!paymentConfig.verifyEndpoint) {
+        throw new Error('Missing verify endpoint');
+      }
+
+      return finalizeThroughEndpoint(payload);
+    },
+    [finalizeThroughEndpoint, paymentConfig.verifyEndpoint],
+  );
+
+  const pollForFinalStatus = useCallback(
+    async (attempts = POLL_ATTEMPTS) => {
+      if (!paymentConfig.statusEndpoint || pollingRef.current) {
+        return false;
+      }
+
+      pollingRef.current = true;
+      setPhase('Checking payment confirmation');
+
+      try {
+        for (let attempt = 0; attempt < attempts; attempt += 1) {
+          const response = await fetchTransactionStatus();
+          const currentStatus =
+            response?.data?.payment_status_code || response?.data?.payment_status;
+
+          if (isTerminalStatus(currentStatus)) {
+            if (
+              mapStatusToUi(currentStatus) === 'success' &&
+              paymentConfig.verifyEndpoint
+            ) {
+              await finalizeThroughEndpoint();
+            }
+            return true;
+          }
+
+          await wait(POLL_INTERVAL_MS);
+        }
+
+        setOutcomeState('pending', 'Return to the app after gateway confirmation');
+        setLoading(false);
+        return false;
+      } finally {
+        pollingRef.current = false;
+      }
+    },
+    [
+      fetchTransactionStatus,
+      finalizeThroughEndpoint,
+      paymentConfig.statusEndpoint,
+      paymentConfig.verifyEndpoint,
+      setOutcomeState,
+    ],
+  );
+
+  const openRazorpayCheckout = useCallback(async () => {
+    const RazorpayModule = require('react-native-razorpay');
+    const RazorpayCheckout = RazorpayModule.default || RazorpayModule;
 
     const options = {
-      description: `${type} Payment`,
-      image: DOMAIN.ICON_URL,
+      key: paymentConfig.razorpayKey,
+      order_id: paymentConfig.orderId,
+      amount: Math.round(paymentConfig.amount * 100),
       currency: 'INR',
-      key: orderData.razorpayKey,
-      amount: orderData.amount * 100,
-      order_id: orderData.order_id,
-      name: APP_NAME,
-      theme: { color: DARK_BLUE },
+      name: paymentConfig.gatewayName,
+      description: type,
       prefill: {
         name: userData?.user?.DisplayName,
         email: userData?.user?.Email,
         contact: userData?.user?.Mobile,
       },
+      theme: {
+        color: paymentConfig.brandColor,
+      },
       notes: {
         MemberID: userData?.user?.MemberID || '',
         SC_ID: userData?.user?.SC_ID || '',
         BookingType: type,
-        MemberName: userData?.user?.DisplayName || '',
       },
-
-      // modal: {
-      //   ondismiss: () => handleFailure({ reason: 'User Cancelled' }),
-      // },
     };
 
-    RazorpayCheckout.open(options)
-      .then((response: any) => {
-      
-        verifyPayment(response);
-      })
-      .catch(handleFailure);
-  };
+    setPhase('Opening native payment checkout');
+    const result = await RazorpayCheckout.open(options);
 
-  const verifyPayment = async (response: any) => {
-    try {
-      const apiRes = await javascriptPost({
-        path: orderData.end_point,
-        body: {
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_signature: response.razorpay_signature,
-        },
-        Token: userData.token,
+    return verifyThroughEndpoint({
+      ...result,
+      transaction_id: paymentConfig.transactionId,
+      merchant_order_id: paymentConfig.merchantOrderId,
+      gateway_order_id: paymentConfig.orderId,
+    });
+  }, [
+    paymentConfig.amount,
+    paymentConfig.brandColor,
+    paymentConfig.gatewayName,
+    paymentConfig.merchantOrderId,
+    paymentConfig.orderId,
+    paymentConfig.razorpayKey,
+    paymentConfig.transactionId,
+    type,
+    userData?.user?.DisplayName,
+    userData?.user?.Email,
+    userData?.user?.MemberID,
+    userData?.user?.Mobile,
+    userData?.user?.SC_ID,
+    verifyThroughEndpoint,
+  ]);
+
+  const openHostedCheckout = useCallback(async () => {
+    if (!paymentConfig.checkoutUrl) {
+      throw new Error('Missing hosted checkout url');
+    }
+
+    setPhase('Opening secure hosted checkout');
+
+    if (await InAppBrowser.isAvailable()) {
+      await InAppBrowser.open(paymentConfig.checkoutUrl, {
+        dismissButtonStyle: 'close',
+        preferredBarTintColor: colors.surface,
+        preferredControlTintColor: colors.text,
+        readerMode: false,
+        animated: true,
+        modalPresentationStyle: 'fullScreen',
+        modalEnabled: true,
+        showTitle: true,
+        toolbarColor: colors.surface,
+        secondaryToolbarColor: colors.background,
+        enableUrlBarHiding: true,
+        enableDefaultShare: false,
       });
-      console.log( type,'---------------------- updating here ---------------------');
-       if (type === 'Recharge') {
-  console.log( '---------------------- updating here ---------------------');
-      queryClient.invalidateQueries({ queryKey: ['card_balance'] });
+    } else {
+      await Linking.openURL(paymentConfig.checkoutUrl);
+    }
 
-          }else if( type === 'Bill'){
-            queryClient.invalidateQueries({ queryKey: ['statements'] });
-          }
-      setPaymentResult(apiRes.data);
+    if (paymentConfig.statusEndpoint) {
+      await pollForFinalStatus();
+      return;
+    }
 
-      if (apiRes.success) {
-        setStatus('success');
-      } else {
-        setStatus('failed');
+    setOutcomeState('pending', 'Complete the payment and refresh to confirm status');
+    setLoading(false);
+  }, [
+    colors.background,
+    colors.surface,
+    colors.text,
+    paymentConfig.checkoutUrl,
+    paymentConfig.statusEndpoint,
+    pollForFinalStatus,
+    setOutcomeState,
+  ]);
+
+  const startPayment = useCallback(async () => {
+    if (startedRef.current) {
+      return;
+    }
+
+    startedRef.current = true;
+    setLoading(true);
+    setErrorMessage('');
+    scale.value = 0.92;
+    opacity.value = 0;
+    translateY.value = 18;
+
+    try {
+      if (paymentConfig.razorpayKey && paymentConfig.orderId) {
+        await openRazorpayCheckout();
+        return;
       }
-    } catch (e) {
-      handleFailure(e);
-    }finally{
-    
-           setLoading(false);
+
+      if (paymentConfig.checkoutUrl) {
+        await openHostedCheckout();
+        return;
+      }
+
+      if (paymentConfig.statusEndpoint) {
+        await pollForFinalStatus(1);
+        return;
+      }
+
+      throw new Error('This payment payload is missing checkout metadata.');
+    } catch (error: any) {
+      const message = error?.description || error?.message || 'Payment could not be started.';
+      await syncLegacyFailure(message);
+      setErrorMessage(message);
+      setOutcomeState('failed', 'Payment flow was interrupted');
+      setLoading(false);
+      Toast.show(message, { type: 'danger' });
+    }
+  }, [
+    openHostedCheckout,
+    openRazorpayCheckout,
+    paymentConfig.checkoutUrl,
+    paymentConfig.orderId,
+    paymentConfig.razorpayKey,
+    paymentConfig.statusEndpoint,
+    pollForFinalStatus,
+    scale,
+    opacity,
+    setOutcomeState,
+    syncLegacyFailure,
+    translateY,
+  ]);
+
+  useEffect(() => {
+    startPayment();
+  }, [startPayment]);
+
+  const onRefresh = useCallback(async () => {
+    if (!paymentConfig.statusEndpoint) {
+      return;
     }
 
-   
-  };
-
-  const handleFailure = async (error: any) => {
-  
     try {
-      const response = await javascriptPost({
-        path: orderData.end_point,
-        body: {
-          razorpay_order_id: orderData.order_id,
-          razorpay_payment_id: error?.payment_id || null,
-          razorpay_signature: null,
-          status: false,
-          failure_reason: error?.description || 'Payment Failed',
-        },
-        Token: userData.token,
-      });
-       
-      setPaymentResult(response.data);
-    } catch (e) {
-      console.log('Failure sync error', e);
-    }finally{
-       setStatus('failed');
-        setLoading(false);
-
-    Toast.show('Payment Failed', { type: 'danger' });
+      setRefreshing(true);
+      await fetchTransactionStatus();
+    } catch (error) {
+      Toast.show('Unable to refresh payment status right now.', { type: 'warning' });
+    } finally {
+      setRefreshing(false);
     }
+  }, [fetchTransactionStatus, paymentConfig.statusEndpoint]);
 
-   
-  };
- console.log( status, '---------------------- status ---------------------');
+  const retryPayment = useCallback(async () => {
+    try {
+      setRetrying(true);
+      setErrorMessage('');
+
+      if (paymentConfig.isCentralized && paymentConfig.retryEndpoint) {
+        const response = await javascriptPost({
+          path: paymentConfig.retryEndpoint,
+          body: {},
+          Token: userData?.token,
+        });
+
+        if (response?.status && response?.data) {
+          navigation.replace('UniversalPayment', {
+            type,
+            orderData: response.data,
+          });
+          return;
+        }
+      }
+
+      startedRef.current = false;
+      await startPayment();
+    } catch (error) {
+      Toast.show('Unable to retry payment right now.', { type: 'danger' });
+    } finally {
+      setRetrying(false);
+    }
+  }, [
+    navigation,
+    paymentConfig.isCentralized,
+    paymentConfig.retryEndpoint,
+    startPayment,
+    type,
+    userData?.token,
+  ]);
+
+  const paymentSnapshot = useMemo(() => {
+    const statusText =
+      paymentResult?.Status ||
+      statusPayload?.payment_status ||
+      (status === 'success'
+        ? 'Success'
+        : status === 'failed'
+        ? 'Failed'
+        : status === 'pending'
+        ? 'Pending'
+        : 'Processing');
+
+    return {
+      gateway_name: statusPayload?.gateway_name || paymentConfig.gatewayName,
+      status: statusText,
+      payment_status: statusText,
+      status_code: statusPayload?.payment_status_code || status,
+      amount:
+        paymentResult?.paid_amount ||
+        statusPayload?.amount ||
+        paymentConfig.amount,
+      reference_number:
+        paymentResult?.reference_number ||
+        statusPayload?.gateway_transaction_id ||
+        statusPayload?.gateway_order_id ||
+        paymentConfig.orderId,
+      gateway_order_id:
+        paymentResult?.orderId ||
+        statusPayload?.order_id ||
+        paymentConfig.orderId,
+      created_at: statusPayload?.created_at || null,
+      initiated_at: statusPayload?.created_at || null,
+      processed_at: statusPayload?.processed_at || null,
+      transaction_date: statusPayload?.processed_at || null,
+      retry_count: statusPayload?.retry_count || 0,
+    };
+  }, [paymentConfig.amount, paymentConfig.gatewayName, paymentConfig.orderId, paymentResult, status, statusPayload]);
+
+  const paymentTimeline = buildPaymentTimeline(paymentSnapshot);
+  const statusTone = resolveTone(paymentSnapshot.status);
+
+  const headline =
+    status === 'success'
+      ? 'Payment successful'
+      : status === 'failed'
+      ? 'Payment failed'
+      : status === 'pending'
+      ? 'Awaiting confirmation'
+      : 'Processing payment';
+
+  const supportingText =
+    status === 'success'
+      ? 'The transaction is verified and the related booking or balance updates are being reflected.'
+      : status === 'failed'
+      ? errorMessage || 'We could not complete the payment. You can retry from here.'
+      : status === 'pending'
+      ? 'We are waiting for the gateway to confirm the payment. Pull to refresh or check again.'
+      : 'Please stay on this screen while we complete the secure payment handshake.';
+
+  const canRetry = status === 'failed' || status === 'pending';
+
   return (
-    <View style={{ flex: 1, backgroundColor: '#FFFF' }}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="Payment Status" toHome />
 
-      {loading ? (
-        <PaymentShimmer />
-      ) : (
-        <View style={styles.center}>
-          <Animated.View
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
+      >
+        <View
+          style={[
+            styles.heroCard,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              shadowColor: colors.overlay,
+            },
+          ]}
+        >
+          <View
             style={[
-              status === 'success'
-                ? styles.iconCircleSuccess
-                : styles.iconCircleFail,
-              iconAnimatedStyle,
+              styles.statusOrb,
+              { backgroundColor: statusTone.background, borderColor: statusTone.border },
             ]}
           >
-            <Icon
-              name={status === 'success' ? 'check-bold' : 'close-thick'}
-              size={44}
-              color={status === 'success' ? '#1BAA60' : '#E5484D'}
+            {status === 'processing' || loading ? (
+              <LottieView
+                autoPlay
+                loop
+                source={require('../Animations/wave_animation.json')}
+                style={styles.statusAnimation}
+              />
+            ) : (
+              <Animated.View style={animatedIconStyle}>
+                <LottieView
+                  autoPlay
+                  loop={status !== 'success'}
+                  source={
+                    status === 'success'
+                      ? require('../Animations/Success.json')
+                      : require('../Animations/Cross_loop.json')
+                  }
+                  style={styles.statusAnimation}
+                />
+              </Animated.View>
+            )}
+          </View>
+
+          <View style={styles.heroCopy}>
+            <Text style={[styles.gatewayEyebrow, { color: colors.textMuted }]}>
+              {paymentConfig.gatewayName} • {paymentConfig.environment.toUpperCase()}
+            </Text>
+            <Text style={[styles.heroTitle, { color: colors.text }]}>{headline}</Text>
+            <Text style={[styles.heroSubtitle, { color: colors.textMuted }]}>{supportingText}</Text>
+          </View>
+
+          <View
+            style={[
+              styles.phasePill,
+              { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
+            ]}
+          >
+            <Icon name="progress-clock" size={16} color={colors.primary} />
+            <Text style={[styles.phaseText, { color: colors.text }]}>{phase}</Text>
+          </View>
+        </View>
+
+        <Animated.View style={animatedCardStyle}>
+          <DetailSection
+            title="Payment Summary"
+            subtitle="Transaction snapshot with gateway metadata and member context."
+            delay={30}
+          >
+            <PaymentSummaryCard
+              status={paymentSnapshot.status}
+              items={[
+                { label: 'Transaction type', value: type },
+                { label: 'Member ID', value: userData?.user?.MemberID || 'N/A' },
+                { label: 'SC ID', value: userData?.user?.SC_ID || 'N/A' },
+                {
+                  label: 'Amount',
+                  value: `Rs. ${Number(paymentSnapshot.amount || 0).toFixed(2)}`,
+                  emphasize: true,
+                },
+                { label: 'Gateway order', value: paymentSnapshot.gateway_order_id || 'Pending' },
+                { label: 'Reference', value: paymentSnapshot.reference_number || 'Pending' },
+                { label: 'Attempts', value: String(paymentSnapshot.retry_count || 0) },
+              ]}
             />
-          </Animated.View>
+          </DetailSection>
 
-          {/* Title */}
-          <Text style={styles.title}>
-            {status === 'success' ? 'Payment Successful' : 'Payment Failed'}
-          </Text>
+          <DetailSection
+            title="Tracking Timeline"
+            subtitle="Follow the processing steps from initiation to final confirmation."
+            delay={90}
+          >
+            {paymentTimeline.length ? (
+              <StatusTimeline items={paymentTimeline} />
+            ) : (
+              <EmptyStateCard
+                title="Timeline will appear after verification"
+                description="As soon as the gateway updates the transaction, you will see each payment milestone here."
+              />
+            )}
+          </DetailSection>
 
-          {/* Subtitle */}
-          <Text style={styles.subtitle}>
-            {status === 'success'
-              ? 'Your transaction was completed successfully.'
-              : 'We could not process your payment.'}
-          </Text>
-
-          {/* Payment Details Card */}
-          {paymentResult && (
-            <Animated.View style={[styles.card, cardAnimatedStyle]}>
-              <View style={styles.row}>
-                <Text style={styles.label}>Transaction Type</Text>
-                <Text style={styles.value}>{type}</Text>
-              </View>
-
-              <View style={styles.divider} />
-
-              <View style={styles.row}>
-                <Text style={styles.label}>Member ID</Text>
-                <Text style={styles.value}>{userData?.user?.MemberID}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>SC ID</Text>
-                <Text style={styles.value}>{userData?.user?.SC_ID}</Text>
-              </View>
-
-              <View style={styles.divider} />
-
-              <View style={styles.row}>
-                <Text style={styles.label}>Amount Paid</Text>
-                <Text style={styles.amount}>
-                  ₹ {Number(paymentResult.paid_amount).toFixed(2)}
-                </Text>
-              </View>
-
-              <View style={styles.row}>
-                <Text style={styles.label}>Transaction ID</Text>
-                <Text style={styles.value}>
-                  {paymentResult.reference_number || '—'}
-                </Text>
-              </View>
-
-              <View style={styles.row}>
-                <Text style={styles.label}>Status</Text>
-                <Text
+          <DetailSection
+            title="Actions"
+            subtitle="Retry, refresh, or return home without losing your payment context."
+            delay={130}
+          >
+            <View style={styles.actionRow}>
+              {canRetry ? (
+                <Pressable
+                  onPress={retryPayment}
+                  disabled={retrying}
                   style={[
-                    styles.status,
-                    paymentResult.Status === 'Success'
-                      ? styles.successText
-                      : styles.failText,
+                    styles.primaryAction,
+                    {
+                      backgroundColor: colors.primary,
+                      opacity: retrying ? 0.6 : 1,
+                    },
                   ]}
                 >
-                  {paymentResult.Status}
+                  <Icon name="refresh" size={18} color={colors.onPrimary} />
+                  <Text style={[styles.primaryActionText, { color: colors.onPrimary }]}>
+                    {retrying ? 'Retrying...' : 'Retry payment'}
+                  </Text>
+                </Pressable>
+              ) : null}
+
+              <Pressable
+                onPress={onRefresh}
+                style={[
+                  styles.secondaryAction,
+                  { backgroundColor: colors.surface, borderColor: colors.border },
+                ]}
+              >
+                <Icon name="sync" size={18} color={colors.text} />
+                <Text style={[styles.secondaryActionText, { color: colors.text }]}>
+                  Refresh status
                 </Text>
-              </View>
-            </Animated.View>
-          )}
-        </View>
-      )}
-    </View>
-  );
-};
-const PaymentShimmer = () => {
-  return (
-    <View style={styles.center}>
-      {/* Icon shimmer */}
-      <Shimmer style={styles.shimmerCircle} />
+              </Pressable>
 
-      {/* Title */}
-      <Shimmer style={styles.shimmerTitle} />
-      <Shimmer style={styles.shimmerSubtitle} />
-
-      {/* Card */}
-      <View style={styles.card}>
-        {[1,2,3,4,5].map((_,i)=>(
-          <View key={i} style={styles.row}>
-            <Shimmer style={styles.shimmerLabel} />
-            <Shimmer style={styles.shimmerValue} />
-          </View>
-        ))}
-      </View>
+              <Pressable
+                onPress={() => navigation.navigate('Home')}
+                style={[
+                  styles.secondaryAction,
+                  { backgroundColor: colors.surface, borderColor: colors.border },
+                ]}
+              >
+                <Icon name="home-outline" size={18} color={colors.text} />
+                <Text style={[styles.secondaryActionText, { color: colors.text }]}>Go home</Text>
+              </Pressable>
+            </View>
+          </DetailSection>
+        </Animated.View>
+      </ScrollView>
     </View>
   );
 };
 
 export default UniversalPaymentScreen;
+
 const styles = StyleSheet.create({
-  loader:{
-flex:1,
-alignItems:'center',
-justifyContent:'center'
-  },
-  center: {
+  container: {
     flex: 1,
-    alignItems: 'center',
-    // justifyContent: 'center',
-    paddingHorizontal: 20,
-    marginTop:20
   },
-
-  iconCircleSuccess: {
-    width: 92,
-    height: 92,
-    borderRadius: 46,
-    backgroundColor: '#E9F8F1',
+  content: {
+    padding: 16,
+    paddingBottom: 32,
+    gap: 10,
+  },
+  heroCard: {
+    borderWidth: 1,
+    borderRadius: 28,
+    padding: 18,
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
+  },
+  statusOrb: {
+    width: 98,
+    height: 98,
+    borderRadius: 49,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 22,
+    alignSelf: 'center',
+    marginBottom: 14,
+    overflow: 'hidden',
   },
-
-  iconCircleFail: {
+  statusAnimation: {
     width: 92,
     height: 92,
-    borderRadius: 46,
-    backgroundColor: '#FDECEC',
+  },
+  heroCopy: {
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 22,
+    marginBottom: 16,
   },
-
-  iconText: {
-    fontSize: 42,
-    color: '#22a55d',
+  gatewayEyebrow: {
+    fontSize: 12,
+    letterSpacing: 0.8,
+    fontFamily: FONT_FAMILY.medium,
+    marginBottom: 8,
   },
-
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-
-  subtitle: {
-    fontSize: 14,
-    color: '#64748b',
-    marginTop: 6,
-    marginBottom: 25,
+  heroTitle: {
+    fontSize: 26,
+    lineHeight: 30,
     textAlign: 'center',
+    fontFamily: FONT_FAMILY.bold,
+    marginBottom: 8,
   },
-  card: {
-    width: '100%',
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
+  heroSubtitle: {
+    fontSize: 14,
+    lineHeight: 21,
+    textAlign: 'center',
+    fontFamily: FONT_FAMILY.regular,
   },
-
-  row: {
+  phasePill: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
-
-  label: {
-    color: '#666',
+  phaseText: {
     fontSize: 13,
+    fontFamily: FONT_FAMILY.medium,
   },
-
-  value: {
-    color: '#111',
-    fontWeight: '600',
+  actionRow: {
+    gap: 12,
   },
-
-  amount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#22a55d',
+  primaryAction: {
+    minHeight: 52,
+    borderRadius: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
-
-  status: {
-    fontWeight: '700',
+  primaryActionText: {
+    fontSize: 14,
+    fontFamily: FONT_FAMILY.semiBold,
   },
-
-  successText: {
-    color: '#22a55d',
+  secondaryAction: {
+    minHeight: 50,
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
-
-  failText: {
-    color: '#e53935',
+  secondaryActionText: {
+    fontSize: 14,
+    fontFamily: FONT_FAMILY.medium,
   },
-
-  divider: {
-    height: 1,
-    backgroundColor: '#eee',
-    marginVertical: 12,
-  },
-  shimmerCircle:{
-  width:92,
-  height:92,
-  borderRadius:46,
-  marginBottom:22
-},
-
-shimmerTitle:{
-  width:180,
-  height:22,
-  borderRadius:6,
-  marginBottom:10
-},
-
-shimmerSubtitle:{
-  width:220,
-  height:14,
-  borderRadius:6,
-  marginBottom:25
-},
-
-shimmerLabel:{
-  width:90,
-  height:12,
-  borderRadius:4
-},
-
-shimmerValue:{
-  width:120,
-  height:12,
-  borderRadius:4
-},
-
 });

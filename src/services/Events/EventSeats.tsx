@@ -55,7 +55,7 @@ const EventSeats: React.FC<Props> = ({ route, navigation }) => {
     .filter((t: any) => t !== null);
   const { data, isLoading, error } = useGetEventSeatsQuery({
     event_id: event.id,
-    token: userData.token,
+    token: userData?.token,
     member_id: member?.id||undefined,
 
   });
@@ -137,7 +137,7 @@ const EventSeats: React.FC<Props> = ({ route, navigation }) => {
       </View>
     );
   }
-
+console.log( data, '---------------------- data ---------------------');
   /** ERROR STATE */
   if (error) {
     return (
@@ -172,6 +172,7 @@ const seatsByBlock = allSeats.reduce((acc: any, seat: any) => {
 
   return acc;
 }, {});
+console.log(  userData?.user?.role, '----------------------  userData?.user?.role ---------------------');
   return (
     <View style={styles.container}>
       <Header title="Select Seats" />
@@ -195,7 +196,7 @@ const seatsByBlock = allSeats.reduce((acc: any, seat: any) => {
       {data?.status ? (
     
 <View style={styles.seatContainer}>
-  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+  <ScrollView horizontal showsHorizontalScrollIndicator={false} >
     <ScrollView 
     showsVerticalScrollIndicator={false}>
 
@@ -225,14 +226,14 @@ const seatsByBlock = allSeats.reduce((acc: any, seat: any) => {
 
                     const selected = selectedSeats.find(s => s.id === seat.id);
                     const status = seat.status;
-                    const isDisabled =
-                      userData?.user?.role !== 'Event Admin' ?
-                      ((seat.category?.seat_type === 'vip' && !data?.vip_allowed) ||
-                        seat.category?.seat_type === 'complimentary') &&
-                      !data?.complimentary_allowed: ((seat.category?.seat_type === 'vip' && data?.vip_allowed) ||
-                        seat.category?.seat_type === 'complimentary') &&
-                      !data?.complimentary_allowed
-
+                    const isVip = seat.category?.seat_type === 'vip';
+const isComplimentary = seat.category?.seat_type === 'complimentary';
+                    const isDisabled = userData?.user?.role !== 'Event Admin' ?
+  (isVip && !data?.vip_allowed) ||
+  (isComplimentary && !data?.complimentary_allowed):(isVip && data?.vip_allowed) ||
+  (isComplimentary && !data?.complimentary_allowed);
+            
+                      console.log( seat.category?.seat_type === 'vip' ? isDisabled : null, status,'---------------------- isDisabled ---------------------');
                     return (
                       <TouchableOpacity
                         key={seat.id}
@@ -326,6 +327,7 @@ const styles = StyleSheet.create({
     flex:1,
     alignItems: 'center',
     paddingBottom: 80,
+    margin:20
   },
 
 seat: {

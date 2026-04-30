@@ -6,10 +6,11 @@ import AuthScreenLayout from '../../components/AuthScreenLayout';
 import Button2 from '../../components/Button2';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Toast } from 'react-native-toast-notifications';
-import { javascriptGet,  javascriptGetLocal,  javascriptPostLocal } from '../../util/api';
+import { javascriptGetLocal,  javascriptPostLocal } from '../../util/api';
 import { Loginstyles } from '../../Styles/LoginStyles';
-import { DARK_BLUE, FONT_FAMILY } from '../../util/colors';
+import { FONT_FAMILY } from '../../util/colors';
 import { ENDPOINT } from '../../util/constant';
+import { useAppTheme } from '../../theme/AppThemeProvider';
 
 type Props=NativeStackScreenProps<AuthStackParamList,'StaffLogin'>;
 
@@ -20,6 +21,8 @@ const StaffLogin:React.FC<Props> = ({navigation}) => {
 
   const [location,setLocation]=useState([]);
     const [selectedValue, setSelectedValue] = useState(null);
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
 
   const userRef = useRef(null);
 
@@ -101,8 +104,8 @@ useEffect(()=>{
               secureTextEntry={false}
               value={usernameTextValue}
               onChangeText={(value) => setUsernameTextValue(value)}
-              style={[Loginstyles.textInput, { paddingVertical: 20 }]}
-              placeholderTextColor="#363b5d"
+              style={[Loginstyles.textInput, styles.textInput, { paddingVertical: 20 }]}
+              placeholderTextColor={colors.placeholder}
               returnKeyType="next"
             />
             <View>
@@ -135,43 +138,55 @@ useEffect(()=>{
 
 export default StaffLogin
 
-const styles=StyleSheet.create({
-
+const createStyles = (colors: {
+  primary: string;
+  border: string;
+  placeholder: string;
+  text: string;
+  surface: string;
+}) =>
+  StyleSheet.create({
+    textInput: {
+      color: colors.text,
+      borderBottomColor: colors.primary,
+      backgroundColor: colors.surface,
+    },
     dropdown: {
-        height: 50,
-        borderBottomWidth: 1,
-        paddingHorizontal: 8,
-        marginVertical:10,
-        marginHorizontal:5,
-        borderBottomColor:DARK_BLUE
+      height: 50,
+      borderBottomWidth: 1,
+      paddingHorizontal: 8,
+      marginVertical: 10,
+      marginHorizontal: 5,
+      borderBottomColor: colors.primary,
+      backgroundColor: colors.surface,
+      borderRadius: 8,
     },
     icon: {
-        marginRight: 5,
+      marginRight: 5,
     },
     containerStyle: {
-        borderRadius: 8,
-        borderColor: 'gray',
-        borderWidth: 0.5,
-        maxHeight: 200,
-        marginTop: 8,
-        
+      borderRadius: 8,
+      borderColor: colors.border,
+      borderWidth: 0.5,
+      maxHeight: 200,
+      marginTop: 8,
+      backgroundColor: colors.surface,
     },
     placeholderStyle: {
-        color: 'gray',
-        fontFamily:FONT_FAMILY.normal,
-        fontSize: 16,
+      color: colors.placeholder,
+      fontFamily: FONT_FAMILY.normal,
+      fontSize: 16,
     },
     selectedTextStyle: {
-        fontFamily:FONT_FAMILY.normal,
-        color: 'black',
-        fontSize: 16,
+      fontFamily: FONT_FAMILY.normal,
+      color: colors.text,
+      fontSize: 16,
     },
     itemTextStyle: {
-        fontFamily:FONT_FAMILY.normal,
-        color: 'black',
-        // fontSize: 16,
+      fontFamily: FONT_FAMILY.normal,
+      color: colors.text,
     },
-})
+  })
 
 // import {
 //   Alert,

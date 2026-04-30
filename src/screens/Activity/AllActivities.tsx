@@ -66,7 +66,6 @@ const AllActivities:React.FC<Props> = ({ navigation }) => {
     retry: 1,
     enabled: !!userData?.token,
   })
-
   useEffect(() => {
     if (data) {
       setOptions(data.data.filter((item) => item.status == "Active"));

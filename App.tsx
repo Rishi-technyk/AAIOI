@@ -14,21 +14,22 @@ import { store, persistor } from './src/store/store';
 import { NavigationContainer } from '@react-navigation/native';
 import { PaperProvider } from 'react-native-paper';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { DARK_BLUE, LIGHT_GREEN } from './src/util/colors';
 import { ToastProvider } from 'react-native-toast-notifications';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { navigationRef } from './src/navigation/RootNavigation';
 import { GestureHandlerRootView, TextInput } from 'react-native-gesture-handler';
+import { AppThemeProvider, useAppTheme } from './src/theme/AppThemeProvider';
 
 const client = new QueryClient();
 
-const Application: React.FC = () => {
+const ApplicationShell: React.FC = () => {
+  const { colors, navigationTheme, paperTheme, resolvedMode } = useAppTheme();
+
   const customTextProps = {
     style: {
       fontFamily: 'OpenSans-Regular',
     },
   };
-
   // Enable layout animation on Android
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -40,7 +41,7 @@ const Application: React.FC = () => {
       fontFamily: 'OpenSans-Regular',
       fontSize: 14,
     },
-    placeholderTextColor: 'grey',
+    placeholderTextColor: colors.placeholder,
   };
 
   // Override default props for Text (RNText because Text from SVG can't be styled globally)
@@ -62,46 +63,61 @@ const Application: React.FC = () => {
   };
 
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <StatusBar backgroundColor={DARK_BLUE} barStyle="light-content" />
+    <>
+      <StatusBar
+        backgroundColor={colors.background}
+        barStyle={resolvedMode === 'dark' ? 'light-content' : 'dark-content'}
+      />
 
-        <ToastProvider
-          placement="top"
-          duration={2000}
-          animationType="zoom-in"
-          animationDuration={300}
-          offset={50}
-          successColor={'rgba(120, 202, 20, 0.78)'}
-          dangerColor={'red'}
-          style={{ borderRadius: 30 }}
-          successIcon={
-            <Icon name="checkmark-done-circle-outline" size={20} color={LIGHT_GREEN} />
-          }
-        >
-          <QueryClientProvider client={client}>
-            <NavigationContainer ref={navigationRef}>
-              <SafeAreaProvider>
-                 <GestureHandlerRootView>
+      <ToastProvider
+        placement="top"
+        duration={2000}
+        animationType="zoom-in"
+        animationDuration={300}
+        offset={50}
+        successColor={colors.success}
+        dangerColor={colors.danger}
+        style={{ borderRadius: 30 }}
+        successIcon={
+          <Icon
+            name="checkmark-done-circle-outline"
+            size={20}
+            color={colors.onPrimary}
+          />
+        }
+      >
+        <QueryClientProvider client={client}>
+          <NavigationContainer ref={navigationRef} theme={navigationTheme}>
+            <SafeAreaProvider>
+              <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
                 <SafeAreaView
-                  style={{ flex: 1, backgroundColor: DARK_BLUE }}
-                  edges={Platform.OS === 'android' ?['top',  'bottom' ]:['top']}
+                  style={{ flex: 1, backgroundColor: colors.primary }}
+                  edges={Platform.OS === 'android' ? ['top', 'bottom'] : ['top']}
                 >
-                  <PaperProvider>
+                  <PaperProvider theme={paperTheme}>
                     <BaseContainer />
                   </PaperProvider>
                 </SafeAreaView>
-                </GestureHandlerRootView>
-              </SafeAreaProvider>
-            </NavigationContainer>
-          </QueryClientProvider>
-        </ToastProvider>
-      </PersistGate>
-    </Provider>
+              </GestureHandlerRootView>
+            </SafeAreaProvider>
+          </NavigationContainer>
+        </QueryClientProvider>
+      </ToastProvider>
+    </>
   );
 };
 
+const Application: React.FC = () => (
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <AppThemeProvider>
+        <ApplicationShell />
+      </AppThemeProvider>
+    </PersistGate>
+  </Provider>
+);
+
 export default Application;
 
-// 17111953
-//17111953
+// 4321123
+//temp@1234

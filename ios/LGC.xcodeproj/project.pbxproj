@@ -492,7 +492,7 @@
 				DEVELOPMENT_TEAM = 22N8UDXNHA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = GVIClub/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = LGCUP;
+				INFOPLIST_KEY_CFBundleDisplayName = "LGC LKO";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -523,7 +523,7 @@
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 22N8UDXNHA;
 				INFOPLIST_FILE = GVIClub/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = LGCUP;
+				INFOPLIST_KEY_CFBundleDisplayName = "LGC LKO";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (

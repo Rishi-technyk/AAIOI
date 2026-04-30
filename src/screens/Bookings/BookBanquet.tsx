@@ -35,13 +35,17 @@ import LinearGradient from 'react-native-linear-gradient';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { NewAppScreenProps } from '@react-native/new-app-screen';
 import { AppStackParamList } from '../../navigation/AppDrawer';
+import { DOMAIN } from '../../util/constant';
+import { useAppTheme } from '../../theme/AppThemeProvider';
+import UniversalModal from '../../components/UniversalModal';
 
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 type Props=NativeStackScreenProps<AppStackParamList,'BookBanquet'>
 
 const BookingForm:React.FC<Props> = ({navigation}) => {
   const userData = useSelector(state => state.auth);
-   
+   const {colors} = useAppTheme();
+    const styles = createStyles(colors);
   const [isloading, setisloading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
  const [venueModal, setVenueModal] = useState(false);
@@ -348,14 +352,14 @@ if (isAnyVenueInvalid) {
     };
 
     fetch(
-      'https://gvicc.in/afsc/api/member/banquet/store',
+      `${DOMAIN.BASE}member/banquet/store`,
       requestOptions,
     )
       .then(response => response.json())
       .then(async json => {
       setisloading(false);
         
-        if (json && json.data && json.data.razorpayKey) {
+        if (json && json.data && json.data) {
           navigation.navigate('UniversalPayment', {
             orderData: json.data,
             type: 'Banquet Booking',
@@ -529,7 +533,7 @@ setCharge(totalAmount)
                 placeholderTextColor="#858585"
                 style={[
                   styles.textinput,
-                  {borderColor: errors.name ? 'red' : 'black'},
+                  {borderColor: errors.name ? 'red' :colors.border},
                 ]}
                 value={name}
                 placeholder="Enter Your Name"
@@ -542,7 +546,7 @@ setCharge(totalAmount)
                 placeholderTextColor="#858585"
                 style={[
                   styles.textinput,
-                  {borderColor: errors.mobile ? 'red' : 'black'},
+                  {borderColor: errors.mobile ? 'red' : colors.border},
                 ]}
                 value={Phone}
                 maxLength={10}
@@ -557,7 +561,7 @@ setCharge(totalAmount)
                 placeholderTextColor="#858585"
                 style={[
                   styles.textinput,
-                  {borderColor: errors.email ? 'red' : 'black'},
+                  {borderColor: errors.email ? 'red' : colors.border},
                 ]}
                 maxLength={80}
                 value={Email}
@@ -571,7 +575,7 @@ setCharge(totalAmount)
                 placeholderTextColor="grey"
                 style={[
                   styles.textinput,
-                  {borderColor: errors.address ? 'red' : 'black'},
+                  {borderColor: errors.address ? 'red' : colors.border},
                 ]}
                 value={Address}
                 maxLength={100}
@@ -647,7 +651,7 @@ setCharge(totalAmount)
               <Dropdown
                 style={[
                   styles.dropdown,
-                  {borderColor: errors.function_type ? 'red' : 'black'},
+                  {borderColor: errors.function_type ? 'red' : colors.border},
                 ]}
                 placeholderStyle={styles.placeholderStyle}
                 selectedTextStyle={styles.selectedTextStyle}
@@ -715,7 +719,7 @@ setCharge(totalAmount)
             placeholderTextColor="#858585"
             style={[
               styles.textinput,
-              {borderColor: errors.no_of_person ? 'red' : 'black'},
+              {borderColor: errors.no_of_person ? 'red' : colors.border},
             ]}
             value={Person}
             placeholder="No. of Persons"
@@ -727,10 +731,10 @@ setCharge(totalAmount)
 
           <View
             style={{
-              backgroundColor: 'white',
+              backgroundColor: colors.card,
               padding: 10,
               borderRadius: 10,
-              borderColor: errors.box ? 'red' : 'black',
+              borderColor: errors.box ? 'red' : colors.border,
               borderWidth: 1,
               marginVertical: 20,
             }}>
@@ -740,7 +744,7 @@ setCharge(totalAmount)
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={[styles.text, {color: 'black'}]}>Venue Details</Text>
+              <Text style={[styles.text, {color: colors.text}]}>Venue Details</Text>
 
               <Pressable
                 onPress={addVenue}
@@ -749,9 +753,9 @@ setCharge(totalAmount)
                   paddingHorizontal: 10,
                   borderRadius: 5,
                   borderWidth: 1,
-                  borderColor: 'black',
+                  borderColor: colors.border,
                 }}>
-                <Text style={{color: 'black'}}>Add Venue</Text>
+                <Text style={{color: colors.text}}>Add Venue</Text>
               </Pressable>
             </View>
            
@@ -1073,6 +1077,34 @@ setCharge(totalAmount)
           </View>
         </TouchableWithoutFeedback>
       </Modal> */}
+         <UniversalModal 
+         visible={modalVisible}
+         setVisible={setModalVisible}
+         isFull={true}
+         title={'Terms & Conditions'}
+         >
+      
+        <ScrollView contentContainerStyle={{ }}>
+          <RenderHTML
+            source={{ html: rooms?.content }}
+            contentWidth={width - 60}
+            style={{ fontSize: 15, marginVertical: 5 }}
+            baseStyle={{
+              color: colors.text,
+              fontSize: 13,
+              width: "100%",
+            }}
+          />
+        </ScrollView>
+        <View style={{ alignItems: "flex-end" ,margin:20}}>
+          <NewButton
+            text={"Accept"}
+            onPress={(isChecked) => {
+              setAgree(isChecked), setModalVisible(false);
+            }}
+          />
+        </View>
+ </UniversalModal>
        <VenueModal
         visible={venueModal}
         onDismiss={() => setVenueModal(false)}
@@ -1107,57 +1139,12 @@ setCharge(totalAmount)
             </View>
           </View>
         )}
-          <Modal
-        visible={modalVisible}
-        dismissable={true}
-        presentationStyle='pageSheet'
-        
-        onDismiss={() => setModalVisible(false)}
-        contentContainerStyle={{
-          backgroundColor: "white",
-          borderTopRightRadius: 20,
-          borderTopLeftRadius: 20,
-          padding: 10,
-
-          width: "100%",
-          height: "80%",
-          position: "absolute",
-          bottom: 0,
-        }}
-        setVisible={setModalVisible}
-      >
-        <View style={ModalStyles.headingContainer}>
-          <Text style={ModalStyles.headingText}>Terms & Conditions</Text>
-          <Pressable onPress={() => setModalVisible(false)}>
-            <Icon name="close" size={25} style={ModalStyles.cancelText} />
-          </Pressable>
-        </View>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 10 }}>
-          <RenderHTML
-            source={{ html: rooms?.content }}
-            contentWidth={width - 60}
-            style={{ fontSize: 15, marginVertical: 5 }}
-            baseStyle={{
-              color: "black",
-              fontSize: 13,
-              width: "100%",
-            }}
-          />
-        </ScrollView>
-        <View style={{ alignItems: "flex-end" ,margin:20}}>
-          <NewButton
-            text={"Accept"}
-            onPress={(isChecked) => {
-              setAgree(isChecked), setModalVisible(false);
-            }}
-          />
-        </View>
-      </Modal>
+      
       {/* <Loader isActive={isloading} /> */}
     </View>
   );
 };
-const styles = StyleSheet.create({
+const createStyles = (colors) =>  StyleSheet.create({
  
 
  
@@ -1176,7 +1163,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   MbuttonText1: {
-    color: 'white',
+    color: colors.text,
     fontSize: 17,
     textAlign: 'center',
     fontFamily: 'Poppins-Bold',
@@ -1189,7 +1176,7 @@ const styles = StyleSheet.create({
     width: '95%',
     justifyContent: 'center',
     alignSelf: 'center',
-    color: 'white',
+    color: colors.text,
     backgroundColor: '#7AC915',
     paddingVertical: '3%',
   },
@@ -1202,26 +1189,26 @@ const styles = StyleSheet.create({
   headerButton: {
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'white',
+    borderColor: colors.primary,
     padding: 5,
     marginRight: 10,
   },
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: colors.background,
   },
   venueContainer: {
     borderBottomWidth: 1,
     padding: 10,
     borderRadius: 6,
-    borderColor: '#dedede',
-    backgroundColor: '#F0EFF2',
+    borderColor: colors.border,
+    backgroundColor: colors.card,
     marginTop: 10,
   },
   text: {
     marginVertical: 10,
     fontSize: 13,
-    color: 'black',
+    color: colors.text,
     fontFamily: FONT_FAMILY.bold,
   },
   innercontainer: {
@@ -1229,29 +1216,34 @@ const styles = StyleSheet.create({
   },
   textinput: {
     fontSize: 15,
-    color: 'black',
+    color: colors.text,
     borderRadius: 10,
     fontFamily: FONT_FAMILY.normal,
-    backgroundColor: 'white',
+    backgroundColor: colors.background,
+    borderColor: colors.border,
     borderWidth: 1,
     padding: 10,
+    
   },
   dropdown: {
-    backgroundColor: 'white',
+    backgroundColor: colors.background,
     padding: 10,
     paddingVertical: 12,
     borderRadius: 10,
     borderWidth: 1,
+      borderColor: colors.border,
   },
   placeholderStyle: {
-    color: 'grey',
+    color: colors.text,
     fontFamily: FONT_FAMILY.normal,
+    
   },
-  selectedTextStyle: {color: 'black', fontFamily: FONT_FAMILY.normal},
-  itemContainerStyle: {color: 'grey', fontFamily: FONT_FAMILY.normal},
+  selectedTextStyle: {color: colors.text, fontFamily: FONT_FAMILY.normal,},
+  itemContainerStyle: {color: colors.text, fontFamily: FONT_FAMILY.normal},
   itemContainer: {
     paddingVertical: 10,
     paddingHorizontal: 15,
+     
   },
 });
 export default BookingForm;

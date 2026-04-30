@@ -8,7 +8,6 @@ import {
   Pressable,
   ActivityIndicator,
 } from "react-native";
-import {PUBLIC_URL} from '@env'
 import { useSelector } from "react-redux";
 import { javascriptGet } from "../../util/api";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -32,6 +31,8 @@ import { Toast } from "react-native-toast-notifications";
 
 type Props=NativeStackScreenProps<AppStackParamList,'Event'>
 const Events:React.FC<Props>=({ navigation,route })=> {
+
+
   const [loading, setLoading] = useState(true);
   const [waiters, setWaiters] = useState(0);
   const [memberVerifyModal, setMemberVerifyModal] = useState(false);
@@ -44,9 +45,10 @@ const Events:React.FC<Props>=({ navigation,route })=> {
   const [cart, setCart] = useState<{ [key: number]: number }>({});
   const slideAnim = useRef(new Animated.Value(100)).current; // start off-screen
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
   const fetchSettings = async (id: any) => {
     const apiObj = {
-      path: ENDPOINT.event_setting + `${route.params.data}?memberid=${id || 0}`,
+      path: ENDPOINT.event_setting + `${route.params.url ||route.params.data}?memberid=${id || 0}`,
       Token: userData?.token,
       body: {},
     };
@@ -58,7 +60,6 @@ const Events:React.FC<Props>=({ navigation,route })=> {
       setIsSeatsAvailable(res.is_seat_booking_available||false);
     }
   };
-
   useFocusEffect(
     useCallback(() => {
       // Reset state if needed
@@ -128,7 +129,6 @@ const Events:React.FC<Props>=({ navigation,route })=> {
     }
   }, [totalTickets, waiters]);
 
-  console.log( tickets, '---------------------- event ---------------------');
   const verifyMember = async () => {
     setLoading(true);
     const response = await javascriptGet({
@@ -148,6 +148,19 @@ const Events:React.FC<Props>=({ navigation,route })=> {
   };
   return (
     <View style={styles.container}>
+          {!loading && !event ? (
+  <View style={styles.emptyContainer}>
+    <Image
+      source={require('../../../assets/images/no-events.png')} // 👈 add image
+      style={styles.emptyImage}
+      resizeMode="contain"
+    />
+    <Text style={styles.emptyTitle}>No Events Found</Text>
+    <Text style={styles.emptySub}>
+      Currently there are no active events available.
+    </Text>
+  </View>
+          ):(
       <ScrollView
         contentContainerStyle={{ paddingBottom: 140,backgroundColor:'white' }}
         stickyHeaderIndices={[0]}
@@ -155,11 +168,12 @@ const Events:React.FC<Props>=({ navigation,route })=> {
 
         showsVerticalScrollIndicator={false}
       >
+    
         {event && (
           <>
             <Image
               source={{
-                uri: `${PUBLIC_URL}event/${event.image}`,
+                uri: event.image,
               }}
               style={styles.banner}
                 resizeMode="stretch"
@@ -300,7 +314,7 @@ const Events:React.FC<Props>=({ navigation,route })=> {
               />
           </View>
         )}
-        <Text style={styles.sectionTitle}>Select Tickets</Text>
+      {  loading && event &&  <Text style={styles.sectionTitle}>Select Tickets</Text>}
 
         {loading
           ? [1, 2, 3, 4].map((i) => <TicketShimmer key={i} />)
@@ -405,9 +419,9 @@ const Events:React.FC<Props>=({ navigation,route })=> {
           </>
         )}
       </ScrollView>
-
+)}
       {/* Bottom Bar */}
-      <Animated.View
+      {hasSelection && <Animated.View
         pointerEvents={!hasSelection ? "none" : "auto"}
         style={[
           styles.bottomBar,
@@ -467,7 +481,7 @@ const Events:React.FC<Props>=({ navigation,route })=> {
           <Text style={styles.nextTxt}>{isSeatsAvailable ? 'Book Seats' : 'Check Out'}</Text>
           <Icon name="keyboard-arrow-right" size={20} color="white" />
         </Pressable>
-      </Animated.View>
+      </Animated.View>}
 
       {memberVerifyModal && (
         <Modal
@@ -658,4 +672,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  emptyContainer: {
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginTop: 80,
+  paddingHorizontal: 20,
+},
+
+emptyImage: {
+  width: 200,
+  height: 200,
+  marginBottom: 20,
+},
+
+emptyTitle: {
+  fontSize: 18,
+  fontFamily: FONT_FAMILY.bold,
+  color: '#111827',
+},
+
+emptySub: {
+  fontSize: 14,
+  color: '#6b7280',
+  marginTop: 6,
+  textAlign: 'center',
+},
 });

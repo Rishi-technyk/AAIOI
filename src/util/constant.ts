@@ -55,7 +55,7 @@ export const ENV: EnvConfig = {
 export const DOMAIN = {
   APP_NAME:APP_NAME,
   // BASE: API_BASE_URL,
-  BASE: 'https://www.lgc.in/MemberPortal/api/',
+BASE: "http://10.0.2.2:8000/api/",
   LOCAL:API_LOCAL_URL,
   API_IMAGE_URL:API_IMAGE_URL,
   PAY_DOMAIN: "https://dsoi.org.in/membersection/mobileAPI/",
@@ -127,10 +127,18 @@ export const ENDPOINT = {
   invoice_transaction_filter: "member/invoice_transaction_filter",
   invoice_transaction_download: "member/invoice_transaction_download",
   transaction_download: "member/transaction_download",
+  financial_home_dashboard: "member/financial/home-dashboard",
+  financial_statement_dashboard: "member/financial/statement-dashboard",
+  financial_recharge_dashboard: "member/financial/recharge-dashboard",
+  financial_ask_ai: "member/financial/ask-ai",
 
   affilated_clubs: "affilated_clubs",
 
   create_pay_order: "member/create_pay_order",
+  centralized_payment_initiate: "member/payments/initiate",
+  centralized_payment_verify: "member/payments/verify",
+  centralized_payment_status: "member/payments/status/",
+  centralized_payment_retry: "member/payments/retry/",
   feedBack: "member/feedback",
 
     //tee

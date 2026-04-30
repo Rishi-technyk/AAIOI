@@ -25,14 +25,14 @@ const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 const Tables = ({navigation}) => {
   const userData = useSelector((state: RootState) => state.auth);
 
-  const today = moment().add(1,'days').format('YYYY-MM-DD');
+  const today = moment().format('YYYY-MM-DD');
 
   const [selectedDate, setSelectedDate] = useState(today);
   const [selectedMeal, setSelectedMeal] = useState<any>(null);
   const [selectedTime, setSelectedTime] = useState<any>(null);
   const [selectedVenue, setSelectedVenue] = useState<any>(null);
   const [selectedTable, setSelectedTable] = useState<any>(null);
-
+  const [message, setMessage] = useState('');
 const [hasChecked, setHasChecked] = useState(false);
   /* ==========================
      SINGLE API CALL
@@ -50,12 +50,14 @@ const { data, isLoading, refetch, isFetching } = useQuery({
       path: url,
       Token: userData.token,
     });
-    if(res.status ==true){
-
-      return res.data;
-    }else{
-      Toast.show(res.message,{type:'danger'})
-    }
+ if(res.status == true){
+  setMessage('');
+  return res.data;
+}else{
+  setMessage(res.message); // ✅ store message
+  // Toast.show(res.message,{type:'danger'})
+  return res.data || {};
+}
   },
   enabled: true,
 });
@@ -69,7 +71,9 @@ const { data: bookingData, isLoading: bookingLoading, refetch: refetchBookings }
       Token: userData.token,
     });
     if (!res.status) {
+           setMessage( res.message || 'Failed to fetch bookings')
       return {
+   
         data:[]
       };
     }
@@ -77,7 +81,6 @@ const { data: bookingData, isLoading: bookingLoading, refetch: refetchBookings }
     return res.data;
   },
 });
-console.log( bookingData, '---------------------- bookingData ---------------------');
 
   /* ==========================
      FILTERING LOGIC
@@ -103,11 +106,17 @@ React.useEffect(() => {
   const venues =  data?.venues || [];
 
 
+const times = useMemo(() => {
+  if (!selectedMeal) return [];
 
-    const times = useMemo(() => {
-    if (!selectedMeal) return [];
-    return meals.find((m: any) => m.id === selectedMeal)?.times || [];
-  }, [selectedMeal, meals]);
+  return meals
+    .find((m: any) => m.id === selectedMeal)
+    ?.times?.filter((t: any) => {
+      if (selectedDate !== today) return true;
+
+      return moment(t.end_time, 'HH:mm:ss').isAfter(moment());
+    }) || [];
+}, [selectedMeal, meals, selectedDate]);
 
 
 const tables = hasChecked ? data?.tables || [] : [];
@@ -207,9 +216,10 @@ console.log( res, '---------------------- res ---------------------');
     Toast.show(error.message || 'Booking Failed', { type: 'danger' });
   },
 });
-  const isValid =
-    selectedMeal && selectedTime && selectedVenue ;
+const isTimeExpired = message === 'This time slot has already passed';
 
+const isValid =
+  selectedMeal && selectedTime && selectedVenue && !isTimeExpired;
   /* ==========================
      SHIMMER
   ========================== */
@@ -217,9 +227,11 @@ console.log( res, '---------------------- res ---------------------');
   return (
     <View style={{ flex: 1 }}>
       <Header title="Book Table" />
-      <ScrollView stickyHeaderIndices={[5]}>
+
+      <ScrollView stickyHeaderIndices={[1]}>
+        <View>
         <CalendarStrip
-          dayOpenBooking={data?.length || 3}
+          dayOpenBooking={data?.days_Open_booking || 3}
           selectedDate={selectedDate}
           onSelectDate={setSelectedDate}
         />
@@ -255,7 +267,16 @@ console.log( res, '---------------------- res ---------------------');
           value={selectedTime}
           onChange={item => setSelectedTime(item.id)}
         />
-
+{message ? (
+  <Text style={{ 
+    color: 'red', 
+    textAlign: 'center', 
+    marginTop: 10,
+    fontWeight: '600'
+  }}>
+    {message}
+  </Text>
+) : null}
     {tables.length > 0 && (
   <Dropdown
     style={styles.dropdown}
@@ -299,20 +320,22 @@ setTimeout(() => {
           {bookMutation.isPending ? (
             <ActivityIndicator color="white" />
           ) : (
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>
+   <Text style={{ color: 'white', fontWeight: 'bold' }}>
   {isFetching
     ? 'Checking...'
-    : !hasChecked
-      ? 'Check Availability'
-      : tables.length > 0
-        ? selectedTable
-          ? 'Confirm Booking'
-          : 'Select Table'
-        : 'No Tables Available'}
+    : isTimeExpired
+      ? 'Time Slot Expired'
+      : !hasChecked
+        ? 'Check Availability'
+        : tables.length > 0
+          ? selectedTable
+            ? 'Confirm Booking'
+            : 'Select Table'
+          : 'No Tables Available'}
 </Text>
           )}
         </TouchableOpacity>
-
+</View>
       {!bookingLoading &&
       <View style={{backgroundColor:'white',padding:20,}}>
 

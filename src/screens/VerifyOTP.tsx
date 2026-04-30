@@ -11,22 +11,24 @@ import {
 import {SigninWithOTPScreenService} from '../services/SigninWithOTPScreenService'
 import messaging, {
 } from '@react-native-firebase/messaging';
-import _ from 'lodash';
 import { useDispatch } from 'react-redux';
 import AuthScreenLayout from '../components/AuthScreenLayout';
 import { Toast } from 'react-native-toast-notifications';
 import { Loginstyles } from '../Styles/LoginStyles';
 import Button2 from '../components/Button2.tsx';
-import { DARK_BLUE, FONT_FAMILY } from '../util/colors';
+import { FONT_FAMILY } from '../util/colors';
 import { loginWithOTP } from '../store/slices/authSlice';
 import DeviceInfo from "react-native-device-info";
+import { useAppTheme } from '../theme/AppThemeProvider';
 const VerifyOTP = ({ route, navigation }) => {
   const [usernameTextValue, setUsernameTextValue] = useState('');
   const [loadingData, setLoadingData] = useState(false);
   const dispatch = useDispatch();
   const userType = route?.params?.type;
-  const [canResend, setCanResend] = useState(false);
+  const [, setCanResend] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300);
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
 
   const formatTime = secs => {
     const minutes = Math.floor(secs / 60);
@@ -162,15 +164,11 @@ async function getIOSFCMToken() {
   return (
     <AuthScreenLayout  title={'Verify OTP'}>
         <View style={{margin:8}}>
-          <Text style={Loginstyles.versionText}>
+          <Text style={[Loginstyles.versionText, styles.helperText]}>
             Please Enter The Valid OTP For{' '}
             {userType === 'waiter' ? 'User Name' : 'Member ID'}:{' '}
             <Text
-              style={{
-                color: 'black',
-                fontSize: 15,
-                fontFamily: FONT_FAMILY.bold,
-              }}
+              style={styles.memberText}
             >
               {route.params?.memberID}
             </Text>
@@ -181,11 +179,11 @@ async function getIOSFCMToken() {
         // ref={userRef}
         maxLength={6}
         placeholder="Enter Your OTP"
-        placeholderTextColor={'grey'}
+        placeholderTextColor={colors.placeholder}
 
         value={usernameTextValue}
         onChangeText={setUsernameTextValue}
-        style={Loginstyles.input}
+        style={[Loginstyles.input, styles.input]}
         autoCapitalize="none"
         returnKeyType="done"
         keyboardType="decimal-pad"
@@ -210,13 +208,33 @@ async function getIOSFCMToken() {
   );
 };
 export default VerifyOTP;
-const styles = StyleSheet.create({
-  resendText: { fontFamily: FONT_FAMILY.bold, color: DARK_BLUE },
-  timerText: {
-    fontFamily: FONT_FAMILY.bold,
-    color: DARK_BLUE,
-    alignSelf: 'flex-end',
-  },
-  resendButton: { alignSelf: 'flex-end' },
-});
+const createStyles = (colors: {
+  primary: string;
+  text: string;
+  textMuted: string;
+  border: string;
+  surface: string;
+}) =>
+  StyleSheet.create({
+    resendText: { fontFamily: FONT_FAMILY.bold, color: colors.primary },
+    timerText: {
+      fontFamily: FONT_FAMILY.bold,
+      color: colors.primary,
+      alignSelf: 'flex-end',
+    },
+    resendButton: { alignSelf: 'flex-end' },
+    helperText: {
+      color: colors.textMuted,
+    },
+    memberText: {
+      color: colors.text,
+      fontSize: 15,
+      fontFamily: FONT_FAMILY.bold,
+    },
+    input: {
+      borderBottomColor: colors.border,
+      backgroundColor: colors.surface,
+      color: colors.text,
+    },
+  });
 

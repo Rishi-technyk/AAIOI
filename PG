@@ -1,0 +1,82 @@
+Centralized Payment Gateway System
+Phases
+DB Design
+Add payment_gateways, payment_webhook_logs, and additive transactions columns.
+Backend APIs
+Use centralized initiate, verify, status, retry, admin, and webhook endpoints.
+Gateway Services
+Resolve the active gateway from the database and initialize it through the service container.
+Webhooks and Browser Callbacks
+Verify signatures, log payloads, enforce idempotency, and update transactions safely.
+React Native UI
+Use the shared payment flow and gateway-aware UI.
+Testing
+Run sandbox verification, webhook replay tests, retry tests, and reconciliation tests.
+Production Deployment
+Seed gateway records, configure live credentials, switch environment, and activate one gateway.
+Recommended Folder Structure
+app/Contracts/Payments
+app/Http/Controllers/api/v1
+app/Http/Middleware
+app/Http/Requests/Payments
+app/Models
+app/Services/Payments
+app/Support/Payments
+database/migrations
+docs
+API Summary
+POST /api/member/payments/initiate
+POST /api/member/payments/verify
+GET /api/member/payments/status/{reference}
+POST /api/member/payments/retry/{reference}
+POST /api/payments/webhooks/{gateway}
+GET /payments/checkout/{transaction}
+GET|POST /payments/callback/{gateway}/{transaction}
+Admin API Summary
+GET /api/admin/payments/gateways
+POST /api/admin/payments/gateways
+PUT /api/admin/payments/gateways/{gateway}
+POST /api/admin/payments/gateways/{gateway}/activate
+GET /api/admin/payments/transactions
+POST /api/admin/payments/transactions/{reference}/retry
+GET /api/admin/payments/webhook-logs
+GET /api/admin/payments/reports/download
+Required Credentials
+Razorpay: Key ID, Key Secret, Webhook Secret
+Cashfree: App ID, Secret Key, Webhook Signature Key
+Easebuzz: Key, Salt, Environment
+Paynimo (Worldline): Merchant ID, API Key / Secret, Request Hash Key, Response Hash Key, Encryption Key / Salt
+Webhook Testing Strategy
+Use one sandbox gateway at a time and replay signed payloads against /api/payments/webhooks/{gateway}.
+Validate duplicate-event handling by sending the same event more than once.
+Confirm that transaction status changes are idempotent and module records do not double-update.
+Verify browser callback flows with signed test URLs and manual app polling.
+Security Audit Checklist
+Confirm only one gateway is active.
+Keep all live credentials in encrypted DB columns.
+Enforce HTTPS on public payment and webhook routes at the load balancer and app layer.
+Validate payment amounts on the server before creating the gateway order.
+Check signatures for webhooks and browser callback payloads where supported.
+Audit duplicate processing by re-running webhook and verify requests.
+Rotate webhook secrets and API keys before production cutover.
+Deployment Checklist
+Run migrations.
+Seed or create the four gateway records.
+Enter sandbox credentials and activate one sandbox gateway.
+Expose signed checkout and callback URLs over HTTPS.
+Configure gateway dashboard webhooks to /api/payments/webhooks/{gateway}.
+Run sandbox payment, failure, refund, retry, and reconciliation tests.
+Switch the chosen gateway to environment=live.
+Replace sandbox credentials with live credentials.
+Activate the live gateway.
+Production Rollout Strategy
+Start with one module in sandbox.
+Move card recharge and bill payment first because they are easy to validate with smaller amounts.
+Roll out room, banquet, and facility bookings next.
+Keep the old endpoints live while they are backed by the new payment engine.
+Enable webhook monitoring and reconciliation jobs before full cutover.
+Rollback Strategy
+Deactivate the new gateway record and reactivate the previous one from the admin API.
+Keep old mobile module endpoints intact so no client hotfix is required.
+Use pending-payment reconciliation before and after rollback to avoid orphaned payments.
+Export transaction and webhook logs before any rollback change.

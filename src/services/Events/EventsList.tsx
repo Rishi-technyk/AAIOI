@@ -1,5 +1,5 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { AppStackParamList } from '../../navigation/AppDrawer';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
@@ -14,13 +14,15 @@ import moment from 'moment';
 import { useQuery } from '@tanstack/react-query';
 import LinearGradient from 'react-native-linear-gradient';
 import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
+import { useAppTheme } from '../../theme/AppThemeProvider';
 
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 type Props = NativeStackScreenProps<AppStackParamList, 'EventsList'>;
 const EventsList: React.FC<Props> = ({ navigation }) => {
   const userData = useSelector((state: RootState) => state.auth);
 
-
+const {colors}=useAppTheme();
+const styles = createStyles(colors);
  const { data: events, isLoading } = useQuery({
   queryKey: ["events"],
   queryFn: async () => {
@@ -32,6 +34,32 @@ const EventsList: React.FC<Props> = ({ navigation }) => {
   },
   staleTime: 1000 * 60 * 10, // 10 minutes
 });
+  const emptyList = () => (
+    <FlatList
+      data={[1, 1, 1, 1, 1, ]}
+      renderItem={() => (
+        <View
+          style={[styles.card, { marginHorizontal: 10, borderRadius: 20 }]}>
+          <View style={{ flex: 1, alignItems: "center", flexDirection: "row" }}>
+            <ShimmerPlaceholder style={{height:100,width:100,borderRadius:10}}  />
+            <View style={{ flex: 1, alignItems: "flex-start", marginLeft: 10 }}>
+              <ShimmerPlaceholder style={{ margin: 5 }} />
+              <ShimmerPlaceholder style={{ margin: 5 }} />
+              <ShimmerPlaceholder style={{ margin: 5 }} />
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-around",
+                }}>
+                <ShimmerPlaceholder width={70} style={{ margin: 5 }} />
+                <ShimmerPlaceholder width={70} style={{ margin: 5 }} />
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
+    />
+  );
   const renderEvents = ({ item }) => {
     return (
       <Pressable
@@ -39,7 +67,7 @@ const EventsList: React.FC<Props> = ({ navigation }) => {
        style={[styles.card]}>
         <View style={styles.row}>
           <Image
-            source={{ uri: `${DOMAIN.IMG}event/${item.image}` }}
+            source={{ uri: item.image }}
             height={100}
             width={100}
             borderRadius={10}
@@ -79,7 +107,7 @@ const EventsList: React.FC<Props> = ({ navigation }) => {
     <View style={{flex:1}}>
       <Header title="Events" />
       <FlatList data={events|| []}
-     ListEmptyComponent={!isLoading ?emptyList(): 
+     ListEmptyComponent={isLoading ?emptyList(): 
 <View
             style={{
               marginTop: 50,
@@ -99,39 +127,13 @@ const EventsList: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-  const emptyList = () => (
-    <FlatList
-      data={[1, 1, 1, 1, 1, ]}
-      renderItem={() => (
-        <View
-          style={[styles.card, { marginHorizontal: 10, borderRadius: 20 }]}>
-          <View style={{ flex: 1, alignItems: "center", flexDirection: "row" }}>
-            <ShimmerPlaceholder style={{height:100,width:100,borderRadius:10}}  />
-            <View style={{ flex: 1, alignItems: "flex-start", marginLeft: 10 }}>
-              <ShimmerPlaceholder style={{ margin: 5 }} />
-              <ShimmerPlaceholder style={{ margin: 5 }} />
-              <ShimmerPlaceholder style={{ margin: 5 }} />
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-around",
-                }}>
-                <ShimmerPlaceholder width={70} style={{ margin: 5 }} />
-                <ShimmerPlaceholder width={70} style={{ margin: 5 }} />
-              </View>
-            </View>
-          </View>
-        </View>
-      )}
-    />
-  );
+
 
 export default EventsList;
 
-const styles = StyleSheet.create({
-  /* 🔹 Card Container */
+const createStyles = (color) => StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor:color.background,
     borderRadius: 14,
     padding: 10,
     marginHorizontal: 16,
@@ -162,7 +164,12 @@ const styles = StyleSheet.create({
     color: '#111827',
     fontFamily: FONT_FAMILY.normal,
   },
-
+empty:{
+    marginTop: 20,
+    fontSize: 16,
+    color: '#6b7280',
+    fontFamily: FONT_FAMILY.normal,
+},
   /* 🔹 Description */
   desc: {
     fontSize: 13,

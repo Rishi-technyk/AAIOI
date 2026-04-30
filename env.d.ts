@@ -1,0 +1,50 @@
+declare module '@env' {
+  export const APP_NAME: string;
+  export const APP_ENV: string;
+  export const API_BASE_URL: string;
+  export const API_IMAGE_URL: string;
+  export const API_LOCAL_URL: string;
+  export const API_CATEGORY_URL: string;
+  export const PUSHER_APP_CLUSTER: string;
+  export const WS_PORT: string;
+  export const WS_HOST: string;
+  export const PUSHER_APP_KEY: string;
+  export const BROADCASTER: string;
+  export const PUBLIC_URL: string;
+  export const PUBLIC_BANNERS: string;
+  export const ICON_URL: string;
+  export const DEBUG_MODE: string;
+  export const TIMEOUT: string;
+  export const ENABLE_PUSH_NOTIFICATIONS: string;
+  export const ENABLE_ANALYTICS: string;
+  export const RETRY_ATTEMPTS: string;
+  export const CACHE_DURATION: string;
+
+  export const THEME_LIGHT_PRIMARY: string;
+  export const THEME_LIGHT_SECONDARY: string;
+  export const THEME_LIGHT_BACKGROUND: string;
+  export const THEME_LIGHT_SURFACE: string;
+  export const THEME_LIGHT_SURFACE_ALT: string;
+  export const THEME_LIGHT_TEXT: string;
+  export const THEME_LIGHT_TEXT_MUTED: string;
+  export const THEME_LIGHT_BORDER: string;
+  export const THEME_LIGHT_ON_PRIMARY: string;
+  export const THEME_LIGHT_SUCCESS: string;
+  export const THEME_LIGHT_DANGER: string;
+  export const THEME_LIGHT_WARNING: string;
+  export const THEME_LIGHT_PLACEHOLDER: string;
+
+  export const THEME_DARK_PRIMARY: string;
+  export const THEME_DARK_SECONDARY: string;
+  export const THEME_DARK_BACKGROUND: string;
+  export const THEME_DARK_SURFACE: string;
+  export const THEME_DARK_SURFACE_ALT: string;
+  export const THEME_DARK_TEXT: string;
+  export const THEME_DARK_TEXT_MUTED: string;
+  export const THEME_DARK_BORDER: string;
+  export const THEME_DARK_ON_PRIMARY: string;
+  export const THEME_DARK_SUCCESS: string;
+  export const THEME_DARK_DANGER: string;
+  export const THEME_DARK_WARNING: string;
+  export const THEME_DARK_PLACEHOLDER: string;
+}

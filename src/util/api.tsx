@@ -114,7 +114,6 @@ export function javascriptGet<T = any>(
   mockURL: string = ''
 ): Promise<ApiResponse<T>> {
   let path = `${DOMAIN.BASE}${apiRequestObject.path}`;
-
   if (mockURL.length > 0) {
     path = mockURL;
   }

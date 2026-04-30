@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -9,15 +9,12 @@ import {
   ActivityIndicator,
   TextInput,
 } from "react-native";
-import {ICON_URL} from '@env'
 import Icon from "react-native-vector-icons/MaterialIcons";
-import RazorpayCheckout from "react-native-razorpay";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { ENDPOINT } from "../../util/constant";
 import { javascriptGet, javascriptPost } from "../../util/api";
 import { useSelector } from "react-redux";
-import { DARK_BLUE, FONT_FAMILY, } from "../../util/colors";
-import { Toast } from "react-native-toast-notifications";
+import { FONT_FAMILY, } from "../../util/colors";
 import { ICONS } from "../../../assets/icons.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import { RootState } from "../../store/store.tsx";
@@ -28,7 +25,6 @@ type Props = NativeStackScreenProps<AppStackParamList,'EventCheckOut'>;
 const  EventCheckOut:React.FC<Props>=()=> {
   const route = useRoute<any>();
   const paymentProcessing = useRef(false);
-const paymentHandled = useRef(false);
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const [loading,setLoading]=useState(false)
@@ -51,105 +47,6 @@ const serviceChargeAmount =
 
 const gstAmount =
   (totalAmount * gstPercent) / 100;
-
-
-
-const handlePaymentSuccess = async (paymentData: any) => {
-  if (paymentHandled.current) return;
-
-  paymentHandled.current = true;
-  setLoading(true);
-
-  try {
-    const payload = {
-      event_id: event.id,
-      is_free: false,
-      waiters,
-      razorpay_order_id: paymentData.razorpay_order_id,
-      razorpay_payment_id: paymentData.razorpay_payment_id,
-      razorpay_signature: paymentData.razorpay_signature,
-      tickets: selectedTickets.map((t: any) => ({
-        id: t.id,
-        type: t.type,
-        quantity: cart[t.id],
-      })),
-      seatGroups,
-    };
-
-    const res = await javascriptPost({
-      path: ENDPOINT.process_event_payment,
-      Token: userData.token,
-      body: payload,
-    });
-
-    if (res?.status) {
-      navigation.replace("EventBookingDetails", {
-        bookingId: res.booking_id,
-      });
-    } else {
-      Alert.alert("Payment Verification Failed", res?.message || "Try again");
-    }
-  } catch (error) {
-    Alert.alert("Payment Error", "Unable to verify payment.");
-  } finally {
-    setLoading(false);
-    paymentProcessing.current = false;
-  }
-};
-const openRazorpay = async (orderId: string, amount: number, key: string) => {
-  const options = {
-    key,
-    order_id: orderId,
-    amount: amount * 100,
-    currency: "INR",
-    name: event.name,
-    description: "Event Ticket Booking",
-    image:
-     ICON_URL,
-    prefill: {
-      name: userData?.user?.DisplayName,
-      email: userData?.user?.Email,
-      contact: userData?.user?.Mobile,
-    },
-    theme: { color: DARK_BLUE },
-    notes: {
-      MemberID: userData?.user?.MemberID || "",
-      SC_ID: userData?.user?.SC_ID || "",
-      BookingType: "Event Booking",
-      MemberName: userData?.user?.DisplayName || "",
-    },
-  };
-
-  try {
-    const data = await RazorpayCheckout.open(options);
-
-    await handlePaymentSuccess(data);
-  } catch (error: any) {
-    /**
-     * iOS sometimes fires cancel even after success
-     * so ignore if success already handled
-     */
-    if (paymentHandled.current) return;
-
-    Toast.show("Payment cancelled", { type: "danger" });
-
-    try {
-      await javascriptPost({
-        path: ENDPOINT.event_payment_failed,
-        Token: userData.token,
-        body: {
-          event_id: event.id,
-          razorpay_order_id: orderId,
-          reason: error?.description || "User cancelled payment",
-          total_amount: totalAmount,
-        },
-      });
-    } catch {}
-
-    setLoading(false);
-    paymentProcessing.current = false;
-  }
-};
 const handleFreeBooking = async () => {
   const payload = {
     event_id: event.id,
@@ -179,7 +76,7 @@ console.log( res, '---------------------- res --from APio-------------------');
     Alert.alert(res.message || "Free booking failed");
   }
 };
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     const apiObj = {
       path: ENDPOINT.event_admin_payment_type,
       Token: userData.token,
@@ -191,12 +88,12 @@ console.log( res, '---------------------- res --from APio-------------------');
       setSettings(res.payment_types);
       setLoading(false);
     }
-  };
+  }, [userData.token]);
 useEffect(()=>{
   if (userData?.user?.role === "Event Admin") {
     fetchSettings()
   }
-},[])
+},[fetchSettings, userData?.user?.role])
 const groupedSeats = selectedSeats.reduce((acc: any, seat: any) => {
 
   const type = seat.category?.seat_type || 'other'
@@ -308,10 +205,32 @@ const bookTickets = async () => {
       paymentProcessing.current = false;
       return;
     }
-    /**
-     * PAID BOOKING
-     */
-    await openRazorpay(res.order_id, res.amount, res.razorpay_key);
+    const orderData = {
+      ...(res?.payment || {}),
+      ...(res?.payment ? {} : res),
+      end_point: ENDPOINT.process_event_payment,
+      order_id: res?.payment?.order_id || res?.order_id,
+      merchant_order_id: res?.payment?.merchant_order_id || res?.merchant_order_id,
+      amount: res?.payment?.amount || res?.amount,
+      gateway: res?.payment?.gateway || res?.gateway,
+      checkout: res?.payment?.checkout || res?.checkout,
+      payment_url: res?.payment?.payment_url || res?.payment_url,
+      access_key: res?.payment?.access_key || res?.payment_session_id,
+      status_reference:
+        res?.payment?.status_reference ||
+        res?.merchant_order_id ||
+        res?.order_id,
+    };
+
+    setLoading(false);
+    paymentProcessing.current = false;
+    navigation.navigate('UniversalPayment', {
+      type: 'Event Booking',
+      orderData: {
+        ...orderData,
+        event_id: event.id,
+      },
+    });
   } catch (error: any) {
     setLoading(false);
     paymentProcessing.current = false;
@@ -518,7 +437,7 @@ const grandTotal =
         </Pressable>
 
         <Text style={styles.footerNote}>
-          Secured by Razorpay. By paying, you agree to our Terms.
+          Secured by the active club payment gateway. By paying, you agree to our Terms.
         </Text>
       </View>
     </View>

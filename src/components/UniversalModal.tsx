@@ -15,6 +15,8 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ModalStyles } from "../Styles/ModalStyles";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { useAppTheme } from "../theme/AppThemeProvider";
+import { FONT_FAMILY } from "../util/colors";
 
 interface UniversalModalProps {
   visible: boolean;
@@ -34,7 +36,8 @@ const UniversalModal: React.FC<UniversalModalProps> = ({
   isFull = false,
 }) => {
   const translateY = useSharedValue(500); // Start off-screen
-
+  const { colors } = useAppTheme();
+  const styles = createStyles(colors);
   const maxHeight = isFull ? "100%" : "55%";
 
   useEffect(() => {
@@ -94,8 +97,8 @@ const UniversalModal: React.FC<UniversalModalProps> = ({
               animatedStyle,
             ]}
           >
-            <View style={ModalStyles.headingContainer}>
-              <Text style={ModalStyles.headingText}>{title}</Text>
+            <View style={styles.headingContainer}>
+              <Text style={styles.headingText}>{title}</Text>
               <Pressable  onPress={closeSheet}>
 
               <Icon
@@ -130,7 +133,17 @@ const UniversalModal: React.FC<UniversalModalProps> = ({
 
 export default UniversalModal;
 
-const styles = StyleSheet.create({
+const createStyles = (colors: {
+  background: string;
+  primary: string;
+  onPrimary: string;
+  surface: string;
+  surfaceAlt: string;
+  text: string;
+  textMuted: string;
+  border: string;
+  success: string;
+}) => StyleSheet.create({
   backdrop: {
     position: "absolute",
     top: 0,
@@ -144,10 +157,23 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     overflow: "hidden",
     paddingBottom: Platform.OS === "ios" ? 20 : 10,
   },
+    headingContainer: {
+    borderBottomWidth: 0.3,
+    padding: 15,
+    borderBlockColor:'grey',
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",backgroundColor:colors.surface,marginBottom:20
+  },
+   headingText: {
+      fontFamily: FONT_FAMILY.semiBold,
+      fontSize: 17,
+      color: colors.text,
+    },
 });
