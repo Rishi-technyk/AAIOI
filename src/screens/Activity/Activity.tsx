@@ -1,624 +1,720 @@
+import React, { useMemo, useState } from 'react';
 import {
-  Image,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
-} from "react-native";
-import React, { useState } from "react";
-import Header from "../../components/Header";
-import { Card } from "react-native-paper";
-import {
-  DARK_BLUE,
-  FONT_FAMILY,
-  LIGHT_BLUE,
-  LIGHT_RED,
-  SECONDARY_COLOR,
-} from "../../util/colors";
-import { Dropdown } from "react-native-element-dropdown";
-import { useSelector } from "react-redux";
-import NewButton from "../../components/Button";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import moment from "moment";
-import UniversalModal from "../../components/UniversalModal";
-import { createShimmerPlaceholder } from "react-native-shimmer-placeholder";
-import LinearGradient from "react-native-linear-gradient";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { AppStackParamList } from "../../navigation/AppDrawer";
-import DatePickerComponent from "../../components/DatePicker";
-import { useSlots } from "../../services/Activity/FacilityService";
-type Props=NativeStackScreenProps<AppStackParamList,'Activity'>
+} from 'react-native';
+import { Dropdown } from 'react-native-element-dropdown';
+import { useSelector } from 'react-redux';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import moment from 'moment';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
+import LinearGradient from 'react-native-linear-gradient';
+
+import Header from '../../components/Header';
+import NewButton from '../../components/Button';
+import DatePickerComponent from '../../components/DatePicker';
+import UniversalModal from '../../components/UniversalModal';
+import BookingHeroCard from '../../components/booking/BookingHeroCard';
+import DetailSection from '../../components/booking/DetailSection';
+import EmptyStateCard from '../../components/booking/EmptyStateCard';
+import AppAlertModal from '../../components/feedback/AppAlertModal';
+import { useAppAlert } from '../../hooks/useAppAlert';
+import { useAppTheme } from '../../theme/AppThemeProvider';
+import { useSlots } from '../../services/Activity/FacilityService';
+import { AppStackParamList } from '../../navigation/AppDrawer';
+import { FONT_FAMILY } from '../../util/colors';
 
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
+type Props = NativeStackScreenProps<AppStackParamList, 'Activity'>;
 
-
-const Activity:React.FC<Props> = ({ route, navigation }) => {
-  const { facility } = route.params;
- const { token } = useSelector((state) => state.auth);
-  const [tempStartDate, setTempStartDate] = useState(
-    moment().format("YYYY-MM-DD")
-  );
-  const [selectedSlots, setSelectedSlots] = useState([]);
-  const [session, setSession] = useState({ id: 0 });
+const Activity: React.FC<Props> = ({ route, navigation }) => {
+  const params = route as any;
+  const facility = params?.params?.facility || route?.params?.facility;
+  const auth = useSelector((state: any) => state.auth);
+  const { colors } = useAppTheme();
+  const { alertState, showAlert, hideAlert } = useAppAlert();
+  const [tempStartDate, setTempStartDate] = useState(moment().format('YYYY-MM-DD'));
+  const [selectedSlots, setSelectedSlots] = useState<any[]>([]);
+  const [session, setSession] = useState<any>({ id: 0 });
   const [visible, setVisible] = useState(false);
 
-  const selectSlot = (day, time) => {
-    setSelectedSlots((prev) => {
+  const { slotsQuery, sessionsQuery } = useSlots(
+    facility?.id,
+    session?.id,
+    tempStartDate,
+    auth?.token,
+  );
+
+  const dateOptions = slotsQuery?.data?.dateOptions || [];
+  const slotRows = slotsQuery?.data?.data || [];
+  const inventory = Number(facility?.inventory || 0);
+
+  const analytics = useMemo(() => {
+    let totalCells = 0;
+    let available = 0;
+    let booked = 0;
+    let past = 0;
+
+    slotRows.forEach((time: any) => {
+      dateOptions.forEach((day: any) => {
+        totalCells += 1;
+        const slotBookingsOnDay = (time?.booking_data || []).filter(
+          (booking: any) => booking?.slot_date === day?.session_date,
+        );
+        const isFullyBooked = slotBookingsOnDay.length >= inventory;
+        const fullDateTime = moment(
+          `${day?.session_date} ${time?.label}`,
+          'YYYY-MM-DD hh:mm A',
+        );
+        const isPast = fullDateTime.isBefore(moment());
+
+        if (isPast) {
+          past += 1;
+        } else if (isFullyBooked) {
+          booked += 1;
+        } else {
+          available += 1;
+        }
+      });
+    });
+
+    return { totalCells, available, booked, past };
+  }, [dateOptions, inventory, slotRows]);
+
+  const selectSlot = (day: any, time: any) => {
+    setSelectedSlots(prev => {
       const exists = prev.find(
-        (slot) => slot.time.id === time.id && slot.day.id === day.id
+        slot => slot?.time?.id === time?.id && slot?.day?.id === day?.id,
       );
 
       if (exists) {
-        // Remove if it already exists
         return prev.filter(
-          (slot) => !(slot.day.id === day.id && slot.time.id === time.id)
+          slot => !(slot?.day?.id === day?.id && slot?.time?.id === time?.id),
         );
-      } else {
-        // Add if not exists
-        return [...prev, { day, time }];
       }
+
+      return [...prev, { day, time }];
     });
   };
 
-  const { slotsQuery, sessionsQuery } = useSlots(
-    facility.id,
-    session.id,
-    tempStartDate,
-    token
-  );
-
-  const renderCell = (day, time, r) => {
-   const slotBookingsOnDay = time.booking_data.filter(
-  (booking) => booking.slot_date === day?.session_date
-);
-
-
-      const isFullyBooked = slotBookingsOnDay.length >= facility.inventory;
-    if (isFullyBooked)
-      return <View style={[styles.cell, { backgroundColor: "#fff0f0" }]} />;
-    // Combine day.session_date and time.label into one moment
-    const fullDateTime = moment(
-      `${day.session_date} ${time.label}`,
-      "YYYY-MM-DD hh:mm A"
+  const renderCell = (day: any, time: any) => {
+    const slotBookingsOnDay = (time?.booking_data || []).filter(
+      (booking: any) => booking?.slot_date === day?.session_date,
     );
-
-    // Check if the full datetime is before the current time
+    const isFullyBooked = slotBookingsOnDay.length >= inventory;
+    const fullDateTime = moment(
+      `${day?.session_date} ${time?.label}`,
+      'YYYY-MM-DD hh:mm A',
+    );
     const isPast = fullDateTime.isBefore(moment());
+    const isSelected = selectedSlots.some(
+      item => item?.time?.id === time?.id && item?.day?.id === day?.id,
+    );
+    const slotsLeft = Math.max(0, inventory - slotBookingsOnDay.length);
+
+    let tone = {
+      backgroundColor: colors.surfaceAlt,
+      textColor: colors.text,
+      subtitleColor: colors.textMuted,
+    };
 
     if (isPast) {
-      return (
-        <View
-          style={[styles.cell, { backgroundColor: "rgb(216, 216, 218)" }]}
-        />
-      );
+      tone = {
+        backgroundColor: `${colors.textMuted}22`,
+        textColor: colors.textMuted,
+        subtitleColor: colors.textMuted,
+      };
+    } else if (isFullyBooked) {
+      tone = {
+        backgroundColor: `${colors.danger}16`,
+        textColor: colors.danger,
+        subtitleColor: colors.danger,
+      };
+    } else if (isSelected) {
+      tone = {
+        backgroundColor: colors.secondary,
+        textColor: colors.onPrimary,
+        subtitleColor: colors.onPrimary,
+      };
     }
+
     return (
-      <TouchableOpacity
+      <Pressable
+        disabled={isPast || isFullyBooked}
         onPress={() => selectSlot(day, time)}
         style={[
-          styles.cell,
-          //  && styles.availableCell,
+          styles.slotCell,
           {
-            backgroundColor: selectedSlots.some(
-              (i) => i.time.id === time.id && i.day.id === day.id
-            )
-              ? SECONDARY_COLOR
-              : LIGHT_BLUE,
+            backgroundColor: tone.backgroundColor,
+            borderColor: isSelected ? colors.secondary : colors.border,
           },
         ]}
       >
-        <Text
-          style={[
-            styles.price,
-            {
-              color: selectedSlots.some(
-                (i) => i.time.id === time.id && i.day.id === day.id
-              )
-                ? "white"
-                : DARK_BLUE,
-            },
-          ]}
-        >
-          ₹{facility.charge}
+        <Text style={[styles.slotPrice, { color: tone.textColor }]}>
+          Rs. {Number(facility?.charge || 0).toFixed(0)}
         </Text>
-        <Text
-          style={[
-            styles.left,
-            {
-              color: selectedSlots.some(
-                (i) => i.time.id === time.id && i.day.id === day.id
-              )
-                ? "white"
-                : DARK_BLUE,
-            },
-          ]}
-        >
-         {/* {facility?.inventory -  (  time.booking_data.length > 0 && time.booking_data[r]?.slot_date == day?.session_date ? time.booking_data.length:0) }{" "}Left */}
-        {facility?.inventory - slotBookingsOnDay.length} Left </Text>
-      </TouchableOpacity>
+        <Text style={[styles.slotLeft, { color: tone.subtitleColor }]}>
+          {isPast ? 'Past' : isFullyBooked ? 'Booked' : `${slotsLeft} left`}
+        </Text>
+      </Pressable>
     );
   };
 
-  const emptyList = [1, 1, 1, 1, 1, 1];
-  const indicators = [
-    { id: "1", name: "Blocked", color: "rgb(216, 216, 218)" },
-    { id: "2", name: "Available", color: LIGHT_BLUE },
-    { id: "3", name: "Selected", color: SECONDARY_COLOR },
-    { id: "4", name: "Booked", color: LIGHT_RED },
-  ];
+  const handleProceed = () => {
+    if (!selectedSlots.length) {
+      showAlert({
+        title: 'No slot selected',
+        message: 'Please select at least one activity slot before continuing.',
+        tone: 'warning',
+      });
+      return;
+    }
+
+    (navigation as any).navigate('ChoosePlayer', {
+      slots: selectedSlots,
+      facility,
+      session,
+    });
+  };
+
+  const renderLoadingGrid = () => (
+    <View style={styles.loadingGrid}>
+      {[1, 2, 3, 4].map(row => (
+        <View key={row} style={styles.loadingRow}>
+          {[1, 2, 3, 4, 5].map(col => (
+            <ShimmerPlaceholder
+              key={`${row}-${col}`}
+              width={78}
+              height={66}
+              shimmerStyle={styles.loadingCell}
+            />
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+
   return (
-    <View style={{ flex: 1,}}>
-      <Header title={"Activity"}>
-        <TouchableOpacity
-           activeOpacity={0.9}
-          style={{
-            borderWidth: 0.8,
-            borderColor: "white",
-            padding: 5,
-            borderRadius: 5,
-          }}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Header title="Activity Booking">
+        <Pressable
+          style={[styles.headerAction, { borderColor: `${colors.onPrimary}35` }]}
           onPress={() =>
-            navigation.navigate("Bookings", { type: facility.id })
+            navigation.navigate('MyBookings', {
+              url: ['Activity'],
+              toggle: 'Activity',
+            } as any)
           }
         >
-          <Text style={{ fontFamily: FONT_FAMILY.normal, color: "white" }}>
+          <Text style={[styles.headerActionLabel, { color: colors.onPrimary }]}>
             My Bookings
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </Header>
-        <Text style={[styles.price,{textAlign:'center'}]}>You can book slots from {facility?.min_days} to {facility?.max_days} days.</Text>
 
-      <ScrollView
-        contentContainerStyle={{ backgroundColor: "white" }}
-        style={{ backgroundColor: 'white' }}
-      >
-        {/* <Image
-          source={{
-            uri: `https://booking.panchshilaclub.org${facility?.second_image}`,
-          }}
-          style={{ width: "auto", height: 250, resizeMode: "cover" }}
-        /> */}
+      <ScrollView contentContainerStyle={styles.content}>
+        <BookingHeroCard
+          eyebrow="Slot Selection"
+          title={facility?.name || 'Activity'}
+          subtitle={`Book between ${facility?.min_days || 0} and ${facility?.max_days || 0} days in advance.`}
+          status={selectedSlots.length ? 'Slots selected' : 'Choose slots'}
+          statusTone={selectedSlots.length ? 'success' : 'warning'}
+          meta={[
+            { label: 'Charge', value: `Rs. ${Number(facility?.charge || 0).toFixed(2)}` },
+            { label: 'Inventory', value: String(inventory) },
+            { label: 'Selected', value: String(selectedSlots.length), tone: 'success' },
+          ]}
+        />
 
-        <Card style={styles.container}>
-         
-            <View style={styles.rowCenter}>
-                 <Image
-                       height={50}
-                       width={50}
-                       style={{ alignSelf: "center" }}
-                       source={{
-                         uri: `https://dynamixclubedepalma.co.in/clubdepalma${facility?.third_image}`,
-                       }}
-                     />
-              <Text style={styles.text}>{facility?.name}</Text>
+        <DetailSection
+          title="Schedule Filters"
+          subtitle="Choose the first booking date and narrow the table by session."
+          delay={40}
+        >
+          <View style={styles.filterRow}>
+            <View style={styles.filterBlock}>
+              <Text style={[styles.filterLabel, { color: colors.text }]}>Start date</Text>
+              <DatePickerComponent
+                placeholder={moment(tempStartDate).format('DD-MMMM-YYYY')}
+                minDate={moment().add(parseInt(facility?.min_days || 0, 10), 'days').toDate()}
+                maxDate={moment()
+                  .add(parseInt((facility?.max_days || 0) - 4, 10), 'days')
+                  .toDate()}
+                stateDate={date => setTempStartDate(date)}
+              />
             </View>
-           
-          <View
-            style={{
-              backgroundColor: "white",
-              padding: 5,
-              borderRadius: 10,
-            }}
-          >
-            <View style={styles.rowCenter}>
-              <View style={{ flex: 1 }}>
-                <DatePickerComponent
-                
-                  placeholder={
-                    tempStartDate
-                      ? moment(tempStartDate).format("DD-MMMM-YYYY")
-                      : "Select Start date"
-                  }
-                  // minDate={new Date()}
-                  // minDate={facility?.min_days}
-                    minDate={moment().add(parseInt(facility?.min_days || 0), 'days').toDate()}
-                    maxDate={moment().add(parseInt(facility?.max_days-4 || 0), 'days').toDate()}
-                  stateDate={(date) => {
-                    setTempStartDate(date);
-                  }}
-                  // maxDate={facility?.max_days}
-                />
-              </View>
-
+            <View style={styles.filterBlock}>
+              <Text style={[styles.filterLabel, { color: colors.text }]}>Session</Text>
               <Dropdown
-                style={[styles.dropdown]}
-                placeholderStyle={styles.placeholderStyle}
-                selectedTextStyle={styles.selectedTextStyle}
-                containerStyle={{
-                  backgroundColor: LIGHT_BLUE,
-                  borderRadius: 10,
-                  marginTop: 10,
-                }}
-                itemTextStyle={styles.itemContainerStyle}
-                iconStyle={styles.iconStyle}
-                data={[
-                  { id: 0, name: "All Sessions" }, // default item at the top
-                  ...(sessionsQuery?.data?.data || []),
+                style={[
+                  styles.dropdown,
+                  { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
                 ]}
-                maxHeight={300}
-                labelField="name"
-                
-                valueField="id"
-                placeholder={"Select session"}
-                value={session?.id ?? 0}
-                onChange={(item) => {
-                  setSession(item);
+                placeholderStyle={{ color: colors.textMuted, fontFamily: FONT_FAMILY.normal }}
+                selectedTextStyle={{ color: colors.text, fontFamily: FONT_FAMILY.semiBold }}
+                containerStyle={{
+                  backgroundColor: colors.surface,
+                  borderRadius: 18,
+                  borderWidth: 1,
+                  borderColor: colors.border,
                 }}
+                itemTextStyle={{ color: colors.text, fontFamily: FONT_FAMILY.normal }}
+                data={[{ id: 0, name: 'All Sessions' }, ...(sessionsQuery?.data?.data || [])]}
+                maxHeight={280}
+                labelField="name"
+                valueField="id"
+                placeholder="Select session"
+                value={session?.id ?? 0}
+                onChange={item => setSession(item)}
               />
             </View>
           </View>
-        </Card>
-        <View style={[styles.rowCenter, { justifyContent: "space-between" }]}>
-          <Text style={styles.text}>Select Slot</Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginRight: 20,
-            }}
-          >
-            {indicators.map((item, index) => (
-              <View
-                key={index}
-                style={{ alignItems: "center", marginLeft: 10 }}
-              >
-                <View
-                  style={{
-                    width: 20,
-                    height: 20,
-                    backgroundColor: item.color,
-                    borderRadius: 5,
-                  }}
-                />
-                <Text style={styles.price}>{item.name}</Text>
+        </DetailSection>
+
+        <DetailSection
+          title="Availability Snapshot"
+          subtitle="Live slot colors help you distinguish available, booked, past, and selected cells."
+          delay={70}
+        >
+          <View style={styles.legendRow}>
+            {[
+              { label: 'Available', color: colors.surfaceAlt, text: colors.text },
+              { label: 'Selected', color: colors.secondary, text: colors.onPrimary },
+              { label: 'Booked', color: `${colors.danger}16`, text: colors.danger },
+              { label: 'Past', color: `${colors.textMuted}22`, text: colors.textMuted },
+            ].map(item => (
+              <View key={item.label} style={styles.legendItem}>
+                <View style={[styles.legendSwatch, { backgroundColor: item.color }]} />
+                <Text style={[styles.legendText, { color: colors.textMuted }]}>
+                  {item.label}
+                </Text>
               </View>
             ))}
           </View>
-        </View>
 
-        <View style={{ flexDirection: "row" }}>
-          <View
-            style={{
-              borderRightWidth: 1,
-              backgroundColor: LIGHT_BLUE,
-              borderRightColor: "grey",
-            }}
-          >
-            <View
-              style={[
-                styles.cell,
-                styles.headerCell,
-                { backgroundColor: LIGHT_BLUE },
-              ]}
+          <View style={styles.analyticsRow}>
+            <View style={[styles.analyticsCard, { backgroundColor: colors.surfaceAlt }]}>
+              <Text style={[styles.analyticsValue, { color: colors.text }]}>
+                {analytics.available}
+              </Text>
+              <Text style={[styles.analyticsLabel, { color: colors.textMuted }]}>
+                Available
+              </Text>
+            </View>
+            <View style={[styles.analyticsCard, { backgroundColor: colors.surfaceAlt }]}>
+              <Text style={[styles.analyticsValue, { color: colors.text }]}>
+                {analytics.booked}
+              </Text>
+              <Text style={[styles.analyticsLabel, { color: colors.textMuted }]}>
+                Booked
+              </Text>
+            </View>
+            <View style={[styles.analyticsCard, { backgroundColor: colors.surfaceAlt }]}>
+              <Text style={[styles.analyticsValue, { color: colors.text }]}>
+                {analytics.past}
+              </Text>
+              <Text style={[styles.analyticsLabel, { color: colors.textMuted }]}>
+                Past
+              </Text>
+            </View>
+          </View>
+        </DetailSection>
+
+        <DetailSection
+          title="Slot Matrix"
+          subtitle="Tap any available cell to add or remove it from your activity cart."
+          delay={100}
+        >
+          {slotsQuery.isLoading ? (
+            renderLoadingGrid()
+          ) : !slotRows.length || !dateOptions.length ? (
+            <EmptyStateCard
+              title="No slots found"
+              description="There are no slot rows available for the chosen date and session."
             />
-
-            {/* Time labels */}
-            {slotsQuery.isLoading
-              ? emptyList.map((item) => (
-                  <View style={[styles.cell, styles.headerCell]}>
-                    <ShimmerPlaceholder style={styles.cell} />
-                  </View>
-                ))
-              : slotsQuery?.data?.data?.map((time, index) => (
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View>
+                <View style={styles.matrixHeaderRow}>
                   <View
-                    key={index}
                     style={[
-                      styles.cell,
-                      { borderRadius: 0, borderTopWidth: 0.3 },
+                      styles.timeHeaderCell,
+                      { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
                     ]}
                   >
-                    <Icon
-                      name={
-                        time.session_id == 1
-                          ? "wb-sunny"
-                          : time.session_id == 2
-                          ? "sunny"
-                          : "nights-stay"
-                      }
-                      color={
-                        time.session_id == 1
-                          ? "orange"
-                          : time.session_id == 2
-                          ? "red"
-                          : "purple"
-                      }
-                      size={17}
-                    />
-                    <Text style={[styles.timeText]}>{time.label}</Text>
+                    <Text style={[styles.timeHeaderText, { color: colors.textMuted }]}>
+                      Time
+                    </Text>
                   </View>
-                ))}
-          </View>
-          <ScrollView horizontal>
-            <View>
-              {/* Date Header Row */}
-              <View
-                style={{ flexDirection: "row", backgroundColor: LIGHT_BLUE }}
-              >
-                {slotsQuery.isLoading
-                  ? emptyList.map((item) => (
-                      <View style={[styles.cell, styles.headerCell]}>
-                        <ShimmerPlaceholder style={styles.cell} />
-                      </View>
-                    ))
-                  : slotsQuery?.data?.dateOptions?.map((day, index) => (
-                      <View
-                        key={index}
-                        style={[styles.cell, { backgroundColor: LIGHT_BLUE }]}
-                      >
-                        <Text style={[styles.dayText, { color: "black" }]}>
-                          {day.date}
-                        </Text>
-                        <Text style={[styles.dayText, { color: "grey" }]}>
-                          {day.day}
-                        </Text>
-                      </View>
-                    ))}
-              </View>
-
-              {/* Time Slots Grid */}
-              {slotsQuery.isLoading
-                ? emptyList.map((i) => (
-                    <View style={{ flexDirection: "row" }}>
-                      {emptyList.map((item) => (
-                        <View style={[styles.cell, styles.headerCell]}>
-                          <ShimmerPlaceholder style={styles.cell} />
-                        </View>
-                      ))}
-                    </View>
-                  ))
-                : slotsQuery?.data?.data?.map((time, rowIndex) => (
-                    <View key={rowIndex} style={{ flexDirection: "row" }}>
-                      {slotsQuery?.data?.dateOptions?.map((day, colIndex) => (
-                        <View key={colIndex} style={styles.cell}>
-                          {renderCell(day, time, rowIndex)}
-                        </View>
-                      ))}
+                  {dateOptions.map((day: any) => (
+                    <View
+                      key={day?.id}
+                      style={[
+                        styles.dayHeaderCell,
+                        { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
+                      ]}
+                    >
+                      <Text style={[styles.dayHeaderDate, { color: colors.text }]}>
+                        {day?.date}
+                      </Text>
+                      <Text style={[styles.dayHeaderDay, { color: colors.textMuted }]}>
+                        {day?.day}
+                      </Text>
                     </View>
                   ))}
-            </View>
-          </ScrollView>
-        </View>
+                </View>
+
+                {slotRows.map((time: any, rowIndex: number) => (
+                  <View key={rowIndex} style={styles.matrixBodyRow}>
+                    <View
+                      style={[
+                        styles.timeCell,
+                        { backgroundColor: colors.surface, borderColor: colors.border },
+                      ]}
+                    >
+                      <Icon
+                        name={
+                          time?.session_id === 1
+                            ? 'weather-sunny'
+                            : time?.session_id === 2
+                            ? 'white-balance-sunny'
+                            : 'weather-night'
+                        }
+                        color={
+                          time?.session_id === 1
+                            ? colors.warning
+                            : time?.session_id === 2
+                            ? colors.danger
+                            : colors.primary
+                        }
+                        size={18}
+                      />
+                      <Text style={[styles.timeCellText, { color: colors.text }]}>
+                        {time?.label}
+                      </Text>
+                    </View>
+                    {dateOptions.map((day: any) => (
+                      <View
+                        key={`${time?.id}-${day?.id}`}
+                        style={[
+                          styles.matrixCellWrap,
+                          { borderColor: colors.border },
+                        ]}
+                      >
+                        {renderCell(day, time)}
+                      </View>
+                    ))}
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+          )}
+        </DetailSection>
       </ScrollView>
-      {selectedSlots.length > 0 && (
+
+      {selectedSlots.length ? (
         <View
-          style={{
-            flexDirection: "row",
-            // alignItems: "center",
-            justifyContent: "space-between",
-            margin: 10,
-          }}
+          style={[
+            styles.footer,
+            { backgroundColor: colors.surface, borderTopColor: colors.border },
+          ]}
         >
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={() => setVisible(true)}
-          >
-            <Text style={styles.price}>
-              {selectedSlots.length +
-                ` ${selectedSlots.length > 1 ? "Slots" : "Slot"} Selected`}
+          <Pressable style={styles.footerMetaWrap} onPress={() => setVisible(true)}>
+            <Text style={[styles.footerTitle, { color: colors.text }]}>
+              {selectedSlots.length} {selectedSlots.length > 1 ? 'slots' : 'slot'} selected
             </Text>
-            <View style={styles.rowCenter}>
-              <Text
-                style={[
-                  styles.price,
-                  { textDecorationLine: "underline", color: "grey" },
-                ]}
-              >
-                tap to view details
-              </Text>
-              <Icon name={"arrow-drop-up"} size={20} color={"black"} />
-            </View>
-          </TouchableOpacity>
-          <NewButton
-            text={"Proceed"}
-            onPress={() =>
-              navigation.navigate("ChoosePlayer", {
-                slots: selectedSlots,
-                facility,
-                session
-              })
-            }
-          />
+            <Text style={[styles.footerSubtitle, { color: colors.textMuted }]}>
+              Tap to review dates and times
+            </Text>
+          </Pressable>
+          <NewButton text="Choose Players" onPress={handleProceed} />
         </View>
-      )}
+      ) : null}
+
       <UniversalModal
         visible={visible}
-        title={
-          selectedSlots.length +
-          ` ${selectedSlots.length > 1 ? "Slots" : "Slot"} Selected`
-        }
+        title={`${selectedSlots.length} ${selectedSlots.length > 1 ? 'Slots' : 'Slot'} Selected`}
         setVisible={setVisible}
       >
-       
-        {selectedSlots.map((slots, index) => (
-          <View
-            key={index}
-            style={[
-              styles.rowCenter,
-              {
-                justifyContent: "space-between",
-                padding: 10,
-              },
-            ]}
-          >
-            <View>
-              <Text
-                style={[styles.price, { fontFamily: FONT_FAMILY.semiBold }]}
-              >
-                {facility?.name}
-              </Text>
-              <Text style={[styles.price]}>
-                {`${moment(slots.time.name, "HHmm").format(
-                  "hh:mm A"
-                )} to ${moment(slots.time.name.slice(5, 8), "HHmm").format(
-                  "hh:mm A"
-                )}`}{" "}
-              </Text>
+        <View style={styles.modalBody}>
+          {selectedSlots.map((slot: any, index: number) => (
+            <View
+              key={`${slot?.day?.id}-${slot?.time?.id}-${index}`}
+              style={[
+                styles.modalCard,
+                { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
+              ]}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.modalCardTitle, { color: colors.text }]}>
+                  {facility?.name}
+                </Text>
+                <Text style={[styles.modalCardMeta, { color: colors.textMuted }]}>
+                  {slot?.time?.label}
+                </Text>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={[styles.modalDate, { color: colors.text }]}>
+                  {moment(slot?.day?.session_date).format('DD MMM YYYY')}
+                </Text>
+                <Text style={[styles.modalSlotsPill, { color: colors.onPrimary }]}>
+                  1 Slot
+                </Text>
+              </View>
             </View>
-            <View style={{ alignItems: "flex-end" }}>
-              <Text
-                style={[
-                  styles.price,
-                  {
-                    backgroundColor: SECONDARY_COLOR,
-                    color: "white",
-                    padding: 6,
-                    borderRadius: 5,
-                    fontFamily: FONT_FAMILY.bold,
-                  },
-                ]}
-              >
-                1 Slot
-              </Text>
-              <Text
-                style={[styles.price, { fontFamily: FONT_FAMILY.semiBold }]}
-              >
-                {moment(slots.day.session_date).format("DD-MMMM-YYYY")}
-              </Text>
-            </View>
-          </View>
-        ))}
+          ))}
+        </View>
       </UniversalModal>
+
+      <AppAlertModal
+        visible={alertState.visible}
+        title={alertState.title}
+        message={alertState.message}
+        tone={alertState.tone}
+        primaryLabel={alertState.primaryLabel}
+        secondaryLabel={alertState.secondaryLabel}
+        onDismiss={hideAlert}
+        onPrimaryPress={() => {
+          hideAlert();
+          alertState.onPrimaryPress?.();
+        }}
+        onSecondaryPress={() => {
+          hideAlert();
+          alertState.onSecondaryPress?.();
+        }}
+      />
     </View>
   );
 };
 
-export default Activity;
-
 const styles = StyleSheet.create({
-  headerCell: {
-    backgroundColor: "#eee",
+  container: {
+    flex: 1,
   },
-  timeText: {
-    fontFamily: FONT_FAMILY.semiBold,
-    fontSize: 15,
-    color: "grey",
+  content: {
+    paddingBottom: 120,
   },
-  dayText: {
+  headerAction: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  headerActionLabel: {
     fontSize: 12,
     fontFamily: FONT_FAMILY.semiBold,
-    color: "grey",
   },
-
-  text: {
-    color: "black",
+  filterRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  filterBlock: {
+    flex: 1,
+  },
+  filterLabel: {
+    marginBottom: 8,
+    fontSize: 13,
     fontFamily: FONT_FAMILY.semiBold,
-    fontSize: 18,
-    margin: 10,
   },
-  rowCenter: { flexDirection: "row", alignItems: "center", },
-  placeholderStyle: {
-    color: "grey",
-    fontFamily: FONT_FAMILY.normal,
-  },
-  description: {
-    color: "grey",
-    fontFamily: FONT_FAMILY.normal,
-    fontSize: 14,
-  },
-  scrollcontainer: { paddingHorizontal: 16 },
-  dateTitle: {
-    fontFamily: FONT_FAMILY.semiBold,
-    fontSize: 17,
-    color: "grey",
-  },
-  datebox: {
-    backgroundColor: LIGHT_BLUE,
-    margin: 10,
-    padding: 10,
-    borderRadius: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  selectedTextStyle: { color: "black", fontFamily: FONT_FAMILY.normal },
   dropdown: {
-    backgroundColor: LIGHT_BLUE,
+    minHeight: 54,
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingHorizontal: 14,
     margin: 10,
-    padding: 10,
-    borderRadius: 6,
-    borderWidth: 0.3,
-    flex: 1,
   },
-  itemContainerStyle: { color: "grey", fontFamily: FONT_FAMILY.normal },
-  container: {
-    margin: 10,
-    backgroundColor: "white",
-    padding: 10,
-    // marginTop: -40,
-    flex: 1,
+  legendRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 14,
   },
-
-  header: {
-    fontSize: 18,
-    textAlign: "center",
-    fontWeight: "600",
-  },
-  subHeader: {
-    textAlign: "center",
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
     marginBottom: 10,
-    color: "#666",
   },
-  headerRow: {
-    flexDirection: "row",
+  legendSwatch: {
+    width: 14,
+    height: 14,
+    borderRadius: 4,
+    marginRight: 8,
   },
-  dayHeader: {
-    width: 80,
-    padding: 5,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#eee",
-    borderWidth: 0.5,
-    borderColor: "#ccc",
-  },
-  dayText: {
-    textAlign: "center",
-  },
-  row: {
-    flexDirection: "row",
-  },
-  timeColumnHeader: {
-    width: 80,
-  },
-  timeColumn: {
-    width: 80,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 0.5,
-    borderColor: "#ccc",
-    backgroundColor: "#f5f5f5",
-  },
-
-  cell: {
-    width: 70,
-    height: 60,
-    justifyContent: "center",
-    alignItems: "center",
-    margin: 5,
-    borderRadius: 5,
-  },
-  availableCell: {
-    backgroundColor: "#fff0f0",
-  },
-  price: {
-    fontSize: 14,
+  legendText: {
+    fontSize: 12,
     fontFamily: FONT_FAMILY.normal,
-    color: DARK_BLUE,
   },
-  left: {
-    fontSize: 10,
-    color: "#888",
+  analyticsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  analyticsCard: {
+    flex: 1,
+    borderRadius: 18,
+    padding: 14,
+  },
+  analyticsValue: {
+    fontSize: 20,
+    fontFamily: FONT_FAMILY.bold,
+  },
+  analyticsLabel: {
+    marginTop: 4,
+    fontSize: 12,
+    fontFamily: FONT_FAMILY.normal,
+  },
+  loadingGrid: {
+    gap: 10,
+  },
+  loadingRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  loadingCell: {
+    borderRadius: 16,
+  },
+  matrixHeaderRow: {
+    flexDirection: 'row',
+  },
+  timeHeaderCell: {
+    width: 94,
+    minHeight: 64,
+    borderWidth: 1,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  timeHeaderText: {
+    fontSize: 13,
+    fontFamily: FONT_FAMILY.semiBold,
+  },
+  dayHeaderCell: {
+    width: 92,
+    minHeight: 64,
+    borderWidth: 1,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  dayHeaderDate: {
+    fontSize: 16,
+    fontFamily: FONT_FAMILY.bold,
+  },
+  dayHeaderDay: {
+    marginTop: 4,
+    fontSize: 12,
+    fontFamily: FONT_FAMILY.normal,
+  },
+  matrixBodyRow: {
+    flexDirection: 'row',
+    marginTop: 10,
+  },
+  timeCell: {
+    width: 94,
+    minHeight: 76,
+    borderWidth: 1,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+    paddingHorizontal: 8,
+  },
+  timeCellText: {
+    marginTop: 6,
+    textAlign: 'center',
+    fontSize: 12,
+    fontFamily: FONT_FAMILY.semiBold,
+  },
+  matrixCellWrap: {
+    width: 92,
+    minHeight: 76,
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  slotCell: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+  },
+  slotPrice: {
+    fontSize: 12,
+    fontFamily: FONT_FAMILY.semiBold,
+  },
+  slotLeft: {
+    marginTop: 4,
+    fontSize: 11,
+    fontFamily: FONT_FAMILY.normal,
   },
   footer: {
-    flexDirection: "row",
-    padding: 10,
-    justifyContent: "space-between",
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderTopWidth: 1,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  turfButton: {
+  footerMetaWrap: {
     flex: 1,
-    marginRight: 10,
   },
-  proceedButton: {
-    flex: 1,
+  footerTitle: {
+    fontSize: 16,
+    fontFamily: FONT_FAMILY.bold,
+  },
+  footerSubtitle: {
+    marginTop: 4,
+    fontSize: 12,
+    fontFamily: FONT_FAMILY.normal,
+  },
+  modalBody: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+  },
+  modalCard: {
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  modalCardTitle: {
+    fontSize: 15,
+    fontFamily: FONT_FAMILY.semiBold,
+  },
+  modalCardMeta: {
+    marginTop: 4,
+    fontSize: 12,
+    fontFamily: FONT_FAMILY.normal,
+  },
+  modalDate: {
+    fontSize: 13,
+    fontFamily: FONT_FAMILY.semiBold,
+  },
+  modalSlotsPill: {
+    marginTop: 8,
+    backgroundColor: '#151831',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    overflow: 'hidden',
+    fontSize: 11,
+    fontFamily: FONT_FAMILY.semiBold,
   },
 });
+
+export default Activity;

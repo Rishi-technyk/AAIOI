@@ -22,11 +22,12 @@ import { askFinancialAi, useStatementDashboard } from '../services/ViewStatement
 import { javascriptPost } from '../util/api';
 import { useAppTheme } from '../theme/AppThemeProvider';
 import { FONT_FAMILY } from '../util/colors';
-import { Toast } from 'react-native-toast-notifications';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../navigation/AppDrawer';
 import { RootState } from '../store/store';
 import { ScrollView } from 'react-native-gesture-handler';
+import AppAlertModal from '../components/feedback/AppAlertModal';
+import { useAppAlert } from '../hooks/useAppAlert';
 
 const initialFilters = {
   startDate: null,
@@ -56,6 +57,7 @@ const ViewStatement:React.FC<Props> = ({ navigation }) => {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiAnswer, setAiAnswer] = useState('');
+  const { alertState, showAlert, hideAlert } = useAppAlert();
 
   const { data, isLoading, refetch } = useStatementDashboard(filters, userData);
 
@@ -153,9 +155,17 @@ const ViewStatement:React.FC<Props> = ({ navigation }) => {
       });
 
       setAiAnswer(response?.data?.answer || 'No insight available yet.');
-      Toast.show('AI insight ready', { type: 'success' });
+      showAlert({
+        title: 'AI insight ready',
+        message: 'Your statement analysis is ready to review.',
+        tone: 'success',
+      });
     } catch (error) {
-      Toast.show('Unable to fetch AI insight right now.', { type: 'danger' });
+      showAlert({
+        title: 'AI unavailable',
+        message: 'Unable to fetch AI insight right now.',
+        tone: 'danger',
+      });
     } finally {
       setAiLoading(false);
     }
@@ -244,7 +254,11 @@ const ViewStatement:React.FC<Props> = ({ navigation }) => {
                       url: summary.pdf,
                       title: 'Statement',
                     })
-                  : Toast.show('No bill available right now.', { type: 'warning' })
+                  : showAlert({
+                      title: 'Bill unavailable',
+                      message: 'No bill is available to view right now.',
+                      tone: 'warning',
+                    })
               }
             >
               <Text style={styles.billButtonText}>View Bill</Text>
@@ -365,6 +379,24 @@ const ViewStatement:React.FC<Props> = ({ navigation }) => {
           />
         </View>
       </ScrollView>
+
+      <AppAlertModal
+        visible={alertState.visible}
+        title={alertState.title}
+        message={alertState.message}
+        tone={alertState.tone}
+        primaryLabel={alertState.primaryLabel}
+        secondaryLabel={alertState.secondaryLabel}
+        onDismiss={hideAlert}
+        onPrimaryPress={() => {
+          hideAlert();
+          alertState.onPrimaryPress?.();
+        }}
+        onSecondaryPress={() => {
+          hideAlert();
+          alertState.onSecondaryPress?.();
+        }}
+      />
 
       <UniversalModal
         visible={showFilterModal}

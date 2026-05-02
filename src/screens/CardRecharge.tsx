@@ -23,10 +23,11 @@ import { javascriptPost } from '../util/api';
 import { ENDPOINT } from '../util/constant';
 import { useAppTheme } from '../theme/AppThemeProvider';
 import { FONT_FAMILY } from '../util/colors';
-import { Toast } from 'react-native-toast-notifications';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../navigation/AppDrawer';
 import { RootState } from '../store/store';
+import AppAlertModal from '../components/feedback/AppAlertModal';
+import { useAppAlert } from '../hooks/useAppAlert';
 
 const initialFilters = {
   startDate: null,
@@ -58,6 +59,7 @@ const CardRecharge:React.FC<Props> = ({ navigation, route }) => {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiAnswer, setAiAnswer] = useState('');
+  const { alertState, showAlert, hideAlert } = useAppAlert();
 
   const { data, isLoading, refetch } = useRechargeDashboard(filters, userData);
 
@@ -101,7 +103,11 @@ const CardRecharge:React.FC<Props> = ({ navigation, route }) => {
 
   const payNowAction = async () => {
     if (!amount || Number(amount) <= 0) {
-      Toast.show('Please enter a valid recharge amount.', { type: 'warning' });
+      showAlert({
+        title: 'Invalid amount',
+        message: 'Please enter a valid recharge amount before continuing.',
+        tone: 'warning',
+      });
       return;
     }
 
@@ -115,7 +121,7 @@ const CardRecharge:React.FC<Props> = ({ navigation, route }) => {
         },
         Token: userData?.token,
       });
-
+   
       if (response?.data?.order_id || response?.data?.checkout || response?.data?.payment_url) {
         navigation.navigate('UniversalPayment', {
           type: 'Recharge',
@@ -123,12 +129,18 @@ const CardRecharge:React.FC<Props> = ({ navigation, route }) => {
         });
         setAmount('');
       } else {
-        Toast.show(response?.message || 'Unable to create recharge order.', {
-          type: 'danger',
+        showAlert({
+          title: 'Recharge unavailable',
+          message: response?.message || 'Unable to create recharge order right now.',
+          tone: 'danger',
         });
       }
     } catch (error) {
-      Toast.show('Unable to start recharge right now.', { type: 'danger' });
+      showAlert({
+        title: 'Recharge unavailable',
+        message: 'Unable to start recharge right now.',
+        tone: 'danger',
+      });
     } finally {
       setLoading(false);
     }
@@ -145,9 +157,17 @@ const CardRecharge:React.FC<Props> = ({ navigation, route }) => {
       });
 
       setAiAnswer(response?.data?.answer || 'No recharge insight available yet.');
-      Toast.show('AI insight ready', { type: 'success' });
+      showAlert({
+        title: 'AI insight ready',
+        message: 'Your recharge summary and suggestions are ready to review.',
+        tone: 'success',
+      });
     } catch (error) {
-      Toast.show('Unable to fetch AI insight right now.', { type: 'danger' });
+      showAlert({
+        title: 'AI unavailable',
+        message: 'Unable to fetch AI insight right now.',
+        tone: 'danger',
+      });
     } finally {
       setAiLoading(false);
     }
@@ -334,6 +354,24 @@ const CardRecharge:React.FC<Props> = ({ navigation, route }) => {
           />
         </View>
       </ScrollView>
+
+      <AppAlertModal
+        visible={alertState.visible}
+        title={alertState.title}
+        message={alertState.message}
+        tone={alertState.tone}
+        primaryLabel={alertState.primaryLabel}
+        secondaryLabel={alertState.secondaryLabel}
+        onDismiss={hideAlert}
+        onPrimaryPress={() => {
+          hideAlert();
+          alertState.onPrimaryPress?.();
+        }}
+        onSecondaryPress={() => {
+          hideAlert();
+          alertState.onSecondaryPress?.();
+        }}
+      />
 
       <UniversalModal
         visible={showFilterModal}

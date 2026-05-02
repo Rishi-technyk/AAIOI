@@ -189,6 +189,8 @@ export type AppStackParamList = {
   //MMR
   MMR: undefined;
 
+  ViewStatment: undefined;
+  
   //single KOT
   FoodOrder: {
     orderType: any;

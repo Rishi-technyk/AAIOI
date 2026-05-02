@@ -1,27 +1,27 @@
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
   FlatList,
   LayoutAnimation,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
-  ToastAndroid,
-  TouchableOpacity,
   View,
-} from "react-native";
-import React, { useEffect, useRef, useState } from "react";
-import { ENDPOINT,  } from "../../util/constant";
-import { DARK_BLUE, LIGHT_BLUE, FONT_FAMILY,SECONDARY_COLOR } from "../../util/colors";
-import { Card, Checkbox } from "react-native-paper";
-import UniversalModal from "../../components/UniversalModal";
-import _ from "lodash";
-import { useSelector } from "react-redux";
-import Icon from "react-native-vector-icons/Entypo";
-import NewButton from "../../components/Button";
-import { javascriptPost } from "../../util/api";
+} from 'react-native';
+import { useSelector } from 'react-redux';
+import Icon from 'react-native-vector-icons/Entypo';
 
-const PickPlayers :React.FC = ({
-  facility,
+import UniversalModal from '../../components/UniversalModal';
+import NewButton from '../../components/Button';
+import AppAlertModal from '../../components/feedback/AppAlertModal';
+import { useAppAlert } from '../../hooks/useAppAlert';
+import { useAppTheme } from '../../theme/AppThemeProvider';
+import { RootState } from '../../store/store';
+import { ENDPOINT } from '../../util/constant';
+import { javascriptPost } from '../../util/api';
+import { FONT_FAMILY } from '../../util/colors';
+
+const PickPlayers: React.FC<any> = ({
   searchPlayer = false,
   setSearchPlayer,
   selectedGameType,
@@ -32,110 +32,106 @@ const PickPlayers :React.FC = ({
   slots,
   search,
   setSearch,
-  toastRef
 }) => {
-  const userData = useSelector((state) => state.auth.userData);
-
-  const [selectedPlayers, setSelectedPlayers] = useState(null);
-  const [newPlayer, setNewPlayer] = useState(false);
+  const userData = useSelector((state: RootState) => state.auth);
+  const { colors } = useAppTheme();
+  const { alertState, showAlert, hideAlert } = useAppAlert();
+  const [selectedPlayers, setSelectedPlayers] = useState<any[]>([]);
+  const [isGuestFormVisible, setIsGuestFormVisible] = useState(false);
   const [addNewPlayer, setAddNewPlayer] = useState({
-    name: "",
-    email: "",
-    mobile: "",
+    name: '',
+    email: '',
+    mobile: '',
   });
+  const [savingGuest, setSavingGuest] = useState(false);
 
-  const handlePlayerSelect = (item) => {
-  
+  useEffect(() => {
+    setSelectedPlayers(Array.isArray(selectedSlot?.players) ? selectedSlot.players : []);
+  }, [selectedSlot]);
+
+  const maxPlayers = Number(selectedGameType?.no_of_players || 0);
+  const availablePlayers = guestQuery?.data?.data?.data || [];
+  const isSelectionComplete = !!maxPlayers && selectedPlayers.length === maxPlayers;
+
+  const guestSummary = useMemo(
+    () =>
+      selectedPlayers.reduce((total, item) => total + Number(item?.charge || 0), 0),
+    [selectedPlayers],
+  );
+
+  const closeModal = () => {
+    setSelectedPlayers([]);
+    setSelectedSlot(null);
+    setSearch('');
+    setSearchPlayer(false);
+  };
+
+  const handlePlayerSelect = (item: any) => {
     if (!selectedGameType) {
-      Alert.alert("Please select a game type first.");
+      showAlert({
+        title: 'Game type required',
+        message: 'Please select a game type before choosing players.',
+        tone: 'warning',
+      });
       return;
     }
-    if (selectedGameType?.no_of_players == selectedPlayers?.length) {
-      Alert.alert(
-        `You can only select up to ${selectedGameType.no_of_players} players.`
-      );
+
+    if (selectedPlayers.length >= maxPlayers) {
+      showAlert({
+        title: 'Player limit reached',
+        message: `You can only select up to ${maxPlayers} player${maxPlayers > 1 ? 's' : ''}.`,
+        tone: 'warning',
+      });
       return;
     }
 
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    if (!selectedPlayers) {
-      setSelectedPlayers([
-        {
-          DisplayName: item.DisplayName,
-          MemberID: item.MemberID,
-          charge: item.charge || 0,
-          occupant_id: item.occupant_id ||'1',
-          mobile: item.mobile,
-          email: item.email,
-        },
-      ]);
-    } else {
-      setSelectedPlayers((prev) => [
-        {
-          DisplayName: item.DisplayName,
-          MemberID: item.MemberID,
-       
-          charge: item.charge || 0,
-          occupant_id: item.occupant_id ||'1',
-          mobile: item.mobile,
-          email: item.email,
-        },
-        ...prev,
-      ]);
-    }
+    setSelectedPlayers(prev => [
+      {
+        DisplayName: item.DisplayName,
+        MemberID: item.MemberID,
+        charge: item.charge || 0,
+        occupant_id: item.occupant_id || '1',
+        mobile: item.mobile,
+        email: item.email,
+      },
+      ...prev,
+    ]);
   };
 
-  const handleDeletePlayer = (index) => {
+  const handleDeletePlayer = (index: number) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setSelectedPlayers(selectedPlayers.filter((_, i) => i !== index));
+    setSelectedPlayers(prev => prev.filter((_, currentIndex) => currentIndex !== index));
   };
-  const renderMembers = ({ item }) => {
-  
-  if(selectedPlayers?.some((player) => player.DisplayName === item.DisplayName && player.MemberID === item.MemberID)) {
-    return null; // Skip rendering if the player is already selected
-  }
-   
-  
-    return (
-      <TouchableOpacity
-        onPress={() => {
-          handlePlayerSelect(item);
-        }}
-        style={{
-          margin: 10,
-          flexDirection: "row",
-          justifyContent: "space-between",
-        }}
-      >
-        <Text style={styles.price}>{item.DisplayName}  <Text style={styles.price2}> ({item.occupant_id == 2 ?'Non Memeber': item.MemberID})  </Text></Text>
-        <Text style={styles.price}>₹{item.charge ||0}</Text>
-      </TouchableOpacity>
-    );
-  };
-  const handlePlayerChange = (value, label) => {
-    setAddNewPlayer((prev) => ({ ...prev, [label]: value }));
-  };
+
   const handleAddNewGuest = async () => {
-   
     if (!addNewPlayer.name.trim()) {
-      Alert.alert("Name is required");
+      showAlert({
+        title: 'Name required',
+        message: 'Enter the guest name before saving.',
+        tone: 'warning',
+      });
       return;
     }
 
-
-    const mobileRegex = /^[0-9]{10}$/;
-    if (!mobileRegex.test(addNewPlayer.mobile)) {
-      Alert.alert("Enter a valid 10-digit mobile number");
+    if (!/^[0-9]{10}$/.test(addNewPlayer.mobile)) {
+      showAlert({
+        title: 'Invalid mobile number',
+        message: 'Please enter a valid 10-digit mobile number.',
+        tone: 'warning',
+      });
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(addNewPlayer.email)) {
-      //  ToastAndroid.TOP("Enter a valid email address");
-      Alert.alert("Enter a valid email address");
-
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addNewPlayer.email)) {
+      showAlert({
+        title: 'Invalid email',
+        message: 'Please enter a valid email address for the guest.',
+        tone: 'warning',
+      });
       return;
     }
+
     const apiobject = {
       path: ENDPOINT.create_activity_guest,
       body: {
@@ -145,187 +141,512 @@ const PickPlayers :React.FC = ({
         game_type: selectedGameType?.id,
         occupant_id: 2,
       },
-      Token: userData?.data?.token,
+      Token: userData?.token,
     };
-   const response=await javascriptPost(apiobject)
-    if (response.success) {
-    
-      setAddNewPlayer({ 
-        name: "", 
-        email: "", 
-        mobile: ""
-      });
-      setNewPlayer(false);
-      Alert.alert(response.message);
-      guestQuery.refetch();
-    }
-    if (!response.success) {
-      // Loop through the message object and show an alert for each error
-      for (let field in response.message) {
-        response.message[field].forEach((error) => {
-          Alert.alert(` ${error}`);
+
+    try {
+      setSavingGuest(true);
+      const response = await javascriptPost(apiobject);
+      setSavingGuest(false);
+
+      if (response?.success) {
+        setAddNewPlayer({ name: '', email: '', mobile: '' });
+        setIsGuestFormVisible(false);
+        guestQuery?.refetch?.();
+        showAlert({
+          title: 'Guest added',
+          message: response?.message || 'The guest player was saved successfully.',
+          tone: 'success',
         });
+        return;
       }
+
+      if (response?.message && typeof response.message === 'object') {
+        const firstError = Object.values(response.message)
+          .flat()
+          .find(Boolean);
+
+        showAlert({
+          title: 'Unable to save guest',
+          message: String(firstError || 'Please review the guest details and try again.'),
+          tone: 'danger',
+        });
+        return;
+      }
+
+      showAlert({
+        title: 'Unable to save guest',
+        message: response?.message || 'Please review the guest details and try again.',
+        tone: 'danger',
+      });
+    } catch (error) {
+      setSavingGuest(false);
+      showAlert({
+        title: 'Guest creation failed',
+        message: 'A network issue interrupted the guest creation request.',
+        tone: 'danger',
+      });
     }
   };
- 
+
   const handleProceedPlayers = () => {
     setSlot(
-      slots.map((item) => {
+      slots.map((item: any) => {
         if (
-          item.day.id === selectedSlot.day.id &&
-          item.time.id === selectedSlot.time.id
-        ) {    
+          item?.day?.id === selectedSlot?.day?.id &&
+          item?.time?.id === selectedSlot?.time?.id
+        ) {
           return {
             ...item,
             players: selectedPlayers,
             game_type_id: selectedGameType?.id,
-       
           };
         }
+
         return item;
-      })
+      }),
     );
-    setSelectedSlot(null);
-    setSearchPlayer(false);
+
+    closeModal();
+  };
+
+  const renderMembers = ({ item }: { item: any }) => {
+    const alreadySelected = selectedPlayers.some(
+      player =>
+        player?.DisplayName === item?.DisplayName && player?.MemberID === item?.MemberID,
+    );
+
+    if (alreadySelected) {
+      return null;
+    }
+
+    return (
+      <Pressable
+        onPress={() => handlePlayerSelect(item)}
+        style={[
+          styles.memberCard,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.memberName, { color: colors.text }]}>
+            {item.DisplayName}
+          </Text>
+          <Text style={[styles.memberMeta, { color: colors.textMuted }]}>
+            {item.occupant_id === 2 ? 'Non-member' : item.MemberID || 'Member'}
+          </Text>
+        </View>
+        <View style={styles.memberPriceWrap}>
+          <Text style={[styles.memberPrice, { color: colors.primary }]}>
+            Rs. {Number(item?.charge || 0).toFixed(0)}
+          </Text>
+          <Icon name="plus" size={18} color={colors.primary} />
+        </View>
+      </Pressable>
+    );
   };
 
   return (
     <UniversalModal
       visible={searchPlayer}
-      title={"Pick Player(s)"}
-      isFull={true}
-      setVisible={() => setSearchPlayer(false)}
+      title="Choose Players"
+      isFull
+      setVisible={visible => {
+        if (!visible) {
+          closeModal();
+        }
+      }}
     >
-      
-      {selectedPlayers?.map((item, index) => (
+      <View style={styles.content}>
         <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            margin: 10,
-            padding: 10,
-            elevation: 2,
-            borderRadius: 10,
-            backgroundColor: "white",
-          }}
-        >
-        <Text style={styles.price}>{item.DisplayName}  <Text style={styles.price2}> ({item.occupant_id == 2 ?'Non Memebr':item.MemberID })  </Text></Text>
-          <Text style={styles.price}>₹{item?.charge || "0"}</Text>
-          <Icon
-            name={"trash"}
-            size={17}
-            color={"red"}
-            onPress={() => handleDeletePlayer(index)}
-          />
-        </View>
-      ))}
-      <View
-        style={[
-          styles.rowCenter,
-          { justifyContent: "space-between", marginHorizontal: 10 },
-        ]}
-      >
-        <Text
-          onPress={() => {
-            LayoutAnimation.configureNext(
-              LayoutAnimation.Presets.easeInEaseOut
-            );
-            setNewPlayer((prev) => !prev);
-          }}
           style={[
-            styles.price,
-            { fontFamily: FONT_FAMILY.bold, color: SECONDARY_COLOR,marginTop:20 },
+            styles.summaryCard,
+            {
+              backgroundColor: colors.surfaceAlt,
+              borderColor: colors.border,
+            },
           ]}
         >
-          {newPlayer ? "Search Member" : "+ Add Player"}
-        </Text>
-        {selectedGameType?.no_of_players == selectedPlayers?.length &&
-          selectedGameType && (
-            <NewButton onPress={handleProceedPlayers} text={"Proceed"} />
+          <View style={styles.summaryHeader}>
+            <View>
+              <Text style={[styles.summaryTitle, { color: colors.text }]}>
+                Player selection
+              </Text>
+              <Text style={[styles.summarySubtitle, { color: colors.textMuted }]}>
+                {selectedPlayers.length}/{maxPlayers || 0} selected
+              </Text>
+            </View>
+            {isSelectionComplete ? (
+              <NewButton text="Use players" onPress={handleProceedPlayers} />
+            ) : null}
+          </View>
+
+          <View style={styles.metricsRow}>
+            <View style={[styles.metricChip, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.metricValue, { color: colors.text }]}>
+                {selectedPlayers.length}
+              </Text>
+              <Text style={[styles.metricLabel, { color: colors.textMuted }]}>players</Text>
+            </View>
+            <View style={[styles.metricChip, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.metricValue, { color: colors.text }]}>
+                Rs. {guestSummary.toFixed(0)}
+              </Text>
+              <Text style={[styles.metricLabel, { color: colors.textMuted }]}>charges</Text>
+            </View>
+            <View style={[styles.metricChip, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.metricValue, { color: colors.text }]}>
+                {selectedGameType?.name || 'Game'}
+              </Text>
+              <Text style={[styles.metricLabel, { color: colors.textMuted }]}>type</Text>
+            </View>
+          </View>
+
+          {selectedPlayers.length ? (
+            <View style={styles.selectedList}>
+              {selectedPlayers.map((item, index) => (
+                <View
+                  key={`${item?.MemberID || item?.DisplayName}-${index}`}
+                  style={[
+                    styles.selectedPlayerCard,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.selectedPlayerName, { color: colors.text }]}>
+                      {item.DisplayName}
+                    </Text>
+                    <Text style={[styles.selectedPlayerMeta, { color: colors.textMuted }]}>
+                      {item.occupant_id === 2 ? 'Non-member' : item.MemberID}
+                    </Text>
+                  </View>
+                  <Text style={[styles.selectedPlayerCharge, { color: colors.primary }]}>
+                    Rs. {Number(item?.charge || 0).toFixed(0)}
+                  </Text>
+                  <Pressable onPress={() => handleDeletePlayer(index)} hitSlop={10}>
+                    <Icon name="circle-with-minus" size={18} color={colors.danger} />
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={[styles.emptySelection, { color: colors.textMuted }]}>
+              Search members or create a guest player to complete this slot.
+            </Text>
           )}
-      </View>
-      {newPlayer ? (
-        <View>
-          <TextInput
-            value={addNewPlayer.name}
-            placeholderTextColor="grey"
-            style={styles.dropdown}
-            onChangeText={(text) => handlePlayerChange(text, "name")}
-            placeholder="Enter player name"
-            cursorColor={SECONDARY_COLOR}
-            maxLength={50}
-          />
-          <TextInput
-            value={addNewPlayer.mobile}
-            placeholderTextColor="grey"
-            style={styles.dropdown}
-            onChangeText={(text) => handlePlayerChange(text, "mobile")}
-            placeholder="Enter player mobile"
-            keyboardType="decimal-pad"
-            cursorColor={SECONDARY_COLOR}
-            maxLength={10}
-          />
-          <TextInput
-            value={addNewPlayer.email}
-            cursorColor={SECONDARY_COLOR}
-            placeholderTextColor="grey"
-            style={styles.dropdown}
-            onChangeText={(text) => handlePlayerChange(text, "email")}
-            placeholder="Enter player email"
-            keyboardType="email-address"
-            maxLength={100}
-          />
-          <NewButton onPress={handleAddNewGuest} text={"+ Add"} />
         </View>
-      ) : (
-        <TextInput
-          value={search}
-          placeholderTextColor="grey"
-          style={[styles.dropdown,]}
-          onChangeText={(text) => setSearch(text)}
-          cursorColor={SECONDARY_COLOR}
-          placeholder="Enter member name / id"
-        />
-      )}
-      <FlatList
-        //   scrollEnabled={false}
-        data={guestQuery?.data?.data?.data}
-        renderItem={renderMembers}
+
+        <View style={styles.tabRow}>
+          <Pressable
+            onPress={() => setIsGuestFormVisible(false)}
+            style={[
+              styles.tabButton,
+              {
+                backgroundColor: !isGuestFormVisible ? colors.primary : colors.surfaceAlt,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabLabel,
+                { color: !isGuestFormVisible ? colors.onPrimary : colors.text },
+              ]}
+            >
+              Search member
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setIsGuestFormVisible(true)}
+            style={[
+              styles.tabButton,
+              {
+                backgroundColor: isGuestFormVisible ? colors.primary : colors.surfaceAlt,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabLabel,
+                { color: isGuestFormVisible ? colors.onPrimary : colors.text },
+              ]}
+            >
+              Add guest
+            </Text>
+          </Pressable>
+        </View>
+
+        {isGuestFormVisible ? (
+          <View
+            style={[
+              styles.formCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.formTitle, { color: colors.text }]}>
+              Guest player details
+            </Text>
+            <TextInput
+              value={addNewPlayer.name}
+              placeholder="Enter guest name"
+              placeholderTextColor={colors.textMuted}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surfaceAlt,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
+              onChangeText={text => setAddNewPlayer(prev => ({ ...prev, name: text }))}
+            />
+            <TextInput
+              value={addNewPlayer.mobile}
+              placeholder="Enter guest mobile"
+              placeholderTextColor={colors.textMuted}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surfaceAlt,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
+              onChangeText={text => setAddNewPlayer(prev => ({ ...prev, mobile: text }))}
+              keyboardType="number-pad"
+              maxLength={10}
+            />
+            <TextInput
+              value={addNewPlayer.email}
+              placeholder="Enter guest email"
+              placeholderTextColor={colors.textMuted}
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.surfaceAlt,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
+              onChangeText={text => setAddNewPlayer(prev => ({ ...prev, email: text }))}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <NewButton text="Save guest" loading={savingGuest} onPress={handleAddNewGuest} />
+          </View>
+        ) : (
+          <>
+            <TextInput
+              value={search}
+              placeholder="Search by member name or ID"
+              placeholderTextColor={colors.textMuted}
+              style={[
+                styles.input,
+                styles.searchInput,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  color: colors.text,
+                },
+              ]}
+              onChangeText={text => setSearch(text)}
+            />
+            <FlatList
+              data={availablePlayers}
+              renderItem={renderMembers}
+              keyExtractor={(item, index) =>
+                String(item?.MemberID || item?.DisplayName || index)
+              }
+              ListEmptyComponent={
+                <Text style={[styles.emptyResults, { color: colors.textMuted }]}>
+                  {guestQuery?.isLoading
+                    ? 'Searching players...'
+                    : 'No matching players found.'}
+                </Text>
+              }
+              contentContainerStyle={styles.listContent}
+            />
+          </>
+        )}
+      </View>
+
+      <AppAlertModal
+        visible={alertState.visible}
+        title={alertState.title}
+        message={alertState.message}
+        tone={alertState.tone}
+        primaryLabel={alertState.primaryLabel}
+        secondaryLabel={alertState.secondaryLabel}
+        onDismiss={hideAlert}
+        onPrimaryPress={() => {
+          hideAlert();
+          alertState.onPrimaryPress?.();
+        }}
+        onSecondaryPress={() => {
+          hideAlert();
+          alertState.onSecondaryPress?.();
+        }}
       />
-   
     </UniversalModal>
   );
 };
 
-export default PickPlayers;
-
 const styles = StyleSheet.create({
-  price: {
-    fontSize: 14,
-    fontFamily: FONT_FAMILY.normal,
-    color: DARK_BLUE,
+  content: {
+    paddingHorizontal: 16,
+    paddingBottom: 20,
   },
-  price2: {
-    fontSize: 14,
-    fontFamily: FONT_FAMILY.normal,
-    color: "grey",
+  summaryCard: {
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: 16,
   },
-  price3: {
+  summaryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontFamily: FONT_FAMILY.bold,
+  },
+  summarySubtitle: {
+    marginTop: 4,
+    fontSize: 13,
+    fontFamily: FONT_FAMILY.normal,
+  },
+  metricsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 14,
+  },
+  metricChip: {
+    flex: 1,
+    borderRadius: 16,
+    padding: 12,
+  },
+  metricValue: {
+    fontSize: 14,
+    fontFamily: FONT_FAMILY.bold,
+  },
+  metricLabel: {
+    marginTop: 4,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    fontFamily: FONT_FAMILY.normal,
+  },
+  selectedList: {
+    marginTop: 14,
+    gap: 10,
+  },
+  selectedPlayerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 12,
+    gap: 10,
+  },
+  selectedPlayerName: {
+    fontSize: 14,
+    fontFamily: FONT_FAMILY.semiBold,
+  },
+  selectedPlayerMeta: {
+    marginTop: 4,
+    fontSize: 12,
+    fontFamily: FONT_FAMILY.normal,
+  },
+  selectedPlayerCharge: {
+    fontSize: 13,
+    fontFamily: FONT_FAMILY.semiBold,
+  },
+  emptySelection: {
+    marginTop: 16,
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: FONT_FAMILY.normal,
+  },
+  tabRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  tabButton: {
+    flex: 1,
+    borderRadius: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  tabLabel: {
+    fontSize: 13,
+    fontFamily: FONT_FAMILY.semiBold,
+  },
+  formCard: {
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: 16,
+  },
+  formTitle: {
     fontSize: 16,
     fontFamily: FONT_FAMILY.bold,
-    color: "black",
+    marginBottom: 12,
   },
-  rowCenter: { flexDirection: "row", alignItems: "center" },
-  dropdown: {
-    height: 50,
-    borderColor: "#ccc",
+  input: {
+    minHeight: 52,
+    borderRadius: 16,
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    margin: 16,
-    backgroundColor: "#fff",
-    color: "black",
+    paddingHorizontal: 14,
+    fontSize: 14,
+    fontFamily: FONT_FAMILY.normal,
+    marginBottom: 12,
+  },
+  searchInput: {
+    marginBottom: 6,
+  },
+  listContent: {
+    paddingBottom: 24,
+  },
+  memberCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 10,
+  },
+  memberName: {
+    fontSize: 14,
+    fontFamily: FONT_FAMILY.semiBold,
+  },
+  memberMeta: {
+    marginTop: 4,
+    fontSize: 12,
     fontFamily: FONT_FAMILY.normal,
   },
+  memberPriceWrap: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  memberPrice: {
+    fontSize: 13,
+    fontFamily: FONT_FAMILY.bold,
+  },
+  emptyResults: {
+    textAlign: 'center',
+    fontSize: 13,
+    fontFamily: FONT_FAMILY.normal,
+    marginTop: 28,
+  },
 });
+
+export default PickPlayers;

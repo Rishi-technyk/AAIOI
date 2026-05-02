@@ -80,7 +80,7 @@ const styles = createStyles(colors);
               <Icon
                 name="location-pin"
                 size={20}
-                color={'grey'}
+                color={colors.textMuted}
                 style={{ marginRight: 4 }}
               />
               <Text style={styles.title}>{item.location}</Text>
@@ -90,7 +90,7 @@ const styles = createStyles(colors);
               <Icon
                 name="date-range"
                 size={20}
-                color={'grey'}
+                color={colors.textMuted}
                 style={{ marginRight: 5 }}
               />
 
@@ -133,7 +133,9 @@ export default EventsList;
 
 const createStyles = (color) => StyleSheet.create({
   card: {
-    backgroundColor:color.background,
+    backgroundColor:color.surface,
+    borderColor: color.border,
+    borderWidth: 1,
     borderRadius: 14,
     padding: 10,
     marginHorizontal: 16,
@@ -147,6 +149,7 @@ const createStyles = (color) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+
   /* 🔹 Disabled / Sold Out */
   disabled: {
     opacity: 0.5,
@@ -161,13 +164,13 @@ const createStyles = (color) => StyleSheet.create({
   /* 🔹 Title */
   title: {
     fontSize: 16,
-    color: '#111827',
+    color: color.text,
     fontFamily: FONT_FAMILY.normal,
   },
 empty:{
     marginTop: 20,
     fontSize: 16,
-    color: '#6b7280',
+    color: color.textMuted,
     fontFamily: FONT_FAMILY.normal,
 },
   /* 🔹 Description */
@@ -196,6 +199,11 @@ empty:{
     fontFamily: FONT_FAMILY.semiBold,
   },
 
+  meta:{
+    fontSize: 12,
+    color: color.textMuted,
+    fontFamily: FONT_FAMILY.normal,
+  },
   /* 🔹 Divider */
   divider: {
     height: 1,

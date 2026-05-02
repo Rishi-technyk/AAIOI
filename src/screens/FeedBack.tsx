@@ -268,13 +268,14 @@ const createStyles = (colors: any) =>
       fontFamily: FONT_FAMILY.normal,
     },
     btn: {
-      backgroundColor: colors.primary,
+      backgroundColor: colors.background,
       padding: 15,
       borderRadius: 14,
       flexDirection: "row",
       justifyContent: "center",
       alignItems: "center",
       marginTop: 12,
+      
     },
     btnText: {
       color: colors.onPrimary,

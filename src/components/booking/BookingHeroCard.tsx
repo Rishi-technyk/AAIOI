@@ -33,7 +33,7 @@ const BookingHeroCard: React.FC<Props> = ({
   return (
     <Animated.View entering={FadeInDown.duration(320)} style={styles.wrapper}>
       <LinearGradient
-        colors={[colors.primary, colors.secondary]}
+        colors={[colors.primary, colors.overlay]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
