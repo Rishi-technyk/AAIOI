@@ -28,16 +28,22 @@ const BookingHeroCard: React.FC<Props> = ({
   statusTone = 'neutral',
   meta = [],
 }) => {
-  const { colors } = useAppTheme();
+  const { colors ,resolvedMode} = useAppTheme();
 
   return (
     <Animated.View entering={FadeInDown.duration(320)} style={styles.wrapper}>
       <LinearGradient
-        colors={[colors.primary, colors.overlay]}
+        colors={resolvedMode === 'dark'
+          ? ['#020617', '#0F172A', '#1E293B']
+          : ['#1E293B', '#334155', '#475569']}
+
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
+        <View style={{ padding: 22, overflow: 'hidden' }}>
+
+       
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             {eyebrow ? <Text style={[styles.eyebrow, { color: colors.onPrimary }]}>{eyebrow}</Text> : null}
@@ -63,6 +69,7 @@ const BookingHeroCard: React.FC<Props> = ({
             ))}
           </ScrollView>
         )}
+         </View>
       </LinearGradient>
     </Animated.View>
   );
@@ -77,7 +84,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   gradient: {
-    padding: 22,
+    
+    // padding: 22,
   },
   header: {
     flexDirection: 'row',

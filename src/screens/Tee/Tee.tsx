@@ -386,7 +386,7 @@ const Tee: React.FC<Props> = ({ navigation }) => {
                 borderWidth: 1,
                 borderColor: colors.border,
               }}
-              itemTextStyle={{ color: colors.text, fontFamily: FONT_FAMILY.normal }}
+              itemTextStyle={{ color: colors.primary, fontFamily: FONT_FAMILY.normal }}
               data={[{ id: 0, session_name: 'All Sessions' }, ...(normalizedData?.sessions || [])]}
               maxHeight={260}
               labelField="session_name"
@@ -412,7 +412,7 @@ const Tee: React.FC<Props> = ({ navigation }) => {
                 borderWidth: 1,
                 borderColor: colors.border,
               }}
-              itemTextStyle={{ color: colors.text, fontFamily: FONT_FAMILY.normal }}
+              itemTextStyle={{ color: colors.primary, fontFamily: FONT_FAMILY.normal }}
               data={[{ id: 0, hole_number: 'All Holes' }, ...(normalizedData?.holes || [])]}
               maxHeight={260}
               labelField="hole_number"

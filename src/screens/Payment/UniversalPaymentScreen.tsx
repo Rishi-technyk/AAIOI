@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import LottieView from 'lottie-react-native';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
-import { initializeEasebuzzCheckout } from 'react-native-easebuzz-sdk';
+// import { initializeEasebuzzCheckout } from 'react-native-easebuzz-sdk';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -553,13 +553,13 @@ const openEasebuzzCheckout = useCallback(async () => {
         await openRazorpayCheckout();
         return;
       }
-      if (
-        paymentConfig.gatewaySlug === 'easebuzz' ||
-        String(paymentConfig.gatewayName || '').toLowerCase() === 'easebuzz'
-      ) {
-        await openEasebuzzCheckout();
-        return;
-      }
+      // if (
+      //   paymentConfig.gatewaySlug === 'easebuzz' ||
+      //   String(paymentConfig.gatewayName || '').toLowerCase() === 'easebuzz'
+      // ) {
+      //   await openEasebuzzCheckout();
+      //   return;
+      // }
       if (paymentConfig.checkoutUrl) {
         await openHostedCheckout();
         return;
@@ -707,6 +707,14 @@ const openEasebuzzCheckout = useCallback(async () => {
 
   const paymentTimeline = buildPaymentTimeline(paymentSnapshot);
   const statusTone = resolveTone(paymentSnapshot.status);
+  const retryActionStyle = useMemo(
+    () => [
+      styles.primaryAction,
+      { backgroundColor: colors.primary },
+      retrying ? styles.disabledAction : null,
+    ],
+    [colors.primary, retrying],
+  );
 
   const headline =
     status === 'success'
@@ -849,13 +857,7 @@ const openEasebuzzCheckout = useCallback(async () => {
                 <Pressable
                   onPress={retryPayment}
                   disabled={retrying}
-                  style={[
-                    styles.primaryAction,
-                    {
-                      backgroundColor: colors.primary,
-                      opacity: retrying ? 0.6 : 1,
-                    },
-                  ]}
+                  style={retryActionStyle}
                 >
                   <Icon name="refresh" size={18} color={colors.onPrimary} />
                   <Text style={[styles.primaryActionText, { color: colors.onPrimary }]}>
@@ -995,6 +997,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+  },
+  disabledAction: {
+    opacity: 0.6,
   },
   primaryActionText: {
     fontSize: 14,

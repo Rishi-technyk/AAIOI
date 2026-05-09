@@ -19,14 +19,17 @@ import Header from '../../components/Header';
 import CalendarStrip from '../../components/CalendarStrip';
 import { Toast } from 'react-native-toast-notifications';
 import { FONT_FAMILY, LIGHT_GREEN, LIGHT_RED, SECONDARY_COLOR } from '../../util/colors';
+import { useAppTheme } from '../../theme/AppThemeProvider';
+import { create } from 'react-native/types_generated/Libraries/ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload';
 
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
 const Tables = ({navigation}) => {
   const userData = useSelector((state: RootState) => state.auth);
 
+  const {colors}=useAppTheme();
   const today = moment().format('YYYY-MM-DD');
-
+const styles=createStyles(colors);
   const [selectedDate, setSelectedDate] = useState(today);
   const [selectedMeal, setSelectedMeal] = useState<any>(null);
   const [selectedTime, setSelectedTime] = useState<any>(null);
@@ -81,7 +84,37 @@ const { data: bookingData, isLoading: bookingLoading, refetch: refetchBookings }
     return res.data;
   },
 });
-
+const ShimmerList = () => (
+  <View style={{  flex: 1, }}>
+    {[1, 2, 3, 4].map(i => (
+      <View style={styles.card} key={i}>
+        <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+      <ShimmerPlaceholder
+        key={i}
+        height={30}
+        style={{ marginBottom: 20, borderRadius: 10 }}
+      />
+      <ShimmerPlaceholder
+        key={i}
+        height={30}
+        width={60}
+        style={{ marginBottom: 20, borderRadius: 10 }}
+      />
+          </View>
+      <ShimmerPlaceholder
+        key={i}
+        height={20}
+        style={{ marginBottom: 20, borderRadius: 10 }}
+      />
+      <ShimmerPlaceholder
+        key={i}
+        height={20}
+        style={{ marginBottom: 20, borderRadius: 10 }}
+      />
+    </View>
+    ))}
+  </View>
+);
   /* ==========================
      FILTERING LOGIC
   ========================== */
@@ -185,6 +218,7 @@ const renderTableItem = ({ item }: { item: any }) => {
     </TouchableOpacity>
   );
 };
+
 const bookMutation = useMutation({
   mutationFn: async () => {
     const res = await javascriptPost({
@@ -198,7 +232,7 @@ const bookMutation = useMutation({
       },
       Token: userData.token,
     });
-console.log( res, '---------------------- res ---------------------');
+
 
     // 🔥 IMPORTANT: throw error if API says false
     if (!res.status) {
@@ -238,6 +272,10 @@ const isValid =
 
  <Dropdown
           style={styles.dropdown}
+              placeholderStyle={{ color: colors.text }}
+     selectedTextStyle={{ color: colors.text }}
+  
+     activeColor={colors.primary}
           data={venues}
           labelField="name"
           valueField="id"
@@ -249,6 +287,10 @@ const isValid =
         <Dropdown
           style={styles.dropdown}
           data={meals}
+              placeholderStyle={{ color: colors.text }}
+     selectedTextStyle={{ color: colors.text }}
+   
+     activeColor={colors.primary}
           labelField="name"
           valueField="id"
           placeholder="Select Meal"
@@ -260,6 +302,10 @@ const isValid =
 
         <Dropdown
           style={styles.dropdown}
+       placeholderStyle={{ color: colors.text }}
+     selectedTextStyle={{ color: colors.text }}
+  
+     activeColor={colors.primary}
           data={times}
           labelField="time"
           valueField="id"
@@ -280,6 +326,10 @@ const isValid =
     {tables.length > 0 && (
   <Dropdown
     style={styles.dropdown}
+     placeholderStyle={{ color: colors.text }}
+     selectedTextStyle={{ color: colors.text }}
+   
+     activeColor={colors.primary}
     data={tables}
     labelField="name"
     valueField="id"
@@ -337,9 +387,9 @@ setTimeout(() => {
         </TouchableOpacity>
 </View>
       {!bookingLoading &&
-      <View style={{backgroundColor:'white',padding:20,}}>
+      <View style={{backgroundColor:colors.surface,padding:20,}}>
 
-      <Text style={{ fontWeight: 'bold', fontSize: 16 }}>
+      <Text style={{ fontWeight: 'bold', fontSize: 16,color: colors.text }}>
   Upcoming Bookings
 </Text>
       </View>
@@ -360,49 +410,19 @@ setTimeout(() => {
 };
 
 export default Tables;
-const ShimmerList = () => (
-  <View style={{  flex: 1, }}>
-    {[1, 2, 3, 4].map(i => (
-      <View style={styles.card} key={i}>
-        <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-      <ShimmerPlaceholder
-        key={i}
-        height={30}
-        style={{ marginBottom: 20, borderRadius: 10 }}
-      />
-      <ShimmerPlaceholder
-        key={i}
-        height={30}
-        width={60}
-        style={{ marginBottom: 20, borderRadius: 10 }}
-      />
-          </View>
-      <ShimmerPlaceholder
-        key={i}
-        height={20}
-        style={{ marginBottom: 20, borderRadius: 10 }}
-      />
-      <ShimmerPlaceholder
-        key={i}
-        height={20}
-        style={{ marginBottom: 20, borderRadius: 10 }}
-      />
-    </View>
-    ))}
-  </View>
-);
 
 
-const styles = StyleSheet.create({
+
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
   },
   dropdown: {
     marginHorizontal: 15,
     marginTop: 15,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border,
     borderRadius: 10,
     paddingHorizontal: 12,
     height: 50,
@@ -411,7 +431,7 @@ const styles = StyleSheet.create({
     margin: 15,
     padding: 15,
     borderRadius: 10,
-    backgroundColor: '#f39c12',
+    backgroundColor: colors.surface,
     alignItems: 'center',
   },
   bookBtn: {
@@ -421,7 +441,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btnText: {
-    color: 'white',
+    color: colors.primary,
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -439,7 +459,7 @@ const styles = StyleSheet.create({
     value: {
         fontSize: 13,
         fontFamily: FONT_FAMILY.semiBold,
-        color: '#333',
+        color: colors.text,
       },
     
       badge: {
@@ -463,7 +483,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 40,
         fontFamily: FONT_FAMILY.normal,
-        color: '#999',
+        color: colors.text,
         fontSize: 15,
       },
       ctaRow: {
@@ -473,7 +493,7 @@ const styles = StyleSheet.create({
       cardTitle: {
     fontSize: 15,
     fontFamily: FONT_FAMILY.bold,
-    color: '#1d4184ff',
+    color: colors.text,
     maxWidth: '70%',
   },
 
@@ -483,7 +503,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: colors.surface,
     marginHorizontal: 16,
     marginVertical: 8,
     padding: 16,

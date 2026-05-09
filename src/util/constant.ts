@@ -54,8 +54,8 @@ export const ENV: EnvConfig = {
 
 export const DOMAIN = {
   APP_NAME:APP_NAME,
-  // BASE: API_BASE_URL,
-BASE: "http://10.0.2.2:8000/api/",
+  BASE: API_BASE_URL,
+// BASE: "http://10.0.2.2:8000/api/",
   LOCAL:API_LOCAL_URL,
   API_IMAGE_URL:API_IMAGE_URL,
   PAY_DOMAIN: "https://dsoi.org.in/membersection/mobileAPI/",

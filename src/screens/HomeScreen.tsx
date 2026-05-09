@@ -421,6 +421,7 @@ colors.surfaceAlt
       <EventModal eventModal={eventModal} setEventModal={setEventModal} />
       <ScrollView
         showsVerticalScrollIndicator={false}
+        // stickyHeaderIndices={[0]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -507,7 +508,7 @@ colors.surfaceAlt
                   },
                 ]}
               >
-                {summary.pay_status || 'PENDING'}
+                {summary.pay_status?.toUpperCase() || 'PENDING'}
               </Text>
             </View>
           </View>
@@ -799,8 +800,9 @@ const createStyles = (colors: {
       width: 140,
       height: 140,
       borderRadius: 70,
-      backgroundColor: colors.surface,
-      opacity: 0.08,
+      // backgroundColor: colors.danger,
+      backgroundColor:'rgba(84, 135, 107, 0.71)',
+      opacity: 0.3,
       bottom: -50,
       left: -20,
     },
@@ -848,7 +850,7 @@ const createStyles = (colors: {
       paddingRight: 12,
     },
     greetingText: {
-      color: colors.surfaceAlt,
+      color: colors.textMuted,
       fontSize: 13,
       fontFamily: FONT_FAMILY.normal,
       marginBottom: 4,
@@ -860,7 +862,7 @@ const createStyles = (colors: {
     },
     memberMetaText: {
       marginTop: 8,
-      color: colors.surfaceAlt,
+      color: colors.textMuted,
       fontSize: 12,
       fontFamily: FONT_FAMILY.normal,
     },

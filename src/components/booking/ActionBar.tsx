@@ -30,7 +30,7 @@ const ActionBar: React.FC<Props> = ({ actions }) => {
             },
           ]}
         >
-          <Icon name={action.icon} size={18} color={colors.primary} />
+          <Icon name={action.icon} size={18} color={colors.text} />
           <Text style={[styles.label, { color: colors.text }]}>{action.label}</Text>
         </TouchableOpacity>
       ))}

@@ -10,6 +10,7 @@ import Animated, {
 import {
   PanGestureHandler,
   PanGestureHandlerGestureEvent,
+  ScrollView,
 } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { ModalStyles } from "../Styles/ModalStyles";
@@ -89,7 +90,11 @@ const UniversalModal: React.FC<UniversalModalProps> = ({
 
       {/* Gesture Root for Portal */}
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <PanGestureHandler onGestureEvent={gestureHandler} onEnded={endGesture}>
+        <PanGestureHandler
+         activeOffsetY={[-200, 200]}
+  failOffsetX={[-400, 400]}
+   onGestureEvent={gestureHandler}
+    onEnded={endGesture}>
           <Animated.View
             style={[
               styles.modalContainer,
@@ -115,13 +120,18 @@ const UniversalModal: React.FC<UniversalModalProps> = ({
   keyboardVerticalOffset={Platform.OS === "ios" ? 70 : 0}
 >
   <KeyboardAwareScrollView
-    showsVerticalScrollIndicator={false}
+     nestedScrollEnabled={true}
     enableOnAndroid={true}
-    extraScrollHeight={Platform.OS === "ios" ? 80 : 100}
-    contentContainerStyle={{ flexGrow: 1 }}
+    keyboardShouldPersistTaps="handled"
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{
+      flexGrow: 1,
+      padding: 20,
+    }}
   >
 
-            <View style={{ flex: 1 }}>{children}</View>
+            <View style={{ flex: 1}}>{children}</View>
+     
       </KeyboardAwareScrollView>
      </KeyboardAvoidingView>
           </Animated.View>

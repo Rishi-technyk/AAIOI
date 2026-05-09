@@ -28,6 +28,9 @@ import { AppStackParamList } from '../navigation/AppDrawer';
 import { RootState } from '../store/store';
 import AppAlertModal from '../components/feedback/AppAlertModal';
 import { useAppAlert } from '../hooks/useAppAlert';
+import LinearGradient from 'react-native-linear-gradient';
+
+
 
 const initialFilters = {
   startDate: null,
@@ -49,9 +52,9 @@ type Props = NativeStackScreenProps<AppStackParamList, 'CardRecharge'>;
 const CardRecharge:React.FC<Props> = ({ navigation, route }) => {
   const fallbackBalance = Number(route?.params || 0);
   const userData = useSelector((state: RootState) => state.auth);
-  const { colors } = useAppTheme();
+  const { colors,resolvedMode } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-
+console.log( resolvedMode, '---------------------- resolvedMode ---------------------');
   const [filters, setFilters] = useState(initialFilters);
   const [draftFilters, setDraftFilters] = useState(initialFilters);
   const [amount, setAmount] = useState('');
@@ -220,15 +223,25 @@ const CardRecharge:React.FC<Props> = ({ navigation, route }) => {
 
   return (
     <View style={styles.screen}>
+
+
       <Header
         title="Card"
         OpenDropDawn={() => setShowFilterModal(true)}
         isMulti={true}
       >
-        <View style={{ marginLeft: 10 }}>
-          <AIFilter onApply={handleAskAi} loading={aiLoading} title="Ask AI" />
-        </View>
+             <View style={styles.rightControls}>
+
+             <AIFilter onApply={handleAskAi} loading={aiLoading} title="Ask AI" />
+             </View>
+
       </Header>
+
+       
+         
+     
+     
+      
 
       <ScrollView
         style={styles.scroll}
@@ -242,17 +255,27 @@ const CardRecharge:React.FC<Props> = ({ navigation, route }) => {
           />
         }
       >
-        <View style={styles.heroCard}>
+       <View
+            // colors={[colors.primary, colors.overlay]}
+  //           colors={resolvedMode === 'dark'
+  // ? ['#020617', '#0F172A', '#1E293B']
+  // : ['#1E293B', '#334155', '#475569']}
+  //           start={{ x: 0, y: 0 }}
+  //           end={{ x: 1, y: 1 }}
+            
+            style={styles.heroCard}
+          >
           <View style={styles.heroTop}>
             <View>
               <Text style={styles.eyebrow}>Current Card Balance</Text>
               <Text style={styles.heroValue}>{currency(balance)}</Text>
             </View>
-            <View style={styles.healthPill}>
-              <Text style={styles.healthPillText}>
+            <View style={[styles.healthPill, { backgroundColor: balance >= 500 ? colors.success + '20' : colors.danger + '20' }]}>
+              <Text style={[styles.healthPillText,{ color: balance >= 500 ? colors.success : colors.danger ,}]}>
                 {balance >= 500 ? 'Healthy balance' : 'Low balance'}
               </Text>
             </View>
+            
           </View>
 
           <View style={styles.rechargeRow}>
@@ -543,6 +566,7 @@ const createStyles = colors =>
       gap: 14,
     },
     heroCard: {
+      // flex:1,
       backgroundColor: colors.primary,
       borderRadius: 24,
       padding: 18,
@@ -578,6 +602,7 @@ const createStyles = colors =>
     rechargeRow: {
       flexDirection: 'row',
       alignItems: 'center',
+    
       gap: 10,
     },
     rechargeInput: {
@@ -595,11 +620,13 @@ const createStyles = colors =>
       paddingHorizontal: 14,
       paddingVertical: 10,
       borderRadius: 999,
-      backgroundColor: colors.surface,
+      backgroundColor: colors.background,
+      borderWidth: 1,
+      borderColor: colors.border,
       marginRight: 10,
     },
     quickAmountText: {
-      color: colors.primary,
+      color: colors.text,
       fontFamily: FONT_FAMILY.bold,
       fontSize: 13,
     },
@@ -812,6 +839,14 @@ const createStyles = colors =>
     secondaryActionText: {
       color: colors.text,
       fontFamily: FONT_FAMILY.semiBold,
+    },
+    rightControls: {
+      position: 'absolute',
+      right: 60,
+      top: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
     },
   });
 

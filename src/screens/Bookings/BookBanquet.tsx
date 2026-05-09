@@ -731,7 +731,7 @@ setCharge(totalAmount)
 
           <View
             style={{
-              backgroundColor: colors.card,
+              backgroundColor: colors.surface,
               padding: 10,
               borderRadius: 10,
               borderColor: errors.box ? 'red' : colors.border,
@@ -1219,14 +1219,14 @@ const createStyles = (colors) =>  StyleSheet.create({
     color: colors.text,
     borderRadius: 10,
     fontFamily: FONT_FAMILY.normal,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     borderColor: colors.border,
     borderWidth: 1,
     padding: 10,
     
   },
   dropdown: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     padding: 10,
     paddingVertical: 12,
     borderRadius: 10,

@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 import * as api from "../../util/api";
 import { useQuery } from "@tanstack/react-query";
 import { ENDPOINT } from "../../util/constant";
@@ -37,17 +35,18 @@ const fetchTransactions = async ({ queryKey }:{queryKey:any[]}) => {
   const response = await api.javascriptPost(apiRequestObject);
 
   if (!startDate && !endDate) {
-    let body = {};
-    body.ws_type = ENDPOINT.account_summary;
-    body.member_id = memberId;
+    const summaryBody = {
+      ws_type: ENDPOINT.account_summary,
+      member_id: memberId,
+    };
 
-    const apiRequestObject = {
+    const summaryRequestObject = {
       path: ENDPOINT.account_summary,
-      body: {},
+      body: summaryBody,
       Token: token,
     };
 
-    const data = await api.javascriptGet(apiRequestObject);
+    const data = await api.javascriptGet(summaryRequestObject);
    let newData = {
       ...response,
       closing_balance: data.data.outstanding_amt,

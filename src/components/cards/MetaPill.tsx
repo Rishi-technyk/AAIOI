@@ -9,7 +9,7 @@ type Props = {
 };
 
 const MetaPill: React.FC<Props> = ({ label, value, tone = 'neutral' }) => {
-  const { colors } = useAppTheme();
+  const { colors ,} = useAppTheme();
 
   const palette =
     tone === 'success'
@@ -22,7 +22,7 @@ const MetaPill: React.FC<Props> = ({ label, value, tone = 'neutral' }) => {
 
   return (
     <View style={[styles.pill, { backgroundColor: palette.bg }]}>
-      <Text style={[styles.label, { color: palette.fg }]}>{label}</Text>
+      <Text style={[styles.label, { color: colors.onPrimary }]}>{label}</Text>
       <Text style={[styles.value, { color: palette.fg }]}>{value}</Text>
     </View>
   );
@@ -30,11 +30,12 @@ const MetaPill: React.FC<Props> = ({ label, value, tone = 'neutral' }) => {
 
 const styles = StyleSheet.create({
   pill: {
-    borderRadius: 999,
+    borderRadius: 18,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginRight: 10,
     marginBottom: 10,
+    minWidth: 80,
   },
   label: {
     fontSize: 11,

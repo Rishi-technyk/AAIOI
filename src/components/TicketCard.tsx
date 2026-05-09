@@ -13,7 +13,7 @@ type Props = {
 };
 
 const TicketCard: React.FC<Props> = ({ data, quantity, onChange }) => {
-  const { colors } = useAppTheme();
+  const { colors,resolvedMode } = useAppTheme();
   const styles = React.useMemo(() => createStyles(colors), [colors]);
   const soldOut = Boolean(data?.sold_out);
   const isComplimentary = Number(data?.price || 0) === 0;
@@ -30,7 +30,9 @@ const TicketCard: React.FC<Props> = ({ data, quantity, onChange }) => {
       ]}
     >
       <LinearGradient
-        colors={[`${colors.primary}F0`, `${colors.surface}D9`]}
+                 colors={resolvedMode === 'dark'
+      ? ['#020617', '#0F172A', '#1E293B']
+      : ['#1E293B', '#334155', '#475569']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.hero}

@@ -22,7 +22,7 @@ import { CustomCheckbox } from '../../components/CustomCheckBox';
 import UniversalModal from '../../components/UniversalModal';
 import { useAppAlert } from '../../hooks/useAppAlert';
 import { useAppTheme } from '../../theme/AppThemeProvider';
-import { usePlayers } from '../../services/Activity/FacilityService';
+import { usePlayers, usePlayersQuery } from '../../services/Activity/FacilityService';
 import { AppStackParamList } from '../../navigation/AppDrawer';
 import { RootState } from '../../store/store';
 import { useSelector } from 'react-redux';
@@ -70,6 +70,12 @@ const ChoosePlayer: React.FC<Props> = ({ route, navigation }) => {
     debouncedSearch,
     facility?.id,
     userData,
+  );
+  const { playersQuery: playerLibraryQuery } = usePlayersQuery(
+    userData,
+    false,
+    false,
+    false,
   );
 
   useEffect(() => {
@@ -186,6 +192,15 @@ const ChoosePlayer: React.FC<Props> = ({ route, navigation }) => {
   };
 
   const gameTypes = gameQuery?.data?.data?.gameTypes || [];
+  const dropdownContainerStyle = useMemo(
+    () => ({
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: colors.border,
+    }),
+    [colors.border, colors.surface],
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -224,12 +239,7 @@ const ChoosePlayer: React.FC<Props> = ({ route, navigation }) => {
             ]}
             placeholderStyle={[styles.dropdownPlaceholder, { color: colors.textMuted }]}
             selectedTextStyle={[styles.dropdownValue, { color: colors.text }]}
-            containerStyle={{
-              backgroundColor: colors.surface,
-              borderRadius: 18,
-              borderWidth: 1,
-              borderColor: colors.border,
-            }}
+            containerStyle={dropdownContainerStyle}
             itemTextStyle={{ color: colors.text, fontFamily: FONT_FAMILY.normal }}
             data={gameTypes}
             maxHeight={280}
@@ -273,7 +283,7 @@ const ChoosePlayer: React.FC<Props> = ({ route, navigation }) => {
                 ]}
               >
                 <View style={styles.slotHeader}>
-                  <View style={{ flex: 1 }}>
+                  <View style={styles.flexOne}>
                     <Text style={[styles.slotTitle, { color: colors.text }]}>
                       {moment(item?.day?.session_date).format('ddd, DD MMM YYYY')}
                     </Text>
@@ -325,7 +335,7 @@ const ChoosePlayer: React.FC<Props> = ({ route, navigation }) => {
                           },
                         ]}
                       >
-                        <View style={{ flex: 1 }}>
+                        <View style={styles.flexOne}>
                           <Text style={[styles.playerName, { color: colors.text }]}>
                             {player.DisplayName}
                           </Text>
@@ -472,7 +482,7 @@ const ChoosePlayer: React.FC<Props> = ({ route, navigation }) => {
           },
         ]}
       >
-        <View style={{ flex: 1 }}>
+        <View style={styles.flexOne}>
           <Text style={[styles.footerAmount, { color: colors.text }]}>Rs. {payableAmount}</Text>
           <Text style={[styles.footerMeta, { color: colors.textMuted }]}>
             {slotCount} {slotCount === 1 ? 'slot' : 'slots'} • {selectedPlayerCount} players
@@ -510,6 +520,7 @@ const ChoosePlayer: React.FC<Props> = ({ route, navigation }) => {
           searchPlayer={searchPlayer}
           setSearchPlayer={setSearchPlayer}
           guestQuery={guestQuery}
+          playerLibraryQuery={playerLibraryQuery}
           setSlot={setSlots}
           slots={slots}
           search={search}
@@ -543,6 +554,9 @@ const ChoosePlayer: React.FC<Props> = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  flexOne: {
     flex: 1,
   },
   content: {

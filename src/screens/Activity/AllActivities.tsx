@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import {
   Dimensions,
@@ -23,7 +24,7 @@ import AppAlertModal from '../../components/feedback/AppAlertModal';
 import { useAppAlert } from '../../hooks/useAppAlert';
 import { useAppTheme } from '../../theme/AppThemeProvider';
 import * as api from '../../util/api';
-import { ENDPOINT } from '../../util/constant';
+import { DOMAIN, ENDPOINT } from '../../util/constant';
 import { AppStackParamList } from '../../navigation/AppDrawer';
 import { FONT_FAMILY } from '../../util/colors';
 import { RootState } from '../../store/store';
@@ -31,7 +32,9 @@ import { RootState } from '../../store/store';
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 type Props = NativeStackScreenProps<AppStackParamList, 'AllActivities'>;
 
-const imageBaseUrl = 'https://dynamixclubedepalma.co.in/clubdepalma';
+// const imageBaseUrl = 'https://dynamixclubedepalma.co.in/clubdepalma';
+const imageBaseUrl = DOMAIN.IMG ;
+
 
 const AllActivities: React.FC<Props> = ({ navigation }) => {
   const userData = useSelector((state: RootState) => state.auth);
@@ -188,8 +191,8 @@ const AllActivities: React.FC<Props> = ({ navigation }) => {
               ) : featured.length ? (
                 <>
                   <Carousel
-                    width={sliderWidth - 32}
-                    height={220}
+                    width={sliderWidth - 70}
+                    height={210}
                     data={featured}
                     autoPlay={navigation.isFocused()}
                     autoPlayInterval={3200}
@@ -206,10 +209,8 @@ const AllActivities: React.FC<Props> = ({ navigation }) => {
                           }}
                           style={styles.bannerImage}
                         />
-                        <LinearGradient
-                          colors={['rgba(15,23,42,0.02)', 'rgba(15,23,42,0.78)']}
-                          style={styles.bannerOverlay}
-                        >
+                        
+                          <View     style={styles.bannerOverlay}>
                           <View style={styles.bannerCopy}>
                             <Text style={styles.bannerTitle}>{item?.name}</Text>
                             <Text style={styles.bannerDescription} numberOfLines={2}>
@@ -219,7 +220,7 @@ const AllActivities: React.FC<Props> = ({ navigation }) => {
                           <View style={styles.bannerAction}>
                             <Text style={styles.bannerActionText}>Book now</Text>
                           </View>
-                        </LinearGradient>
+                          </View>
                       </Pressable>
                     )}
                   />
@@ -231,7 +232,7 @@ const AllActivities: React.FC<Props> = ({ navigation }) => {
                           styles.paginationDot,
                           {
                             backgroundColor:
-                              currentIndex === index ? colors.primary : colors.border,
+                              currentIndex === index ? colors.secondary : colors.border,
                           },
                         ]}
                       />
@@ -320,7 +321,8 @@ const styles = StyleSheet.create({
   bannerOverlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'space-between',
-    padding: 18,
+      flex:1,
+      padding:18
   },
   bannerCopy: {
     marginTop: 'auto',

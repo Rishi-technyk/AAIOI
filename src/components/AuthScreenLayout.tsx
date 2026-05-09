@@ -60,10 +60,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({
             style={{ position: "absolute" }}
           >
             <Path
-              d={`M 0 ${height * 0.45}
-              C ${width * 0.5} ${height * 0.5}, 
-                ${width * 0.2} ${height * 0.25}, 
-                ${width} ${height * 0.2}
+              d={`M 0 ${height * 1.8}
+              C ${width * 0.0} ${height * 0.1}, 
+                ${width * 0.9} ${height * 0.90}, 
+                ${width } ${height * 0.04}
               L ${width} ${height} 
               L 0 ${height} Z`}
               fill={colors.surfaceAlt}
@@ -220,13 +220,13 @@ const createStyles = (colors: {
     paddingBottom: 10,
     textAlign: 'center',
     paddingVertical: 20,
-    fontFamily: FONT_FAMILY.light,
-    color: colors.onPrimary,
+    fontFamily: FONT_FAMILY.bold,
+    color: colors.text,
   },
   versionText: {
     fontSize: 14,
     fontFamily: FONT_FAMILY.light,
-    color: colors.surfaceAlt,
+    color: colors.text,
 
   },
   dividor: {

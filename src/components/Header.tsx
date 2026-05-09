@@ -70,8 +70,7 @@ const Header: React.FC<HeaderProps> = ({
               onPress={() => setVisible(true)}
             />
           )}
-
-          {/* Download Modal */}
+        
           <DownloadModal
             visible={visible}
             setVisible={setVisible}
@@ -109,6 +108,7 @@ const createStyles = (colors: { primary: string; onPrimary: string }) =>
     paddingBottom: 10,
     flexDirection: "row",
     justifyContent: "space-between",
+    // backgroundColor:'pink',
     elevation: 5,
   },
   button: {
@@ -125,6 +125,8 @@ const createStyles = (colors: { primary: string; onPrimary: string }) =>
   rightControls: {
     flexDirection: "row",
     alignItems: "center",
+    // backgroundColor:'red',
+    justifyContent:'flex-end'
   },
 });
 

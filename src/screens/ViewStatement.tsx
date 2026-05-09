@@ -28,6 +28,7 @@ import { RootState } from '../store/store';
 import { ScrollView } from 'react-native-gesture-handler';
 import AppAlertModal from '../components/feedback/AppAlertModal';
 import { useAppAlert } from '../hooks/useAppAlert';
+import LinearGradient from 'react-native-linear-gradient';
 
 const initialFilters = {
   startDate: null,
@@ -46,7 +47,7 @@ const currency = value => `₹${Number(value || 0).toFixed(2)}`;
 type Props = NativeStackScreenProps<AppStackParamList,'ViewStatement'>;
 const ViewStatement:React.FC<Props> = ({ navigation }) => {
   const userData = useSelector((state:RootState) => state.auth);
-  const { colors } = useAppTheme();
+  const { colors, resolvedMode } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [filters, setFilters] = useState(initialFilters);
@@ -222,9 +223,9 @@ const ViewStatement:React.FC<Props> = ({ navigation }) => {
         isMulti={true}
         isDawnload={false}
       >
-        {/* <View style={{ marginLeft: 10 }}> */}
+        <View style={styles.rightControls}>
           <AIFilter onApply={handleAskAi} loading={aiLoading} title="Ask AI" />
-        {/* </View> */}
+        </View>
       </Header>
 
       <ScrollView
@@ -239,7 +240,14 @@ const ViewStatement:React.FC<Props> = ({ navigation }) => {
           />
         }
       >
-        <View style={styles.heroCard}>
+        <LinearGradient
+             colors={resolvedMode === 'dark'
+  ? ['#020617', '#0F172A', '#1E293B']
+  : ['#1E293B', '#334155', '#475569']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+               style={styles.heroCard}
+      >
           <View style={styles.heroTop}>
             <View>
               <Text style={styles.eyebrow}>Current Outstanding</Text>
@@ -275,7 +283,7 @@ const ViewStatement:React.FC<Props> = ({ navigation }) => {
               <Text style={styles.heroAmount}>{currency(summary.bill_amount)}</Text>
             </View>
           </View>
-        </View>
+        </LinearGradient>
 
         <View style={styles.analyticsRow}>
           <View style={styles.metricCard}>
@@ -546,7 +554,7 @@ const createStyles = colors =>
       borderRadius: 14,
     },
     billButtonText: {
-      color: colors.primary,
+      color: colors.text,
       fontFamily: FONT_FAMILY.bold,
       fontSize: 13,
     },
@@ -826,6 +834,14 @@ const createStyles = colors =>
     secondaryActionText: {
       color: colors.text,
       fontFamily: FONT_FAMILY.semiBold,
+    },
+      rightControls: {
+      position: 'absolute',
+      right: 60,
+      top: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
     },
   });
 

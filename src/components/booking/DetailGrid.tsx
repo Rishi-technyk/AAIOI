@@ -35,7 +35,7 @@ const DetailGrid: React.FC<Props> = ({ items, columns = 2 }) => {
             style={[
               styles.value,
               {
-                color: item.highlight ? colors.primary : colors.text,
+                color: item.highlight ? colors.success : colors.text,
               },
             ]}
           >

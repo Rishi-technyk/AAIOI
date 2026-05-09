@@ -41,10 +41,13 @@ target 'Technyk' do
     )
 
     installer.pods_project.targets.each do |target|
+      
     target.build_configurations.each do |config|
       # Use GNU++20 to support unordered_map::contains
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = ''
       config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++20'
       config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
+      config.build_settings['SWIFT_ENABLE_EXPLICIT_MODULES'] = 'NO'
 
       # Remove duplicate linker flags (RN quirk)
       flags = config.build_settings['OTHER_LDFLAGS']

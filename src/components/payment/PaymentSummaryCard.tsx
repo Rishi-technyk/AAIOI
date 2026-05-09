@@ -32,7 +32,7 @@ const PaymentSummaryCard: React.FC<Props> = ({ status, items }) => {
             style={[
               styles.value,
               {
-                color: item.emphasize ? colors.primary : colors.text,
+                color: item.emphasize ? colors.success : colors.text,
               },
             ]}
           >

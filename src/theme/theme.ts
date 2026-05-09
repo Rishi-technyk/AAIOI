@@ -72,7 +72,7 @@ export const darkColors: AppColors = {
   secondary: withFallback(THEME_DARK_SECONDARY, '#8bd44f'),
   background: withFallback(THEME_DARK_BACKGROUND, '#020617'),
   surface: withFallback(THEME_DARK_SURFACE, '#111827'),
-  surfaceAlt: withFallback(THEME_DARK_SURFACE_ALT, '#767c87'),
+  surfaceAlt: withFallback(THEME_DARK_SURFACE_ALT, '#334155'),
   text: withFallback(THEME_DARK_TEXT, '#f8fafc'),
   textMuted: withFallback(THEME_DARK_TEXT_MUTED, '#94a3b8'),
   border: withFallback(THEME_DARK_BORDER, '#334155'),

@@ -3,6 +3,7 @@ import {
   FlatList,
   LayoutAnimation,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -21,11 +22,52 @@ import { ENDPOINT } from '../../util/constant';
 import { javascriptPost } from '../../util/api';
 import { FONT_FAMILY } from '../../util/colors';
 
+type Player = {
+  id?: number | string;
+  DisplayName?: string;
+  MemberID?: string | null;
+  charge?: number | string;
+  occupant_id?: number | string;
+  mobile?: string;
+  email?: string;
+  is_favorite?: number | string;
+  played_count?: number | string;
+  last_played_at?: string | null;
+  source?: string;
+};
+
+const playerKey = (item: Player) =>
+  String(
+    item?.MemberID ||
+      item?.mobile ||
+      item?.email ||
+      item?.DisplayName ||
+      item?.id ||
+      '',
+  )
+    .trim()
+    .toLowerCase();
+
+const dedupePlayers = (players: Player[]) => {
+  const seen = new Set<string>();
+
+  return players.filter(item => {
+    const key = playerKey(item);
+    if (!key || seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+};
+
 const PickPlayers: React.FC<any> = ({
   searchPlayer = false,
   setSearchPlayer,
   selectedGameType,
   guestQuery,
+  playerLibraryQuery,
   selectedSlot,
   setSelectedSlot,
   setSlot,
@@ -36,7 +78,7 @@ const PickPlayers: React.FC<any> = ({
   const userData = useSelector((state: RootState) => state.auth);
   const { colors } = useAppTheme();
   const { alertState, showAlert, hideAlert } = useAppAlert();
-  const [selectedPlayers, setSelectedPlayers] = useState<any[]>([]);
+  const [selectedPlayers, setSelectedPlayers] = useState<Player[]>([]);
   const [isGuestFormVisible, setIsGuestFormVisible] = useState(false);
   const [addNewPlayer, setAddNewPlayer] = useState({
     name: '',
@@ -44,29 +86,100 @@ const PickPlayers: React.FC<any> = ({
     mobile: '',
   });
   const [savingGuest, setSavingGuest] = useState(false);
+  const styles = useMemo(() => createStyles(), []);
 
   useEffect(() => {
     setSelectedPlayers(Array.isArray(selectedSlot?.players) ? selectedSlot.players : []);
   }, [selectedSlot]);
 
   const maxPlayers = Number(selectedGameType?.no_of_players || 0);
-  const availablePlayers = guestQuery?.data?.data?.data || [];
-  const isSelectionComplete = !!maxPlayers && selectedPlayers.length === maxPlayers;
+  const availablePlayers = Array.isArray(guestQuery?.data?.data?.data)
+    ? guestQuery.data.data.data
+    : [];
+  const playerLibrary = useMemo(() => {
+    const libraryResponse = playerLibraryQuery?.data || {};
+    const savedPlayers = Array.isArray(libraryResponse?.data) ? libraryResponse.data : [];
+    const favoritePlayers = Array.isArray(libraryResponse?.favorites)
+      ? libraryResponse.favorites
+      : [];
+    const recentPlayers = Array.isArray(libraryResponse?.recent_players)
+      ? libraryResponse.recent_players
+      : [];
+    const guestPlayers = Array.isArray(libraryResponse?.guest_players)
+      ? libraryResponse.guest_players
+      : savedPlayers.filter((item: Player) => Number(item?.occupant_id) === 2);
 
+    return {
+      savedPlayers,
+      favoritePlayers,
+      recentPlayers,
+      guestPlayers,
+    };
+  }, [playerLibraryQuery?.data]);
+
+  const isSelectionComplete = !!maxPlayers && selectedPlayers.length === maxPlayers;
   const guestSummary = useMemo(
     () =>
       selectedPlayers.reduce((total, item) => total + Number(item?.charge || 0), 0),
     [selectedPlayers],
   );
 
+  const selectedKeys = useMemo(
+    () => new Set(selectedPlayers.map(player => playerKey(player))),
+    [selectedPlayers],
+  );
+
+  const suggestedSections = useMemo(() => {
+    const favorites = dedupePlayers(
+      playerLibrary.favoritePlayers.filter(item => !selectedKeys.has(playerKey(item))),
+    );
+    const recent = dedupePlayers(
+      playerLibrary.recentPlayers.filter(
+        item =>
+          !selectedKeys.has(playerKey(item)) &&
+          !favorites.some(favorite => playerKey(favorite) === playerKey(item)),
+      ),
+    );
+    const guests = dedupePlayers(
+      playerLibrary.guestPlayers.filter(
+        item =>
+          !selectedKeys.has(playerKey(item)) &&
+          !favorites.some(favorite => playerKey(favorite) === playerKey(item)) &&
+          !recent.some(recentItem => playerKey(recentItem) === playerKey(item)),
+      ),
+    );
+
+    return [
+      {
+        key: 'favorites',
+        title: 'Favorite players',
+        subtitle: 'Fastest picks from your saved favorites.',
+        data: favorites.slice(0, 6),
+      },
+      {
+        key: 'recent',
+        title: 'Previously played',
+        subtitle: 'Players from your recent activity bookings.',
+        data: recent.slice(0, 6),
+      },
+      {
+        key: 'guests',
+        title: 'Guest players',
+        subtitle: 'Saved non-member players ready for reuse.',
+        data: guests.slice(0, 8),
+      },
+    ].filter(section => section.data.length);
+  }, [playerLibrary, selectedKeys]);
+
   const closeModal = () => {
     setSelectedPlayers([]);
     setSelectedSlot(null);
     setSearch('');
     setSearchPlayer(false);
+    setIsGuestFormVisible(false);
   };
 
-  const handlePlayerSelect = (item: any) => {
+  const handlePlayerSelect = (item: Player) => {
     if (!selectedGameType) {
       showAlert({
         title: 'Game type required',
@@ -89,11 +202,12 @@ const PickPlayers: React.FC<any> = ({
     setSelectedPlayers(prev => [
       {
         DisplayName: item.DisplayName,
-        MemberID: item.MemberID,
-        charge: item.charge || 0,
-        occupant_id: item.occupant_id || '1',
+        MemberID: item.MemberID || null,
+        charge: Number(item.charge || 0),
+        occupant_id: Number(item.occupant_id || 1),
         mobile: item.mobile,
         email: item.email,
+        is_favorite: Number(item.is_favorite || 0),
       },
       ...prev,
     ]);
@@ -153,6 +267,7 @@ const PickPlayers: React.FC<any> = ({
         setAddNewPlayer({ name: '', email: '', mobile: '' });
         setIsGuestFormVisible(false);
         guestQuery?.refetch?.();
+        playerLibraryQuery?.refetch?.();
         showAlert({
           title: 'Guest added',
           message: response?.message || 'The guest player was saved successfully.',
@@ -162,10 +277,7 @@ const PickPlayers: React.FC<any> = ({
       }
 
       if (response?.message && typeof response.message === 'object') {
-        const firstError = Object.values(response.message)
-          .flat()
-          .find(Boolean);
-
+        const firstError = Object.values(response.message).flat().find(Boolean);
         showAlert({
           title: 'Unable to save guest',
           message: String(firstError || 'Please review the guest details and try again.'),
@@ -210,13 +322,89 @@ const PickPlayers: React.FC<any> = ({
     closeModal();
   };
 
-  const renderMembers = ({ item }: { item: any }) => {
-    const alreadySelected = selectedPlayers.some(
-      player =>
-        player?.DisplayName === item?.DisplayName && player?.MemberID === item?.MemberID,
-    );
+  const renderSelectedPlayer = (item: Player, index: number) => (
+    <View
+      key={`${playerKey(item)}-${index}`}
+      style={[
+        styles.selectedPlayerCard,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+        },
+      ]}
+    >
+      <View style={styles.flexOne}>
+        <Text style={[styles.selectedPlayerName, { color: colors.text }]}>
+          {item.DisplayName}
+        </Text>
+        <Text style={[styles.selectedPlayerMeta, { color: colors.textMuted }]}>
+          {Number(item.occupant_id) === 2 ? 'Guest player' : item.MemberID || 'Member player'}
+        </Text>
+      </View>
+      <Text style={[styles.selectedPlayerCharge, { color: colors.primary }]}>
+        Rs. {Number(item?.charge || 0).toFixed(0)}
+      </Text>
+      <Pressable onPress={() => handleDeletePlayer(index)} hitSlop={10}>
+        <Icon name="circle-with-minus" size={18} color={colors.danger} />
+      </Pressable>
+    </View>
+  );
 
-    if (alreadySelected) {
+  const renderSuggestionCard = (item: Player) => {
+    const badgeText =
+      item.source === 'favorite'
+        ? 'Favorite'
+        : item.source === 'recent'
+        ? `${Number(item.played_count || 1)} plays`
+        : Number(item.occupant_id) === 2
+        ? 'Guest'
+        : 'Saved';
+
+    return (
+      <Pressable
+        key={`${item.source}-${playerKey(item)}`}
+        onPress={() => handlePlayerSelect(item)}
+        style={[
+          styles.suggestionCard,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        <View style={styles.suggestionHeader}>
+          <View style={styles.flexOne}>
+            <Text style={[styles.memberName, { color: colors.text }]}>
+              {item.DisplayName}
+            </Text>
+            <Text style={[styles.memberMeta, { color: colors.textMuted }]}>
+              {Number(item.occupant_id) === 2
+                ? 'Guest player'
+                : item.MemberID || 'Member player'}
+            </Text>
+          </View>
+          <View style={[styles.badge, { backgroundColor: colors.surfaceAlt }]}>
+            <Text style={[styles.badgeText, { color: colors.text }]}>
+              {badgeText}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.suggestionFooter}>
+          <Text style={[styles.memberPrice, { color: colors.primary }]}>
+            Rs. {Number(item?.charge || 0).toFixed(0)}
+          </Text>
+          <View style={styles.addInline}>
+            <Text style={[styles.addInlineText, { color: colors.primary }]}>Add</Text>
+            <Icon name="plus" size={16} color={colors.primary} />
+          </View>
+        </View>
+      </Pressable>
+    );
+  };
+
+  const renderMembers = ({ item }: { item: Player }) => {
+    if (selectedKeys.has(playerKey(item))) {
       return null;
     }
 
@@ -231,12 +419,12 @@ const PickPlayers: React.FC<any> = ({
           },
         ]}
       >
-        <View style={{ flex: 1 }}>
+        <View style={styles.flexOne}>
           <Text style={[styles.memberName, { color: colors.text }]}>
             {item.DisplayName}
           </Text>
           <Text style={[styles.memberMeta, { color: colors.textMuted }]}>
-            {item.occupant_id === 2 ? 'Non-member' : item.MemberID || 'Member'}
+            {Number(item.occupant_id) === 2 ? 'Guest player' : item.MemberID || 'Member player'}
           </Text>
         </View>
         <View style={styles.memberPriceWrap}>
@@ -249,6 +437,8 @@ const PickPlayers: React.FC<any> = ({
     );
   };
 
+  const showSuggestions = !isGuestFormVisible && !search.trim();
+
   return (
     <UniversalModal
       visible={searchPlayer}
@@ -260,7 +450,7 @@ const PickPlayers: React.FC<any> = ({
         }
       }}
     >
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <View
           style={[
             styles.summaryCard,
@@ -271,12 +461,12 @@ const PickPlayers: React.FC<any> = ({
           ]}
         >
           <View style={styles.summaryHeader}>
-            <View>
+            <View style={styles.flexOne}>
               <Text style={[styles.summaryTitle, { color: colors.text }]}>
                 Player selection
               </Text>
               <Text style={[styles.summarySubtitle, { color: colors.textMuted }]}>
-                {selectedPlayers.length}/{maxPlayers || 0} selected
+                {selectedPlayers.length}/{maxPlayers || 0} selected for this slot
               </Text>
             </View>
             {isSelectionComplete ? (
@@ -307,37 +497,11 @@ const PickPlayers: React.FC<any> = ({
 
           {selectedPlayers.length ? (
             <View style={styles.selectedList}>
-              {selectedPlayers.map((item, index) => (
-                <View
-                  key={`${item?.MemberID || item?.DisplayName}-${index}`}
-                  style={[
-                    styles.selectedPlayerCard,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                    },
-                  ]}
-                >
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.selectedPlayerName, { color: colors.text }]}>
-                      {item.DisplayName}
-                    </Text>
-                    <Text style={[styles.selectedPlayerMeta, { color: colors.textMuted }]}>
-                      {item.occupant_id === 2 ? 'Non-member' : item.MemberID}
-                    </Text>
-                  </View>
-                  <Text style={[styles.selectedPlayerCharge, { color: colors.primary }]}>
-                    Rs. {Number(item?.charge || 0).toFixed(0)}
-                  </Text>
-                  <Pressable onPress={() => handleDeletePlayer(index)} hitSlop={10}>
-                    <Icon name="circle-with-minus" size={18} color={colors.danger} />
-                  </Pressable>
-                </View>
-              ))}
+              {selectedPlayers.map((item, index) => renderSelectedPlayer(item, index))}
             </View>
           ) : (
             <Text style={[styles.emptySelection, { color: colors.textMuted }]}>
-              Search members or create a guest player to complete this slot.
+              Open suggestions below to quickly add favorite, recent, or guest players for this slot.
             </Text>
           )}
         </View>
@@ -358,7 +522,7 @@ const PickPlayers: React.FC<any> = ({
                 { color: !isGuestFormVisible ? colors.onPrimary : colors.text },
               ]}
             >
-              Search member
+              Select players
             </Text>
           </Pressable>
           <Pressable
@@ -393,6 +557,9 @@ const PickPlayers: React.FC<any> = ({
           >
             <Text style={[styles.formTitle, { color: colors.text }]}>
               Guest player details
+            </Text>
+            <Text style={[styles.formSubtitle, { color: colors.textMuted }]}>
+              Create a guest once and it will also appear in your future booking suggestions.
             </Text>
             <TextInput
               value={addNewPlayer.name}
@@ -446,7 +613,7 @@ const PickPlayers: React.FC<any> = ({
           <>
             <TextInput
               value={search}
-              placeholder="Search by member name or ID"
+              placeholder="Search by member name or member ID"
               placeholderTextColor={colors.textMuted}
               style={[
                 styles.input,
@@ -459,24 +626,61 @@ const PickPlayers: React.FC<any> = ({
               ]}
               onChangeText={text => setSearch(text)}
             />
-            <FlatList
-              data={availablePlayers}
-              renderItem={renderMembers}
-              keyExtractor={(item, index) =>
-                String(item?.MemberID || item?.DisplayName || index)
-              }
-              ListEmptyComponent={
-                <Text style={[styles.emptyResults, { color: colors.textMuted }]}>
-                  {guestQuery?.isLoading
-                    ? 'Searching players...'
-                    : 'No matching players found.'}
-                </Text>
-              }
-              contentContainerStyle={styles.listContent}
-            />
+
+            {showSuggestions ? (
+              <View style={styles.sectionList}>
+                {suggestedSections.length ? (
+                  suggestedSections.map(section => (
+                    <View key={section.key} style={styles.sectionBlock}>
+                      <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                        {section.title}
+                      </Text>
+                      <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>
+                        {section.subtitle}
+                      </Text>
+                      <View style={styles.suggestionList}>
+                        {section.data.map(renderSuggestionCard)}
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <View
+                    style={[
+                      styles.formCard,
+                      {
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.formTitle, { color: colors.text }]}>
+                      No quick suggestions yet
+                    </Text>
+                    <Text style={[styles.formSubtitle, { color: colors.textMuted }]}>
+                      Search members above or add a guest player to start building smarter suggestions here.
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <FlatList
+                data={availablePlayers}
+                renderItem={renderMembers}
+                keyExtractor={(item, index) =>
+                  String(item?.MemberID || item?.DisplayName || item?.mobile || index)
+                }
+                scrollEnabled={false}
+                ListEmptyComponent={
+                  <Text style={[styles.emptyResults, { color: colors.textMuted }]}>
+                    {guestQuery?.isLoading ? 'Searching players...' : 'No matching players found.'}
+                  </Text>
+                }
+                contentContainerStyle={styles.listContent}
+              />
+            )}
           </>
         )}
-      </View>
+      </ScrollView>
 
       <AppAlertModal
         visible={alertState.visible}
@@ -499,154 +703,217 @@ const PickPlayers: React.FC<any> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  content: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
-  summaryCard: {
-    borderWidth: 1,
-    borderRadius: 22,
-    padding: 16,
-  },
-  summaryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontFamily: FONT_FAMILY.bold,
-  },
-  summarySubtitle: {
-    marginTop: 4,
-    fontSize: 13,
-    fontFamily: FONT_FAMILY.normal,
-  },
-  metricsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 14,
-  },
-  metricChip: {
-    flex: 1,
-    borderRadius: 16,
-    padding: 12,
-  },
-  metricValue: {
-    fontSize: 14,
-    fontFamily: FONT_FAMILY.bold,
-  },
-  metricLabel: {
-    marginTop: 4,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    fontFamily: FONT_FAMILY.normal,
-  },
-  selectedList: {
-    marginTop: 14,
-    gap: 10,
-  },
-  selectedPlayerCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 12,
-    gap: 10,
-  },
-  selectedPlayerName: {
-    fontSize: 14,
-    fontFamily: FONT_FAMILY.semiBold,
-  },
-  selectedPlayerMeta: {
-    marginTop: 4,
-    fontSize: 12,
-    fontFamily: FONT_FAMILY.normal,
-  },
-  selectedPlayerCharge: {
-    fontSize: 13,
-    fontFamily: FONT_FAMILY.semiBold,
-  },
-  emptySelection: {
-    marginTop: 16,
-    fontSize: 13,
-    lineHeight: 19,
-    fontFamily: FONT_FAMILY.normal,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 16,
-    marginBottom: 12,
-  },
-  tabButton: {
-    flex: 1,
-    borderRadius: 16,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  tabLabel: {
-    fontSize: 13,
-    fontFamily: FONT_FAMILY.semiBold,
-  },
-  formCard: {
-    borderWidth: 1,
-    borderRadius: 22,
-    padding: 16,
-  },
-  formTitle: {
-    fontSize: 16,
-    fontFamily: FONT_FAMILY.bold,
-    marginBottom: 12,
-  },
-  input: {
-    minHeight: 52,
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    fontSize: 14,
-    fontFamily: FONT_FAMILY.normal,
-    marginBottom: 12,
-  },
-  searchInput: {
-    marginBottom: 6,
-  },
-  listContent: {
-    paddingBottom: 24,
-  },
-  memberCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 14,
-    marginBottom: 10,
-  },
-  memberName: {
-    fontSize: 14,
-    fontFamily: FONT_FAMILY.semiBold,
-  },
-  memberMeta: {
-    marginTop: 4,
-    fontSize: 12,
-    fontFamily: FONT_FAMILY.normal,
-  },
-  memberPriceWrap: {
-    alignItems: 'flex-end',
-    gap: 4,
-  },
-  memberPrice: {
-    fontSize: 13,
-    fontFamily: FONT_FAMILY.bold,
-  },
-  emptyResults: {
-    textAlign: 'center',
-    fontSize: 13,
-    fontFamily: FONT_FAMILY.normal,
-    marginTop: 28,
-  },
-});
+const createStyles = () =>
+  StyleSheet.create({
+    content: {
+      paddingHorizontal: 16,
+      paddingBottom: 20,
+    },
+    flexOne: {
+      flex: 1,
+    },
+    summaryCard: {
+      borderWidth: 1,
+      borderRadius: 22,
+      padding: 16,
+    },
+    summaryHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: 10,
+    },
+    summaryTitle: {
+      fontSize: 18,
+      fontFamily: FONT_FAMILY.bold,
+    },
+    summarySubtitle: {
+      marginTop: 4,
+      fontSize: 13,
+      fontFamily: FONT_FAMILY.normal,
+    },
+    metricsRow: {
+      flexDirection: 'row',
+      gap: 8,
+      marginTop: 14,
+    },
+    metricChip: {
+      flex: 1,
+      borderRadius: 16,
+      padding: 12,
+    },
+    metricValue: {
+      fontSize: 14,
+      fontFamily: FONT_FAMILY.bold,
+    },
+    metricLabel: {
+      marginTop: 4,
+      fontSize: 11,
+      textTransform: 'uppercase',
+      fontFamily: FONT_FAMILY.normal,
+    },
+    selectedList: {
+      marginTop: 14,
+      gap: 10,
+    },
+    selectedPlayerCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderRadius: 16,
+      padding: 12,
+      gap: 10,
+    },
+    selectedPlayerName: {
+      fontSize: 14,
+      fontFamily: FONT_FAMILY.semiBold,
+    },
+    selectedPlayerMeta: {
+      marginTop: 4,
+      fontSize: 12,
+      fontFamily: FONT_FAMILY.normal,
+    },
+    selectedPlayerCharge: {
+      fontSize: 13,
+      fontFamily: FONT_FAMILY.semiBold,
+    },
+    emptySelection: {
+      marginTop: 16,
+      fontSize: 13,
+      lineHeight: 19,
+      fontFamily: FONT_FAMILY.normal,
+    },
+    tabRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: 16,
+      marginBottom: 12,
+    },
+    tabButton: {
+      flex: 1,
+      borderRadius: 16,
+      paddingVertical: 12,
+      alignItems: 'center',
+    },
+    tabLabel: {
+      fontSize: 13,
+      fontFamily: FONT_FAMILY.semiBold,
+    },
+    formCard: {
+      borderWidth: 1,
+      borderRadius: 22,
+      padding: 16,
+    },
+    formTitle: {
+      fontSize: 16,
+      fontFamily: FONT_FAMILY.bold,
+      marginBottom: 6,
+    },
+    formSubtitle: {
+      fontSize: 13,
+      fontFamily: FONT_FAMILY.normal,
+      lineHeight: 19,
+      marginBottom: 14,
+    },
+    input: {
+      minHeight: 52,
+      borderRadius: 16,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      fontSize: 14,
+      fontFamily: FONT_FAMILY.normal,
+      marginBottom: 12,
+    },
+    searchInput: {
+      marginBottom: 10,
+    },
+    listContent: {
+      paddingBottom: 24,
+    },
+    memberCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderRadius: 18,
+      padding: 14,
+      marginBottom: 10,
+    },
+    memberName: {
+      fontSize: 14,
+      fontFamily: FONT_FAMILY.semiBold,
+    },
+    memberMeta: {
+      marginTop: 4,
+      fontSize: 12,
+      fontFamily: FONT_FAMILY.normal,
+    },
+    memberPriceWrap: {
+      alignItems: 'flex-end',
+      gap: 4,
+    },
+    memberPrice: {
+      fontSize: 13,
+      fontFamily: FONT_FAMILY.bold,
+    },
+    emptyResults: {
+      textAlign: 'center',
+      fontSize: 13,
+      fontFamily: FONT_FAMILY.normal,
+      marginTop: 28,
+    },
+    sectionList: {
+      gap: 16,
+      paddingBottom: 12,
+    },
+    sectionBlock: {
+      gap: 10,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontFamily: FONT_FAMILY.bold,
+    },
+    sectionSubtitle: {
+      fontSize: 12,
+      fontFamily: FONT_FAMILY.normal,
+      lineHeight: 18,
+    },
+    suggestionList: {
+      gap: 10,
+    },
+    suggestionCard: {
+      borderWidth: 1,
+      borderRadius: 18,
+      padding: 14,
+    },
+    suggestionHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 10,
+    },
+    badge: {
+      paddingHorizontal: 10,
+      paddingVertical: 7,
+      borderRadius: 999,
+    },
+    badgeText: {
+      fontSize: 11,
+      fontFamily: FONT_FAMILY.semiBold,
+    },
+    suggestionFooter: {
+      marginTop: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    addInline: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    addInlineText: {
+      fontSize: 12,
+      fontFamily: FONT_FAMILY.semiBold,
+    },
+  });
 
 export default PickPlayers;

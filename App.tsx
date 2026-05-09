@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
+  StyleSheet,
   StatusBar,
   Platform,
   UIManager,
@@ -19,11 +20,21 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { navigationRef } from './src/navigation/RootNavigation';
 import { GestureHandlerRootView, TextInput } from 'react-native-gesture-handler';
 import { AppThemeProvider, useAppTheme } from './src/theme/AppThemeProvider';
+import SplashOverlay from './src/components/SplashOverlay';
 
 const client = new QueryClient();
 
 const ApplicationShell: React.FC = () => {
   const { colors, navigationTheme, paperTheme, resolvedMode } = useAppTheme();
+  const [showSplash, setShowSplash] = useState(true);
+  const gestureStyle = React.useMemo(
+    () => [appStyles.flexOne, { backgroundColor: colors.background }],
+    [colors.background],
+  );
+  const safeAreaStyle = React.useMemo(
+    () => [appStyles.flexOne, { backgroundColor: colors.primary }],
+    [colors.primary],
+  );
 
   const customTextProps = {
     style: {
@@ -77,7 +88,7 @@ const ApplicationShell: React.FC = () => {
         offset={50}
         successColor={colors.success}
         dangerColor={colors.danger}
-        style={{ borderRadius: 30 }}
+        style={appStyles.toast}
         successIcon={
           <Icon
             name="checkmark-done-circle-outline"
@@ -89,15 +100,16 @@ const ApplicationShell: React.FC = () => {
         <QueryClientProvider client={client}>
           <NavigationContainer ref={navigationRef} theme={navigationTheme}>
             <SafeAreaProvider>
-              <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
+              <GestureHandlerRootView style={gestureStyle}>
                 <SafeAreaView
-                  style={{ flex: 1, backgroundColor: colors.primary }}
+                  style={safeAreaStyle}
                   edges={Platform.OS === 'android' ? ['top', 'bottom'] : ['top']}
                 >
                   <PaperProvider theme={paperTheme}>
                     <BaseContainer />
                   </PaperProvider>
                 </SafeAreaView>
+                <SplashOverlay visible={showSplash} onFinish={() => setShowSplash(false)} />
               </GestureHandlerRootView>
             </SafeAreaProvider>
           </NavigationContainer>
@@ -119,5 +131,14 @@ const Application: React.FC = () => (
 
 export default Application;
 
-// 4321123
-//temp@1234
+const appStyles = StyleSheet.create({
+  flexOne: {
+    flex: 1,
+  },
+  toast: {
+    borderRadius: 30,
+  },
+});
+
+// O-0818
+//Temp@1234

@@ -1,17 +1,25 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
   Image,
+  Pressable,
+  RefreshControl,
   StyleSheet,
   Text,
-  TouchableOpacity,
+  TextInput,
   View,
 } from 'react-native';
-import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
 import LinearGradient from 'react-native-linear-gradient';
+import { createShimmerPlaceholder } from 'react-native-shimmer-placeholder';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSelector } from 'react-redux';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+
 import Header from '../../components/Header';
+import BookingHeroCard from '../../components/booking/BookingHeroCard';
+import EmptyStateCard from '../../components/booking/EmptyStateCard';
+import AppAlertModal from '../../components/feedback/AppAlertModal';
+import { useAppAlert } from '../../hooks/useAppAlert';
 import { javascriptGet } from '../../util/api';
 import { ENDPOINT } from '../../util/constant';
 import { AppStackParamList } from '../../navigation/AppDrawer';
@@ -20,16 +28,40 @@ import { FONT_FAMILY } from '../../util/colors';
 import { useAppTheme } from '../../theme/AppThemeProvider';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ClubMenu'>;
+type MenuItem = {
+  id?: string | number;
+  name?: string;
+  subTitle?: string;
+  subtitle?: string;
+  description?: string;
+  icon?: string;
+  icon_url?: string;
+  navigate?: string;
+  data?: string;
+  cta_label?: string;
+  module_type?: string;
+};
+
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
 const ClubMenu: React.FC<Props> = ({ navigation }) => {
   const userData = useSelector((state: RootState) => state.auth);
   const { colors } = useAppTheme();
-  const styles = createStyles(colors);
-  const [menus, setMenus] = useState<any[]>([]);
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { alertState, hideAlert, showAlert } = useAppAlert();
+  const [menus, setMenus] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [meta, setMeta] = useState<{ total_menus?: number; menus_with_icons?: number }>({});
 
-  const fetchMenus = useCallback(async () => {
+  const fetchMenus = useCallback(async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const response = await javascriptGet({
         path: ENDPOINT.club_menu,
@@ -37,80 +69,214 @@ const ClubMenu: React.FC<Props> = ({ navigation }) => {
         body: {},
       });
 
-      if (response.status) {
-        setMenus(response.data);
+      if (response?.status) {
+        setMenus(Array.isArray(response?.data) ? response.data : []);
+        setMeta(response?.meta || {});
+        return;
       }
+
+      showAlert({
+        title: 'Unable to load menus',
+        message: response?.message || 'Please try again shortly.',
+        tone: 'danger',
+      });
     } catch (error) {
-      console.log('Menu fetch error', error);
+      showAlert({
+        title: 'Unable to load menus',
+        message: 'Something went wrong while fetching the club menu.',
+        tone: 'danger',
+      });
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [userData.token]);
+  }, [showAlert, userData.token]);
 
   useEffect(() => {
     fetchMenus();
   }, [fetchMenus]);
 
-  const renderMenuCard = ({ item }: any) => (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={() =>
-        navigation.navigate(item.navigate, {
-          url: item.data,
-          name: item.name,
-        })
-      }
-      style={styles.card}
-    >
-      <View style={styles.iconWrap}>
-        <Image
-          width={36}
-          height={36}
-          source={{
-            uri: `https://club26.org/mobileAPI/icons/${item.icon}`,
-          }}
-        />
-      </View>
+  const filteredMenus = useMemo(() => {
+    const keyword = searchQuery.trim().toLowerCase();
+    if (!keyword) {
+      return menus;
+    }
 
-      <View style={styles.textWrap}>
-        <Text style={styles.title}>{item.name}</Text>
-        {item.subTitle ? <Text style={styles.subtitle}>{item.subTitle}</Text> : null}
-      </View>
-    </TouchableOpacity>
-  );
+    return menus.filter(item =>
+      [item.name, item.subtitle, item.subTitle, item.description, item.module_type]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(keyword),
+    );
+  }, [menus, searchQuery]);
 
-  const renderSkeleton = () => (
-    <FlatList
-      data={[1, 1, 1, 1, 1, 1]}
-      keyExtractor={(_, index) => `skeleton-${index}`}
-      renderItem={() => (
-        <View style={styles.card}>
-          <ShimmerPlaceholder style={styles.iconWrap} />
-          <View style={styles.textWrap}>
-            <ShimmerPlaceholder style={styles.shimmerLine} />
-            <ShimmerPlaceholder style={styles.shimmerLineShort} />
-            <ShimmerPlaceholder style={styles.shimmerLineWide} />
+  const handleOpenMenu = useCallback((item: MenuItem) => {
+    if (!item?.navigate || !item?.data) {
+      showAlert({
+        title: 'Menu unavailable',
+        message: 'This menu item is not linked correctly yet.',
+        tone: 'warning',
+      });
+      return;
+    }
+
+    navigation.navigate(item.navigate as never, {
+      url: item.data,
+      name: item.name,
+    } as never);
+  }, [navigation, showAlert]);
+
+  const renderMenuCard = ({ item, index }: { item: MenuItem; index: number }) => {
+    const subtitle = item.subtitle || item.subTitle || item.description || 'Tap to open this club menu.';
+    const iconSource = item.icon_url
+      ? { uri: item.icon_url }
+      : item.icon
+      ? { uri: `https://club26.org/mobileAPI/icons/${item.icon}` }
+      : null;
+
+    return (
+      <Pressable
+        onPress={() => handleOpenMenu(item)}
+        style={[
+          styles.card,
+          index % 2 === 0 ? styles.cardAccentPrimary : styles.cardAccentSecondary,
+        ]}
+      >
+        <View style={styles.cardTopRow}>
+          <View style={styles.iconWrap}>
+            {iconSource ? (
+              <Image source={iconSource} style={styles.iconImage} resizeMode="contain" />
+            ) : (
+              <Icon name="silverware-fork-knife" size={28} color={colors.primary} />
+            )}
+          </View>
+
+          <View style={styles.ctaWrap}>
+            <Text style={styles.ctaText}>{item.cta_label || 'Open menu'}</Text>
+            <Icon name="arrow-right" size={18} color={colors.primary} />
           </View>
         </View>
-      )}
-    />
+
+        <Text style={styles.title}>{item.name || 'Club menu'}</Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
+
+        <View style={styles.footerRow}>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{item.module_type || 'menu'}</Text>
+          </View>
+          <Icon name="chevron-right" size={22} color={colors.textMuted} />
+        </View>
+      </Pressable>
+    );
+  };
+
+  const renderSkeleton = () => (
+    <View style={styles.skeletonWrap}>
+      {[1, 2, 3].map(item => (
+        <View key={item} style={styles.card}>
+          <View style={styles.cardTopRow}>
+            <ShimmerPlaceholder style={styles.iconWrap} />
+            <ShimmerPlaceholder style={styles.ctaSkeleton} />
+          </View>
+          <ShimmerPlaceholder style={styles.lineSkeletonWide} />
+          <ShimmerPlaceholder style={styles.lineSkeletonMedium} />
+          <View style={styles.footerRow}>
+            <ShimmerPlaceholder style={styles.badgeSkeleton} />
+            <ShimmerPlaceholder style={styles.chevronSkeleton} />
+          </View>
+        </View>
+      ))}
+    </View>
   );
 
   return (
     <View style={styles.container}>
-      <Header title="Club Menues" />
+      <Header title="Club Menus" />
 
-      {loading ? (
-        <View style={styles.listContent}>{renderSkeleton()}</View>
-      ) : (
-        <FlatList
-          data={menus}
-          keyExtractor={(item, index) => `${item?.name || 'menu'}-${index}`}
-          renderItem={renderMenuCard}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={<Text style={styles.emptyText}>No menus available</Text>}
-        />
-      )}
+      <FlatList
+        data={filteredMenus}
+        keyExtractor={(item, index) => `${item?.id || item?.name || 'menu'}-${index}`}
+        renderItem={renderMenuCard}
+        numColumns={1}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => fetchMenus(true)}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View>
+            <BookingHeroCard
+              eyebrow="Dining"
+              title="Club Menu Hub"
+              subtitle="Browse menus, jump into venue pages, and keep the food discovery flow cleaner and faster."
+              status={`${meta.total_menus || menus.length} menus`}
+              statusTone="neutral"
+              meta={[
+                {
+                  label: 'With Icons',
+                  value: String(meta.menus_with_icons || 0),
+                },
+                {
+                  label: 'Ready',
+                  value: String(menus.length),
+                  tone: 'success',
+                },
+              ]}
+            />
+
+            <View style={styles.searchWrap}>
+              <Icon name="magnify" size={20} color={colors.textMuted} />
+              <TextInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder="Search menus or modules"
+                placeholderTextColor={colors.placeholder}
+                style={styles.searchInput}
+                cursorColor={colors.primary}
+              />
+              {searchQuery ? (
+                <Pressable onPress={() => setSearchQuery('')}>
+                  <Icon name="close-circle" size={18} color={colors.textMuted} />
+                </Pressable>
+              ) : null}
+            </View>
+          </View>
+        }
+        ListEmptyComponent={
+          loading ? (
+            renderSkeleton()
+          ) : (
+            <EmptyStateCard
+              title="No menus available"
+              description="Refresh this page after the backend menu list is updated."
+            />
+          )
+        }
+      />
+
+      <AppAlertModal
+        visible={alertState.visible}
+        title={alertState.title}
+        message={alertState.message}
+        tone={alertState.tone}
+        primaryLabel={alertState.primaryLabel}
+        secondaryLabel={alertState.secondaryLabel}
+        onPrimaryPress={() => {
+          alertState.onPrimaryPress?.();
+          hideAlert();
+        }}
+        onSecondaryPress={() => {
+          alertState.onSecondaryPress?.();
+          hideAlert();
+        }}
+        onDismiss={hideAlert}
+      />
     </View>
   );
 };
@@ -122,68 +288,144 @@ const createStyles = (colors: any) =>
       backgroundColor: colors.background,
     },
     listContent: {
-      padding: 16,
       paddingBottom: 40,
     },
-    card: {
+    searchWrap: {
+      marginHorizontal: 16,
+      marginBottom: 14,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 20,
+      backgroundColor: colors.surface,
       flexDirection: 'row',
       alignItems: 'center',
+      paddingHorizontal: 16,
+    },
+    searchInput: {
+      flex: 1,
+      paddingVertical: 14,
+      paddingHorizontal: 10,
+      color: colors.text,
+      fontFamily: FONT_FAMILY.normal,
+      fontSize: 14,
+    },
+    card: {
+      marginHorizontal: 16,
+      marginBottom: 14,
       backgroundColor: colors.surface,
-      borderRadius: 22,
+      borderRadius: 26,
       padding: 18,
-      marginBottom: 16,
       borderWidth: 1,
       borderColor: colors.border,
       shadowColor: '#000',
-      shadowOpacity: 0.06,
-      shadowRadius: 10,
-      shadowOffset: { width: 0, height: 5 },
-      elevation: 3,
+      shadowOpacity: 0.07,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 10 },
+      elevation: 4,
+    },
+    cardAccentPrimary: {
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary,
+    },
+    cardAccentSecondary: {
+      borderLeftWidth: 4,
+      borderLeftColor: colors.secondary,
+    },
+    cardTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 16,
     },
     iconWrap: {
-      width: 56,
-      height: 56,
+      width: 58,
+      height: 58,
       borderRadius: 18,
       backgroundColor: colors.surfaceAlt,
       alignItems: 'center',
       justifyContent: 'center',
-      marginRight: 16,
     },
-    textWrap: {
-      flex: 1,
+    iconImage: {
+      width: 34,
+      height: 34,
+    },
+    ctaWrap: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+      borderRadius: 999,
+      backgroundColor: colors.surfaceAlt,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    ctaText: {
+      marginRight: 6,
+      color: colors.primary,
+      fontFamily: FONT_FAMILY.semiBold,
+      fontSize: 12,
     },
     title: {
-      fontSize: 16,
-      fontFamily: FONT_FAMILY.bold,
       color: colors.text,
+      fontFamily: FONT_FAMILY.bold,
+      fontSize: 18,
+      lineHeight: 22,
     },
     subtitle: {
-      fontSize: 13,
+      marginTop: 8,
       color: colors.textMuted,
       fontFamily: FONT_FAMILY.normal,
-      marginTop: 4,
-      width: '90%',
+      fontSize: 13,
+      lineHeight: 20,
     },
-    emptyText: {
-      textAlign: 'center',
-      marginTop: 40,
-      fontFamily: FONT_FAMILY.semiBold,
-      fontSize: 16,
-      color: colors.textMuted,
+    footerRow: {
+      marginTop: 18,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
     },
-    shimmerLine: {
-      width: '65%',
+    badge: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 999,
+      backgroundColor: colors.surfaceAlt,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    badgeText: {
+      color: colors.text,
+      fontFamily: FONT_FAMILY.medium,
+      fontSize: 12,
+      textTransform: 'capitalize',
+    },
+    skeletonWrap: {
+      paddingHorizontal: 16,
+    },
+    ctaSkeleton: {
+      width: 96,
+      height: 34,
+      borderRadius: 999,
+    },
+    lineSkeletonWide: {
+      width: '70%',
+      height: 16,
+      borderRadius: 8,
       marginBottom: 10,
+    },
+    lineSkeletonMedium: {
+      width: '92%',
+      height: 14,
       borderRadius: 8,
     },
-    shimmerLineShort: {
-      width: '35%',
-      marginBottom: 10,
-      borderRadius: 8,
+    badgeSkeleton: {
+      width: 84,
+      height: 32,
+      borderRadius: 999,
     },
-    shimmerLineWide: {
-      width: '80%',
-      borderRadius: 8,
+    chevronSkeleton: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
     },
   });
 
