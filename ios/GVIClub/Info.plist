@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Technyk</string>
+	<string>Amar singh club</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -58,6 +58,11 @@
 	<string>This app uses notifications.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+  <string>We need your location to verify that you are inside the club premises.</string>
+
+  <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+  <string>We need your location to verify that you are inside the club premises.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-Bold.ttf</string>

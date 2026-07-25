@@ -1,12 +1,12 @@
 {
   "images" : [
     {
-      "filename" : "AppIcon~ios-marketing 1.png",
+      "filename" : "AppIcon~ios-marketing.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "AppIcon~ios-marketing.png",
+      "filename" : "AppIcon~ios-marketing 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },

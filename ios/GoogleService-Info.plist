@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyCbyt9liwdaf4Srnwn0UL9qyckqScAu8GM</string>
+	<string>AIzaSyD9Mq6qB0BefO0Q06G2fAEHMUPYtN9Yuz4</string>
 	<key>GCM_SENDER_ID</key>
-	<string>599024430916</string>
+	<string>462582817456</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.technyk.technyk</string>
+	<string>com.technyk.amarsinghclub</string>
 	<key>PROJECT_ID</key>
-	<string>technyk-6a30d</string>
+	<string>amarsinghclub-caeef</string>
 	<key>STORAGE_BUCKET</key>
-	<string>technyk-6a30d.firebasestorage.app</string>
+	<string>amarsinghclub-caeef.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:599024430916:ios:eb9a19fe5e64b285657111</string>
+	<string>1:462582817456:ios:b35f1e113f3f09c74c5175</string>
 </dict>
 </plist>

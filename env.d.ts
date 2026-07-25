@@ -19,6 +19,7 @@ declare module '@env' {
   export const ENABLE_ANALYTICS: string;
   export const RETRY_ATTEMPTS: string;
   export const CACHE_DURATION: string;
+  export const getway: string;
 
   export const THEME_LIGHT_PRIMARY: string;
   export const THEME_LIGHT_SECONDARY: string;

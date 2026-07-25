@@ -109,14 +109,16 @@ export const useTransactions = (startDate, endDate, userData) => {
     refetchOnWindowFocus: false, // Prevent refetching on tab switch
   });
 };
-const fetchSlots = async (id, session_id, date, token) => {
+const fetchSlots = async (id, 
+  // session_id, date, 
+  token) => {
   try {
     const apiRequestObject = {
       path: `${ENDPOINT.get_slots + id}`,
       body: {
-        from_date: date,
-        to_date: moment(date).add(3, "days").format("YYYY-MM-DD"),
-        sessionId: session_id,
+        // from_date: date,
+        // to_date: moment(date).add(3, "days").format("YYYY-MM-DD"),
+        // sessionId: session_id,
       },
       Token: token,
     };
@@ -144,6 +146,7 @@ const fetchActivitySessions = async (id, session_id, token) => {
     return response;
   } catch (error) {}
 };
+
 const fetchPlayers = async (memberId, token,Active,NonMember,Member) => {
   try {
     const apiRequestObject = {
@@ -158,17 +161,24 @@ const fetchPlayers = async (memberId, token,Active,NonMember,Member) => {
     console.log('\x1b[36m%s\x1b[0m', apiRequestObject, '---------------------- apiRequestObject ---------------------');
     
     const response = await api.javascriptPost(apiRequestObject);
+     console.log( response, '---------------------- apiRequestObject ---------------------');
      return response;
   } catch (error) {
     console.log('\x1b[36m%s\x1b[0m', error, '---------------------- error ---------------------');
   }
 };
 
-export const useSlots = (id, session_id, date, token) => {
+export const useSlots = (id, 
+  // session_id, date,
+   token) => {
  // Fetch facility slots
   const slotsQuery = useQuery({
-    queryKey: ["slots", id || "", session_id || 0, date, token],
-    queryFn: () => fetchSlots(id, session_id, date, token),
+    queryKey: ["slots", id || "", 
+      // session_id || 0, date, 
+      token],
+    queryFn: () => fetchSlots(id, 
+      // session_id, date,
+       token),
     enabled: true,
     retry: 2,
     refetchOnWindowFocus: false,

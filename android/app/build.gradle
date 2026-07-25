@@ -79,23 +79,23 @@ android {
     project.ext.vectoricons = [
     iconFontNames: [ 'MaterialIcons.ttf', 'Ionicons.ttf', 'FontAwesome.ttf' ]
 ]
-    namespace "com.technyk.technyk"
+    namespace "com.technyk.amarsinghclub"
     defaultConfig {
-        applicationId "com.technyk.technyk"
+        applicationId "com.technyk.amarsinghclub"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "0.0.1"
+        versionCode 6
+        versionName "0.0.6"
     }
     signingConfigs {
         debug {
-           storeFile file('technyk.jks')
+           storeFile file('asc.jks')
             storePassword 'qwerty'
             keyAlias 'key-1'
             keyPassword 'qwerty'
         }
          release {
-             storeFile file('technyk.jks')
+             storeFile file('asc.jks')
             storePassword 'qwerty'
             keyAlias 'key-1'
             keyPassword 'qwerty'

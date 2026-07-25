@@ -55,7 +55,8 @@ export const ENV: EnvConfig = {
 export const DOMAIN = {
   APP_NAME:APP_NAME,
   BASE: API_BASE_URL,
-// BASE: "http://10.0.2.2:8000/api/",
+  // BASE: "http://10.0.2.2:8000/api/v2/",
+// BASE: "https://cgomanoida.org/member/api/v2/",
   LOCAL:API_LOCAL_URL,
   API_IMAGE_URL:API_IMAGE_URL,
   PAY_DOMAIN: "https://dsoi.org.in/membersection/mobileAPI/",
@@ -145,6 +146,7 @@ export const ENDPOINT = {
   tee_settings:'member/get/tee/setting',
   tee_sessions:'member/get/sessions',
   tee_srarch_buddies:'member/get/buddies/',
+    tee_delete_group:'member/delete/tee/group/',
   tee_add_group:'member/create/tee/group',
   tee_edit_group:'member/update/tee/group/',
   tee_group:'member/get/tee/group',
@@ -189,6 +191,13 @@ export const ENDPOINT = {
   event_payment_failed:'member/event/payment-failed',
       process_event_payment:"member/tickets/process-payment", 
        process_admin_payment:"event/book-tickets",
+
+       // Member food order
+       member_food_menu:'member/food/menu',
+       member_food_checkout_summary:'member/food/checkout-summary',
+       member_food_orders:'member/food/orders',
+       member_food_cancel:'member/food/orders/',
+       member_food_order:'member/food/orders/',
 
        //mmr
        get_mmr_settings:'member/get-mmr',

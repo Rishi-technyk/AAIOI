@@ -11,11 +11,11 @@
 		018BF263D21642AEAFA03663 /* OpenSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8AAE4E654AF44208B61F8C1E /* OpenSans-SemiBold.ttf */; };
 		085CB173D61A4A9A99B414E2 /* OpenSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9AB27EDA86F4450DB8F5FD40 /* OpenSans-ExtraBold.ttf */; };
 		08FCDC7A4A74468A9E13F080 /* OpenSans_Condensed-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 368552FF55574366B0471F22 /* OpenSans_Condensed-Medium.ttf */; };
-		1069BD9F28660B418F7E4537 /* libPods-Technyk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 98FC1775227A48D990502038 /* libPods-Technyk.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		1A5587AB0EC846B58AD5499B /* OpenSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 365260B279644F3FB7EF9DCB /* OpenSans-Regular.ttf */; };
 		2645791C79464CA69EC8CA34 /* OpenSans_SemiCondensed-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6E97529064F14D98BEE07635 /* OpenSans_SemiCondensed-Italic.ttf */; };
 		273F32B10B8C4145B20239D2 /* OpenSans_Condensed-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DD02BDDC66C549C3AE50450F /* OpenSans_Condensed-ExtraBoldItalic.ttf */; };
+		2906D1692FCAB05B007EB721 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2906D1682FCAB05B007EB721 /* LaunchScreen.storyboard */; };
 		293B41F62ECDB568007D5BAF /* OpenSans_SemiCondensed-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 45EC92AC430A44CC8E49DF2F /* OpenSans_SemiCondensed-ExtraBoldItalic.ttf */; };
 		29BF40722ECC9FAF00312D6A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 29BF40712ECC9FAF00312D6A /* GoogleService-Info.plist */; };
 		315858275FAD457885C214B9 /* OpenSans_Condensed-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 73C63DFE478548CB87DEE9FD /* OpenSans_Condensed-Light.ttf */; };
@@ -27,8 +27,8 @@
 		4ABBC54FC45B4F35A2B275E7 /* OpenSans_SemiCondensed-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1BD7588C363743BBA56FA5DA /* OpenSans_SemiCondensed-Light.ttf */; };
 		519B0307029A4DEF9BAC3ACF /* OpenSans_Condensed-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1999FFAA59734423BB9D2FB7 /* OpenSans_Condensed-Bold.ttf */; };
 		52562223B0584EFE9181FE34 /* OpenSans_Condensed-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7A678EDD08D544CE8E53E2E0 /* OpenSans_Condensed-Regular.ttf */; };
+		5478D564E326CD4B3303AF9C /* libPods-AmarSinghClub.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E9A4DA58C559A63303AA0716 /* libPods-AmarSinghClub.a */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
-		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8A986CBFA0515E70AABF776C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		8DFB75CCF1BA48529A56DDDD /* OpenSans_SemiCondensed-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 46178C1705A44496B5B77F74 /* OpenSans_SemiCondensed-Regular.ttf */; };
 		908A2E5CF87F475794854A12 /* OpenSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B35B5F53C4B04B5AB088B5F4 /* OpenSans-Italic.ttf */; };
@@ -52,13 +52,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		13B07F961A680F5B00A75B9A /* Technyk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Technyk.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0495267F9D6A59E842A34F2B /* Pods-AmarSinghClub.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AmarSinghClub.release.xcconfig"; path = "Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub.release.xcconfig"; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* AmarSinghClub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AmarSinghClub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = GVIClub/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = GVIClub/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = GVIClub/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		1999FFAA59734423BB9D2FB7 /* OpenSans_Condensed-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_Condensed-Bold.ttf"; path = "../assets/fonts/OpenSans_Condensed-Bold.ttf"; sourceTree = "<group>"; };
 		1BD7588C363743BBA56FA5DA /* OpenSans_SemiCondensed-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_SemiCondensed-Light.ttf"; path = "../assets/fonts/OpenSans_SemiCondensed-Light.ttf"; sourceTree = "<group>"; };
 		210EE515CA064DD0BD689CD8 /* OpenSans_SemiCondensed-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_SemiCondensed-BoldItalic.ttf"; path = "../assets/fonts/OpenSans_SemiCondensed-BoldItalic.ttf"; sourceTree = "<group>"; };
+		2906D1682FCAB05B007EB721 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		293B417F2ECDA56F007D5BAF /* GVIClub.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = GVIClub.entitlements; path = GVIClub/GVIClub.entitlements; sourceTree = "<group>"; };
 		29BF40712ECC9FAF00312D6A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		2D363C9843FC4BC6BC234DF9 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = ../assets/fonts/MaterialIcons.ttf; sourceTree = "<group>"; };
@@ -84,16 +86,15 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = GVIClub/AppDelegate.swift; sourceTree = "<group>"; };
 		79CDD13AC68048179D3BBD63 /* OpenSans_Condensed-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_Condensed-SemiBold.ttf"; path = "../assets/fonts/OpenSans_Condensed-SemiBold.ttf"; sourceTree = "<group>"; };
 		7A678EDD08D544CE8E53E2E0 /* OpenSans_Condensed-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_Condensed-Regular.ttf"; path = "../assets/fonts/OpenSans_Condensed-Regular.ttf"; sourceTree = "<group>"; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = GVIClub/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		844F2B005EED479C82A59156 /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = ../assets/fonts/Octicons.ttf; sourceTree = "<group>"; };
 		8730179B15AE480ABF96A3EA /* OpenSans_Condensed-SemiBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_Condensed-SemiBoldItalic.ttf"; path = "../assets/fonts/OpenSans_Condensed-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		88D655C0824D438491DE08F9 /* OpenSans_Condensed-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_Condensed-LightItalic.ttf"; path = "../assets/fonts/OpenSans_Condensed-LightItalic.ttf"; sourceTree = "<group>"; };
 		8AAE4E654AF44208B61F8C1E /* OpenSans-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-SemiBold.ttf"; path = "../assets/fonts/OpenSans-SemiBold.ttf"; sourceTree = "<group>"; };
+		90FE336F66E62544F9A37118 /* Pods-AmarSinghClub.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AmarSinghClub.debug.xcconfig"; path = "Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub.debug.xcconfig"; sourceTree = "<group>"; };
 		91079B90515C448282B3FD1D /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = ../assets/fonts/Foundation.ttf; sourceTree = "<group>"; };
 		91F73F4B1A154F5EB1B75796 /* OpenSans-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Light.ttf"; path = "../assets/fonts/OpenSans-Light.ttf"; sourceTree = "<group>"; };
 		956C7293CD19468DB185D9F1 /* OpenSans-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-MediumItalic.ttf"; path = "../assets/fonts/OpenSans-MediumItalic.ttf"; sourceTree = "<group>"; };
 		984F7587EF7443FDA92A5EE1 /* OpenSans-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Medium.ttf"; path = "../assets/fonts/OpenSans-Medium.ttf"; sourceTree = "<group>"; };
-		98FC1775227A48D990502038 /* libPods-Technyk.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Technyk.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9AB27EDA86F4450DB8F5FD40 /* OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBold.ttf"; path = "../assets/fonts/OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
 		9EC33BA1A9064BA5A79A8873 /* OpenSans-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBoldItalic.ttf"; path = "../assets/fonts/OpenSans-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		A1FF97FFEDDB43578771C414 /* OpenSans_SemiCondensed-MediumItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_SemiCondensed-MediumItalic.ttf"; path = "../assets/fonts/OpenSans_SemiCondensed-MediumItalic.ttf"; sourceTree = "<group>"; };
@@ -119,6 +120,7 @@
 		DD02BDDC66C549C3AE50450F /* OpenSans_Condensed-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_Condensed-ExtraBoldItalic.ttf"; path = "../assets/fonts/OpenSans_Condensed-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		E57C164DD7C14E7C954D2407 /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = ../assets/fonts/Ionicons.ttf; sourceTree = "<group>"; };
 		E8F8EB9D1915FA655BE07C50 /* Pods-LGC.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LGC.release.xcconfig"; path = "Target Support Files/Pods-LGC/Pods-LGC.release.xcconfig"; sourceTree = "<group>"; };
+		E9A4DA58C559A63303AA0716 /* libPods-AmarSinghClub.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AmarSinghClub.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F17AA747E0674412B0244B59 /* FontAwesome6_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome6_Solid.ttf; path = ../assets/fonts/FontAwesome6_Solid.ttf; sourceTree = "<group>"; };
 		F1F9CC16F9BD4B7082C87339 /* OpenSans_Condensed-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_Condensed-BoldItalic.ttf"; path = "../assets/fonts/OpenSans_Condensed-BoldItalic.ttf"; sourceTree = "<group>"; };
@@ -132,25 +134,25 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1069BD9F28660B418F7E4537 /* libPods-Technyk.a in Frameworks */,
+				5478D564E326CD4B3303AF9C /* libPods-AmarSinghClub.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		13B07FAE1A68108700A75B9A /* Technyk */ = {
+		13B07FAE1A68108700A75B9A /* AmarSinghClub */ = {
 			isa = PBXGroup;
 			children = (
 				293B417F2ECDA56F007D5BAF /* GVIClub.entitlements */,
 				29BF40712ECC9FAF00312D6A /* GoogleService-Info.plist */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
+				2906D1682FCAB05B007EB721 /* LaunchScreen.storyboard */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
-				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 			);
-			name = Technyk;
+			name = AmarSinghClub;
 			sourceTree = "<group>";
 		};
 		1479E3A9B54E446482D2B96C /* Resources */ = {
@@ -219,7 +221,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				98FC1775227A48D990502038 /* libPods-Technyk.a */,
+				E9A4DA58C559A63303AA0716 /* libPods-AmarSinghClub.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -234,7 +236,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				13B07FAE1A68108700A75B9A /* Technyk */,
+				13B07FAE1A68108700A75B9A /* AmarSinghClub */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
@@ -249,7 +251,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* Technyk.app */,
+				13B07F961A680F5B00A75B9A /* AmarSinghClub.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -265,6 +267,8 @@
 				E8F8EB9D1915FA655BE07C50 /* Pods-LGC.release.xcconfig */,
 				C31D201774F91CD08B7DFA4C /* Pods-Technyk.debug.xcconfig */,
 				A23C43CA918B2CFC435BEF53 /* Pods-Technyk.release.xcconfig */,
+				90FE336F66E62544F9A37118 /* Pods-AmarSinghClub.debug.xcconfig */,
+				0495267F9D6A59E842A34F2B /* Pods-AmarSinghClub.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -272,9 +276,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		13B07F861A680F5B00A75B9A /* Technyk */ = {
+		13B07F861A680F5B00A75B9A /* AmarSinghClub */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Technyk" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AmarSinghClub" */;
 			buildPhases = (
 				FDFDAAE2948E70783ADCF4C0 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
@@ -289,9 +293,9 @@
 			);
 			dependencies = (
 			);
-			name = Technyk;
+			name = AmarSinghClub;
 			productName = GVIClub;
-			productReference = 13B07F961A680F5B00A75B9A /* Technyk.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* AmarSinghClub.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -307,7 +311,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Technyk" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "AmarSinghClub" */;
 			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -320,7 +324,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* Technyk */,
+				13B07F861A680F5B00A75B9A /* AmarSinghClub */,
 			);
 		};
 /* End PBXProject section */
@@ -331,7 +335,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				293B41F62ECDB568007D5BAF /* OpenSans_SemiCondensed-ExtraBoldItalic.ttf in Resources */,
-				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				8A986CBFA0515E70AABF776C /* PrivacyInfo.xcprivacy in Resources */,
 				F684407B66CE4A1D8CE05C83 /* OpenSans-Bold.ttf in Resources */,
@@ -364,6 +367,7 @@
 				36257A0ADF5F486BBFB905CA /* OpenSans_SemiCondensed-ExtraBold.ttf in Resources */,
 				2645791C79464CA69EC8CA34 /* OpenSans_SemiCondensed-Italic.ttf in Resources */,
 				4ABBC54FC45B4F35A2B275E7 /* OpenSans_SemiCondensed-Light.ttf in Resources */,
+				2906D1692FCAB05B007EB721 /* LaunchScreen.storyboard in Resources */,
 				C1718015DA1149C09C0F731E /* OpenSans_SemiCondensed-LightItalic.ttf in Resources */,
 				9DA67ED23FFB47DCA6B66FB3 /* OpenSans_SemiCondensed-Medium.ttf in Resources */,
 				00ACC27B8BB14AB49F441276 /* OpenSans_SemiCondensed-MediumItalic.ttf in Resources */,
@@ -413,19 +417,19 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Technyk/Pods-Technyk-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			inputPaths = (
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Technyk/Pods-Technyk-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Technyk/Pods-Technyk-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		8BF4999F4DA2CB9C3D360F58 /* [CP] Embed Pods Frameworks */ = {
@@ -434,19 +438,19 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Technyk/Pods-Technyk-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			inputPaths = (
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Technyk/Pods-Technyk-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Technyk/Pods-Technyk-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FDFDAAE2948E70783ADCF4C0 /* [CP] Check Pods Manifest.lock */ = {
@@ -464,7 +468,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Technyk-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-AmarSinghClub-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -487,30 +491,30 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C31D201774F91CD08B7DFA4C /* Pods-Technyk.debug.xcconfig */;
+			baseConfigurationReference = 90FE336F66E62544F9A37118 /* Pods-AmarSinghClub.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = GVIClub/GVIClub.entitlements;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 22N8UDXNHA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = GVIClub/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Technyk;
+				INFOPLIST_KEY_CFBundleDisplayName = "Amar singh club";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.1;
+				MARKETING_VERSION = 0.0.7;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.technyk.technyk;
-				PRODUCT_NAME = Technyk;
+				PRODUCT_BUNDLE_IDENTIFIER = com.technyk.amarsinghclub;
+				PRODUCT_NAME = AmarSinghClub;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -520,29 +524,29 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A23C43CA918B2CFC435BEF53 /* Pods-Technyk.release.xcconfig */;
+			baseConfigurationReference = 0495267F9D6A59E842A34F2B /* Pods-AmarSinghClub.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = GVIClub/GVIClub.entitlements;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 22N8UDXNHA;
 				INFOPLIST_FILE = GVIClub/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Technyk;
+				INFOPLIST_KEY_CFBundleDisplayName = "Amar singh club";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.1;
+				MARKETING_VERSION = 0.0.7;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.technyk.technyk;
-				PRODUCT_NAME = Technyk;
+				PRODUCT_BUNDLE_IDENTIFIER = com.technyk.amarsinghclub;
+				PRODUCT_NAME = AmarSinghClub;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -724,7 +728,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Technyk" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AmarSinghClub" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
@@ -733,7 +737,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Technyk" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "AmarSinghClub" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,

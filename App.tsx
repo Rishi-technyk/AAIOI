@@ -77,7 +77,7 @@ const ApplicationShell: React.FC = () => {
     <>
       <StatusBar
         backgroundColor={colors.background}
-        barStyle={resolvedMode === 'dark' ? 'light-content' : 'dark-content'}
+        barStyle={'light-content' }
       />
 
       <ToastProvider
@@ -140,5 +140,5 @@ const appStyles = StyleSheet.create({
   },
 });
 
-// O-0818
-//Temp@1234
+// 1
+//123456

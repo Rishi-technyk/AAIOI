@@ -71,6 +71,10 @@ import ValidateMemberTickets from '../services/Events/ValidateMemberTickets';
 import EventSeats from '../services/Events/EventSeats';
 import StaffHome from '../screens/KOTStaff/StaffHome';
 import { useAppTheme } from '../theme/AppThemeProvider';
+import FoodMenu from '../screens/FoodOrder/FoodMenu';
+import MemberFoodCart from '../screens/FoodOrder/MemberFoodCart';
+import MemberOrderDetails from '../screens/FoodOrder/MemberOrderDetails';
+import ViewBill from '../screens/ViewBill';
 
 /* -----------------------------------------------------------
    TYPE DEFINITIONS FOR NAVIGATION
@@ -185,7 +189,9 @@ export type AppStackParamList = {
   TableBookingDetail: {
     bookingId: number | string;
   };
-
+ViewBill:{
+  
+}
   //MMR
   MMR: undefined;
 
@@ -203,6 +209,14 @@ export type AppStackParamList = {
   Miscellaneous: undefined;
   Camera: undefined;
   ClubMenu: undefined;
+  FoodMenu: {
+    orderType: 'take_away' | 'home_delivery';
+  };
+  MemberFoodCart: {paymentMode:{
+    Card:boolean,
+    Subscription:boolean
+  }};
+  MemberOrderDetails:undefined;
 };
 
 export type RootStackParamList = {
@@ -323,6 +337,7 @@ const AppStackScreens = () => {
       <Stack.Screen name="Contact" component={Contact} />
       <Stack.Screen name="Notification" component={NotificationListScreen} />
       <Stack.Screen name="Invoice" component={ViewStatement} />
+      <Stack.Screen name="ViewBill" component={ViewBill} />
 
       <Stack.Screen name="PDFView" component={PDFComponent} />
       <Stack.Screen name="Rooms" component={Room} />
@@ -343,6 +358,7 @@ const AppStackScreens = () => {
       <Stack.Screen name="BookBanquet" component={BookBanquet} />
       <Stack.Screen name="MyBookings" component={MyBookings} />
       <Stack.Screen name="RoomReview" component={RoomReview} />
+     
       <Stack.Screen name="InvoiceHallDetails" component={InvoiceHallDetails} />
       <Stack.Screen name="InvoiceDetails" component={InvoiceDetails} />
       <Stack.Screen name="FeedBack" component={FeedbackScreen} />
@@ -387,6 +403,11 @@ const AppStackScreens = () => {
       <Stack.Screen name="TableOrder" component={TableOrder} />
       <Stack.Screen name="Miscellaneous" component={Miscellaneous} />
       <Stack.Screen name="Camera" component={CameraScreen} />
+
+      {/* Food Order*/}
+       <Stack.Screen name="FoodMenu" component={FoodMenu} />
+       <Stack.Screen name="MemberFoodCart" component={MemberFoodCart} />
+       <Stack.Screen name="MemberOrderDetails" component={MemberOrderDetails} />
     </Stack.Navigator>
   );
 };

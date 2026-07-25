@@ -1,200 +1,48 @@
-{
-    "id": 601,
-    "event_id": 3,
-    "member_id": 3067,
-    "booking_no": "EVT-69AF9F86D25A3",
-    "total_amount": 1610,
-    "payment_status": "admin",
-    "razorpay_order_id": null,
-    "razorpay_payment_id": "N\/A",
-    "payment_type": "Cash",
-    "admin_id": 3067,
-    "Mobile": "9251524400",
-    "Name": "Suresh",
-    "created_at": "2026-03-10T04:35:18.000000Z",
-    "updated_at": "2026-03-10T04:35:18.000000Z",
-    "member": {
-        "id": 3067,
-        "Email": "event@admin.com",
-        "DisplayName": "Event Admin",
-        "SC_ID": "Event Admin",
-        "MemberId": "Event Admin"
-    },
-    "participants": [
-        {
-            "id": 1511,
-            "booking_id": 601,
-            "ticket_type": {
-                "id": 129,
-                "name": "Guest",
-                "event_id": 3,
-                "type": "guest",
-                "amount": 500,
-                "max_per_member": 100,
-                "image_background": "1772446807_vivid-blurred-colorful-background.jpg",
-                "created_at": "2026-03-02T10:20:07.000000Z",
-                "updated_at": "2026-03-02T10:39:58.000000Z",
-                "status": 1
-            },
-            "ticket_id": 129,
-            "name": "Suresh",
-            "mobile": "9251520000",
-            "email": "event@admin.com",
-            "relation": null,
-            "qr_code": "eyJpdiI6IlZaaDgxMDZkQ29DVXQ3TUN0NHQ3NWc9PSIsInZhbHVlIjoicGc4YVZxbVloMTNITXVRdGlteGo1LzVGVys1TGtEbkVCTVVoYzNzdXloQnNpNUR2TjRvRGdjeFJsVk1CVTJLeGt5RDBFVHVxR2h1TVZqbndMdU05bGVGNmMrc0NTRmt0VForRlk0Vk5zVENVQ2ErVGdRdEs1WVEvc3NwM3NrbUhoakJaZE5nTVByemlpZVNHZE1iVUV",
-            "entry_status": false,
-            "food_status": false,
-            "consumed_alcohol": 0,
-            "consumed_non_alcohol": 0,
-            "amount": "500.00",
-            "entry_at": null,
-            "food_at": null,
-            "is_complimentary": 0,
-            "created_at": "2026-03-10T04:35:18.000000Z",
-            "updated_at": "2026-03-10T04:35:18.000000Z"
-        },
-        {
-            "id": 1512,
-            "booking_id": 601,
-            "ticket_type": {
-                "id": 129,
-                "name": "Guest",
-                "event_id": 3,
-                "type": "guest",
-                "amount": 500,
-                "max_per_member": 100,
-                "image_background": "1772446807_vivid-blurred-colorful-background.jpg",
-                "created_at": "2026-03-02T10:20:07.000000Z",
-                "updated_at": "2026-03-02T10:39:58.000000Z",
-                "status": 1
-            },
-            "ticket_id": 129,
-            "name": "Suresh",
-            "mobile": "9251520000",
-            "email": "event@admin.com",
-            "relation": null,
-            "qr_code": "eyJpdiI6IkxwamwvS0pVR1B4QlVHVmZTLzJuMXc9PSIsInZhbHVlIjoiRW93eDZkVEtuMXZwN2g4ZklYOGhXM09DM0U5QnZuLzhkcGFWaVo2ZEovYUFuVGM4d2gyUy9FYXdjcDBPZXBORGNRc0lYM3ZnaitCK1g0YlVzMmtmdjJtb2c5Y0QyaGIrcjVMY0Y2Rncvbi9SaXdVOXhnVExGYmtzeHhucWEzVFIvV2h5eDR5bGpnVlF5R0x4ZWRJM09",
-            "entry_status": false,
-            "food_status": false,
-            "consumed_alcohol": 0,
-            "consumed_non_alcohol": 0,
-            "amount": "500.00",
-            "entry_at": null,
-            "food_at": null,
-            "is_complimentary": 0,
-            "created_at": "2026-03-10T04:35:18.000000Z",
-            "updated_at": "2026-03-10T04:35:18.000000Z"
-        },
-        {
-            "id": 1513,
-            "booking_id": 601,
-            "ticket_type": {
-                "id": 130,
-                "name": "Services",
-                "event_id": 3,
-                "type": "guest",
-                "amount": 500,
-                "max_per_member": 11,
-                "image_background": "1772605116_wintertambola.jpg",
-                "created_at": "2026-03-04T06:18:36.000000Z",
-                "updated_at": "2026-03-04T06:18:44.000000Z",
-                "status": 1
-            },
-            "ticket_id": 130,
-            "name": "Suresh",
-            "mobile": "9251520000",
-            "email": "event@admin.com",
-            "relation": null,
-            "qr_code": "eyJpdiI6IjFzL3czZElxd1VueEhJdm12UG1hc1E9PSIsInZhbHVlIjoidzdGZEhRNElKVmJIV3l6dkt4TmlRZ1lpL0ZBL2NTbGxlRWdFa2d3bVdXUW13SmZ2SVoraGtLNXNvUE0zNGZOVE14SGNZK1U1NUJPeFRqVGJBTWs1MDJWNUs3b05oZHFnL1BuRXZ6TlRITUdiSzJYbFl5LzVBaWk4ZWQ4NG9scmVFM3JLVE04enU0T1k1a05PWTl4S3B",
-            "entry_status": false,
-            "food_status": false,
-            "consumed_alcohol": 0,
-            "consumed_non_alcohol": 0,
-            "amount": "500.00",
-            "entry_at": null,
-            "food_at": null,
-            "is_complimentary": 0,
-            "created_at": "2026-03-10T04:35:18.000000Z",
-            "updated_at": "2026-03-10T04:35:18.000000Z"
-        }
-    ],
-    "waiter_booking": {
-        "id": 47,
-        "event_id": 3,
-        "booking_id": 601,
-        "member_id": 3067,
-        "quantity": 1,
-        "price": 110,
-        "total_amount": 110,
-        "created_at": "2026-03-10T04:35:18.000000Z",
-        "updated_at": "2026-03-09T23:05:18.000000Z"
-    },
-    "seats": [
-        {
-            "id": 18,
-            "booking_id": 601,
-            "seat_id": 23,
-            "amount": "100.00",
-            "created_at": "2026-03-10T04:35:18.000000Z",
-            "updated_at": "2026-03-10T04:35:18.000000Z",
-            "seat": {
-                "id": 23,
-                "event_id": 3,
-                "layout_id": 1,
-                "category_id": 1,
-                "row_label": "C",
-                "seat_number": 5,
-                "seat_code": "C5",
-                "pos_x": 5,
-                "pos_y": 3,
-                "status": "booked",
-                "created_at": "2026-03-09T09:54:41.000000Z",
-                "updated_at": "2026-03-10T04:35:18.000000Z"
-            }
-        },
-        {
-            "id": 19,
-            "booking_id": 601,
-            "seat_id": 24,
-            "amount": "100.00",
-            "created_at": "2026-03-10T04:35:18.000000Z",
-            "updated_at": "2026-03-10T04:35:18.000000Z",
-            "seat": {
-                "id": 24,
-                "event_id": 3,
-                "layout_id": 1,
-                "category_id": 1,
-                "row_label": "C",
-                "seat_number": 6,
-                "seat_code": "C6",
-                "pos_x": 6,
-                "pos_y": 3,
-                "status": "booked",
-                "created_at": "2026-03-09T09:54:41.000000Z",
-                "updated_at": "2026-03-10T04:35:18.000000Z"
-            }
-        },
-        {
-            "id": 20,
-            "booking_id": 601,
-            "seat_id": 25,
-            "amount": "100.00",
-            "created_at": "2026-03-10T04:35:18.000000Z",
-            "updated_at": "2026-03-10T04:35:18.000000Z",
-            "seat": {
-                "id": 25,
-                "event_id": 3,
-                "layout_id": 1,
-                "category_id": 1,
-                "row_label": "C",
-                "seat_number": 7,
-                "seat_code": "C7",
-                "pos_x": 7,
-                "pos_y": 3,
-                "status": "booked",
-                "created_at": "2026-03-09T09:54:41.000000Z",
-                "updated_at": "2026-03-10T04:35:18.000000Z"
-            }
-        }
-    ]
-}
+SELECT
+    rc.id,
+    rc.name AS room_category,
+    rc.no_of_rooms AS total_rooms,
+
+    COALESCE(b.booked_rooms, 0) AS booked_rooms,
+    COALESCE(br.blocked_rooms, 0) AS blocked_rooms,
+
+    GREATEST(
+        rc.no_of_rooms
+        - COALESCE(b.booked_rooms, 0)
+        - COALESCE(br.blocked_rooms, 0),
+        0
+    ) AS available_rooms
+
+FROM room_category_master rc
+
+LEFT JOIN
+(
+    SELECT
+        rbi.room_category_id,
+        SUM(CAST(rbi.no_of_rooms AS UNSIGNED)) AS booked_rooms
+    FROM room_booking_items rbi
+    INNER JOIN room_bookings rb
+        ON rb.id = rbi.booking_id
+    WHERE
+        rb.status IN ('Pending','Active')
+        AND rb.checkin < '2026-07-20'
+        AND rb.checkout > '2026-07-18'
+        AND rbi.status IN ('Pending','Active')
+    GROUP BY rbi.room_category_id
+) b
+ON b.room_category_id = rc.id
+
+LEFT JOIN
+(
+    SELECT
+        room_category_id,
+        SUM(CAST(blocked_room AS UNSIGNED)) AS blocked_rooms
+    FROM block_rooms
+    WHERE
+        from_date < '2026-07-20'
+        AND to_date > '2026-07-18'
+    GROUP BY room_category_id
+) br
+ON br.room_category_id = rc.id
+
+WHERE rc.status='Active';
