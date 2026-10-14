@@ -1,4 +1,4 @@
-package com.technyk.amarsinghclub
+package com.technyk.aaioi
 
 import android.app.Application
 import com.facebook.react.PackageList

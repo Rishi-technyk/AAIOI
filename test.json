@@ -1,48 +1,1560 @@
-SELECT
-    rc.id,
-    rc.name AS room_category,
-    rc.no_of_rooms AS total_rooms,
-
-    COALESCE(b.booked_rooms, 0) AS booked_rooms,
-    COALESCE(br.blocked_rooms, 0) AS blocked_rooms,
-
-    GREATEST(
-        rc.no_of_rooms
-        - COALESCE(b.booked_rooms, 0)
-        - COALESCE(br.blocked_rooms, 0),
-        0
-    ) AS available_rooms
-
-FROM room_category_master rc
-
-LEFT JOIN
-(
-    SELECT
-        rbi.room_category_id,
-        SUM(CAST(rbi.no_of_rooms AS UNSIGNED)) AS booked_rooms
-    FROM room_booking_items rbi
-    INNER JOIN room_bookings rb
-        ON rb.id = rbi.booking_id
-    WHERE
-        rb.status IN ('Pending','Active')
-        AND rb.checkin < '2026-07-20'
-        AND rb.checkout > '2026-07-18'
-        AND rbi.status IN ('Pending','Active')
-    GROUP BY rbi.room_category_id
-) b
-ON b.room_category_id = rc.id
-
-LEFT JOIN
-(
-    SELECT
-        room_category_id,
-        SUM(CAST(blocked_room AS UNSIGNED)) AS blocked_rooms
-    FROM block_rooms
-    WHERE
-        from_date < '2026-07-20'
-        AND to_date > '2026-07-18'
-    GROUP BY room_category_id
-) br
-ON br.room_category_id = rc.id
-
-WHERE rc.status='Active';
+{
+  "info": {
+    "_postman_id": "570a3a5f-d92c-4e1a-a8d1-7d36ecbe3ccc",
+    "name": "BI X AtMoonVentures",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "34025375"
+  },
+  "item": [
+    {
+      "name": "DigiLocker v1",
+      "item": [
+        {
+          "name": "DigiLocker - Initiate v1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "customer-id",
+                "value": "{{customer-id}}",
+                "type": "text"
+              },
+              {
+                "key": "private-api-key",
+                "value": "{{private-api-key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"request_id\": \"{{$guid}}\"\r\n}"
+            },
+            "url": {
+              "raw": "https://api.bharatinformatics.com/prod/digilocker_initiate/v1/",
+              "protocol": "https",
+              "host": [
+                "api",
+                "bharatinformatics",
+                "com"
+              ],
+              "path": [
+                "prod",
+                "digilocker_initiate",
+                "v1",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "customer-id",
+                    "value": "{{customer-id}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "private-api-key",
+                    "value": "{{private-api-key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"request_id\": \"{{$guid}}\"\r\n}"
+                },
+                "url": {
+                  "raw": "https://api.bharatinformatics.com/prod/digilocker_initiate/v1/",
+                  "protocol": "https",
+                  "host": [
+                    "api",
+                    "bharatinformatics",
+                    "com"
+                  ],
+                  "path": [
+                    "prod",
+                    "digilocker_initiate",
+                    "v1",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": ":status",
+                  "value": 200
+                },
+                {
+                  "key": "date",
+                  "value": "Wed, 29 Apr 2026 21:38:00 GMT"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "content-length",
+                  "value": "1446"
+                },
+                {
+                  "key": "apigw-requestid",
+                  "value": "cmgIvjzvhcwEPLA="
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"success\",\n    \"data\": {\n        \"result_id\": \"915849431967488280\",\n        \"digilocker_url\": \"https://www.digiverify.in/instructions?token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI5MTU4NDk0MzE5Njc0ODgyODciLCJlaWQiOjM0NywidGhlbWVfY29sb3IiOiJoc2woMjE2LCA4OSUsIDQ5JSkiLCJpc3MiOiJzZWxmIiwibG9nb19hbGlnbm1lbnQiOiJjZW50ZXIiLCJjbGllbnRfaWQiOiIyMzkyMTMwOCIsImFjY2Vzc190b2tlbiI6IjE4MThlYTJkLTUwN2QtNGUyMi1hZDhjLWQ4ZDkzMWM3ZDEwMyIsInJlZGlyZWN0aW9uX21lc3NhZ2UiOiJEbyBub3QgY2xvc2UgdGhpcyB3aW5kb3cuIFlvdSdsbCBiZSByZWRpcmVjdGVkIiwidWlkIjoiMDUzZGY2ZDktYjk5MS00YTFkLWJlOTAtZmEzNDUzMGY0NDEzIiwic3VjY2Vzc19tZXNzYWdlIjoiRG9jdW1lbnRzIFZlcmlmaWVkIHZpYSBEaWdpTG9ja2VyIiwibG9nbyI6Imh0dHBzOi8vcHJvZC1lbnQtbG9nby5zMy5hcC1zb3V0aC0xLmFtYXpvbmF3cy5jb20vMzQ3LnBuZyIsImZvbnRfZmFtaWx5IjoiUG9wcGlucyIsImV4cCI6MTc3Nzc1Nzg3OSwiaGlkZV9kaWdpdGFwX2JyYW5kaW5nIjp0cnVlLCJpYXQiOjE3Nzc0OTg2Nzl9.AL8rwhQ76495BUH8wcuqxGqtJqOiQGVl4z9SfTIK_xFeP6zbtVqbNm85WIHd2-nzRD3h86uSaUPXeduQ1AVI2HiT2oT_WvNRZshWovEFA72z66XWdo1byhKe07_f8cIWecJ5PGzqdTQLUjISqsDhDHetKIIXwRPoOV72dbynLZUYfCRp-46rOaI_tamgjd9lSy7rkugr_O5TGa8hwletCKr9_uajv1W4K-yTV21drPcx06FB3UYaE4nBU33BALWNZ0dK3TtTRU96-AVz84Nvzc5kTnBS6wQTThjj-lnTbIrfPE3a8mBwNSCuiL8QtTQbTVk1ZUPBxbXWR_Dn5Q6000\"\n    },\n    \"meta\": {\n        \"api\": \"DigiLocker v1\",\n        \"request_id\": \"63b2e643-ca90-4951-b395-710f0a30e5f9\",\n        \"response_id\": \"053df6d9-b991-4a1d-be90-fa34530f4413\",\n        \"completed_at\": \"2026-04-30T03:08:00.349655+05:30\",\n        \"action\": \"DigiLocker - Fetch v1\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Digilocker - Fetch v1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "customer-id",
+                "value": "{{customer-id}}",
+                "type": "text"
+              },
+              {
+                "key": "private-api-key",
+                "value": "{{private-api-key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"result_id\": \"769081074291955029\"\r\n}"
+            },
+            "url": {
+              "raw": "https://api.bharatinformatics.com/prod/digilocker_fetch/v1/",
+              "protocol": "https",
+              "host": [
+                "api",
+                "bharatinformatics",
+                "com"
+              ],
+              "path": [
+                "prod",
+                "digilocker_fetch",
+                "v1",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "customer-id",
+                    "value": "{{customer-id}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "private-api-key",
+                    "value": "{{private-api-key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"result_id\": \"915849431967488280\"\r\n}"
+                },
+                "url": {
+                  "raw": "https://api.bharatinformatics.com/prod/digilocker_fetch/v1/",
+                  "protocol": "https",
+                  "host": [
+                    "api",
+                    "bharatinformatics",
+                    "com"
+                  ],
+                  "path": [
+                    "prod",
+                    "digilocker_fetch",
+                    "v1",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": ":status",
+                  "value": 200
+                },
+                {
+                  "key": "date",
+                  "value": "Wed, 29 Apr 2026 21:47:13 GMT"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "content-length",
+                  "value": "29235"
+                },
+                {
+                  "key": "apigw-requestid",
+                  "value": "cmhfGjS5hcwEJtg="
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"success\",\n    \"data\": {\n        \"result_id\": \"915849431967488280\",\n        \"uniqueId\": \"053df6d9-b991-4a1d-be90-fa34530f4000\",\n        \"maskedAdharNumber\": \"xxxxxxxx9312\",\n        \"name\": \"John Doe Jr\",\n        \"gender\": \"M\",\n        \"dob\": \"01-01-1991\",\n        \"careOf\": \"S/O: John Doe Sr\",\n        \"address\": {\n            \"house\": \"A-1, ABC Apartment\",\n            \"street\": \"Plot No - 01\",\n            \"landmark\": \"\",\n            \"loc\": \"\",\n            \"po\": \"Lower Parel\",\n            \"dist\": \"South Mumbai\",\n            \"subdist\": \"\",\n            \"vtc\": \"Lower Parel\",\n            \"pc\": \"40013\",\n            \"state\": \"Mumbai\",\n            \"country\": \"India\"\n        },\n        \"image\": \"/9j/4AAQSkZJRgABAgAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCADIAKADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/UAz//Z\",\n        \"xmlResponse\": \"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\" standalone=\\\"yes\\\"?>\\n<Certificate><CertificateData><KycRes code=\\\"634dcdda786a40329900ae700d6f6000\\\" ret=\\\"Y\\\" ts=\\\"2026-04-29T15:21:44.580+05:30\\\" ttl=\\\"2027-04-29T15:21:44\\\" txn=\\\"UKC:61bc0c9174aeeeef04674676be84de7b20260429152000\\\"><UidData tkn=\\\"\\\" uid=\\\"xxxxxxxx9312\\\"><Poi dob=\\\"01-01-1991\\\" gender=\\\"M\\\" name=\\\"John Doe\\\"/><Poa co=\\\"S/O: John Doe Sr\\\" country=\\\"India\\\" dist=\\\"South Mumbai\\\" house=\\\"A-3, ABC Apartment\\\" pc=\\\"40013\\\" po=\\\"\\\" state=\\\"Maharashtra\\\" street=\\\"Plot No - 01\\\" subdist=\\\"\\\" vtc=\\\"\\\"/><Pht>/9j/4AAQSkZJRgABAgAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJ0oFFFJgOAFBUEUUUAz//Z</Pht></UidData></KycRes></CertificateData><Signature xmlns=\\\"http://www.w3.org/2000/01/xmldsig#\\\">\\n  <SignedInfo><CanonicalizationMethod Algorithm=\\\"http://www.w3.org/2001/10/xml-exc-c14n#\\\"/>\\n    <SignatureMethod Algorithm=\\\"http://www.w3.org/2000/09/xmldsig#rsa-sha1\\\"/>\\n  <Reference URI=\\\"\\\"><Transforms><Transform Algorithm=\\\"http://www.w3.org/2000/09/xmldsig#enveloped-signature\\\"/></Transforms><DigestMethod Algorithm=\\\"http://www.w3.org/2001/04/xmlenc#sha256\\\"/><DigestValue>RrE32rdinUOEtb2VvM0+DBK4VV3zr2MkNoZse=</DigestValue></Reference></SignedInfo><SignatureValue>DW7YuEeCW1gr6aFMRQAPI9Lp+vrPzJUp4nhd/ZmkBaJLbrPCK0dgTf0eN2TdRw1YdND6zkG+FVxHjQcW3fs8cEFY6EZg6YgDU4/J7zNeZAm5LEQjwczAQ4fbUQBCS2/b3qsEr7z4vwm0ZDN9dA3KCySZwx9+nlK4DQHPcKsLUy4c8VWmfpdmwzO3lEv9x6DYf3UYmqbIgRfcmAl0eTjOYBUcOYm+lvQXN2O9KOl+X65ChgFvyU8bCIKorSSGA8/xFVv0BdEbKKdSGpiFB/Xv0mNukPBOeewn/DgoagbcrZqVSYJkIYgRvQW2DMUaToPE7IoybMLb4X0Hg==</SignatureValue>\\n<KeyInfo><X509Data><X509SubjectName>CN=DS DIGITAL INDIA CORPORATION,emailAddress=dnayak.nic.in@gmail.com,serialNumber=f738623af69f4d586f8b83cc70e9210b97f1ad5ac4bca648a1d0690bd6346,street=NATIONAL EGOVERNANCE DIVISION 4th FLOOR ELECTRONICS NIKETAN 6,ST=Delhi,L=South Delhi,postalCode=110003,OU=NATIONAL E GOVERNANCE DEPARTMENT,O=DIGITAL INDIA CORPORATION,C=IN</X509SubjectName><X509Certificate>MIIHoDCCBoigAwIBAgIQQ57Nm//OnytCGpUn9iXWUTANBgkqhkiG9w0BAQsFADCB/TELMAkGA1UEBhMCSU4xKDAmBgNVBAoTH1Byb2Zlc3Npb25hbCBEaWdpU2lnbiBQdnQuIEx0ZC4xHTAbBgNVBAsTIENPUlBPUkFUSU9OMSkwJwYDVQQLEyBOQVRJT05BTCBFIEdPVkVSTkFOQ0UgREVQQVJUTUVOVDEPMA0GA1UEERMGMTEwMDAzMRQwEgYDVQQHEwtTb3V09w0BAQEFAAOCAQ8AMIIBCgKCAQEAyJzCBKiShkSCaiduIsRA27rc1/iOxdP0AsL1CsYKV5R50SLUzVQNLAL9clphLsXEjzDCb+AwGchqQWrQASII6aJJR9cxTj5db9nemnmjvk7ictcPAKSPRNHcnwT9EMTxQB+3ZMZQK/CDfaE9cz6y8MVbKydmYDscsfMnRD0oJddEfyaHHD699V8UGm+mKQsMSRQSnIovwuri1ALkShiwND189CVCRTcggbRlLGRi1vxLht9HOOE8stJKeGoAuC9ravjGsma1KIjKIVCzEzDOj1xilBap2KlI/p9YN054AmekkI7+yrl5+wKPr8sLQakSg+tQz7eXZrRyKRbKw9YKSO2XvaxjwUJvYcv6ZNC760dwG1cfQUrasx4W1Q6fJfMlTagrgQMyjZ9kGpVw+GiOQUdBpWVK1e3o/OHlftDIvjZehSPT6i2p7vT/q6Ml3Sy7gl6KPxqjbTmql4x1FOyFtyOigxp/B8jyI9v8Sn3oeTo847XvlcKKdt8wZcXxgRQuNjg1D4teEODLgt/knvdQGINZNyA1M</X509Certificate></X509Data></KeyInfo></Signature></Certificate>\",\n        \"digilockerFiles\": [\n            {\n                \"docLink\": \"https://ekyc-docs-prod.s3.ap-south-1.amazonaws.com/2026/04/30/347/23921308/915849431967488287/aed7b312-0fe3-4e7c-9958-9cad857b9ca1/AADHAAR.xml?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDUaCmFwLXNvdXRoLTEiRjBEAiAKnJ%2Fhg3ZKVrbrobgWCCf9pKMhiL%2F1Wic%2B7r0xkpZmNwIgBXr3558Dxz7JeS8EgfIcCSrI%2FgumUIA%2FSlpn6nnUrvcqyQUI%2Fv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARADGgw3MDA3OTg2MzYyODUiDACxuDgshfKVVYpDPiqdBShfwzFU6U6DkxPLi8MdL4M%2FwrBeAgH8tNXJWrKysDTEUvnjVfoWcx1j28iBYTURGntbLRH3982rABFxiX0STdnHMxl%2Bz%2FtxegjVWaFK80wb5XuqPSWpUQJ7e%2B6%2BBAZqXvhzlmBoBUM8qKI%2BgZqlhyz8jk%2FDE%2F6dS5vdTZ92%2BfbZIa3O%2FvtWVnebzWpYSDVWOwDMzrbtafmSK0LVng3bYrLhJo9zMqnL51kxVZeIjrtetU%2BM1iDzWRVJiZIAMAutTtz3ziHcRBcBIXNoZWM9HWBl7dbxDAdascBhPCt8k8BxExTMsNObN8vhsSg73apr9EukzFxtmr5zXBfWOSxKsfmu6HRkb%2F%2BfGsBWYzJ%2BNWABRs1qloiCLRUvMhC425QjUnvy2tQAKZJVkIu0nqxnfd2ClbYCvPn4VvZ1t4oe1MKG2npjGNHzKPgwPJ1WlYgRF0sBnYaZqft4tB%2BMQ%2B0eRidSHkcKB4KzOu3rxXHTvx2r94%2B14rOczlbh8%2BQAsAbiOgxo58bO2OnadVH3c%2B0IwRwGMbMgV5cMDxM0qCmFdblKZag9SEgY2L%2FerK87MYhXBLhr0vyzeC2fOjaek8st4UUJBQd9bQ6aGItANJ%2Fac48nzqoK2ESC1mhXYD60z%2FoAvOM41G5CunXVV4ocz3w2fIudxkmsHRlVr09wSfLCzrLTrsrz28v4Cwctx2CifdAtCDJhhonqyCVk70zMr6QzzlBtcfeX6HuAw%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20260429T214712Z&X-Amz-SignedHeaders=host&X-Amz-Expires=14400&X-Amz-Credential=ASIA2GKW2SD6ZOYXDJUM%2F20260429%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Signature=a008671518a5a2a10974c9b92f2505092be4c8ff9c105e622fcc67c12f894a84\",\n                \"docType\": \"AADHAAR\",\n                \"docExtension\": \"xml\"\n            },\n            {\n                \"docLink\": \"https://ekyc-docs-prod.s3.ap-south-1.amazonaws.com/2026/04/30/347/23921308/915849431967488287/72919591-9983-4919-bb6f-89e85774ecd3/DRVLC.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDUaCmFwLXNvdXRoLTEiRjBEAiAKnJ%2Fhg3ZKVrbrobgWCCf9pKMhiL%2F1Wic%2B7r0xkpZmNwIgBXr3558Dxz7JeS8EgfIcCSrI%2FgumUIA%2FSlpn6nnUrvcqyQUI%2Fv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARADGgw3MDA3OTg2MzYyODUiDACxuDgshfKVVYpDPiqdBShfwzFU6U6DkxPLi8MdL4M%2FwrBeAgH8tNXJWrKysDTEUvnjVfoWcx1j28iBYTURGntbLRH3982rABFxiX0STdnHMxl%2Bz%2FtxegjVWaFK80wb5XuqPSWpUQJ7e%2B6%2BBAZqXvhzlmBoBUM8qKI%2BgZqlhyz8jk%2FDE%2F6dS5vdTZ92%2BfbZIa3O%2FvtWVnebBjqyAaQgzKAKOsF47ZvgzPMB%2FG6wlYbN4HKFqQTpEoKdvjJ5BBvHc%2BeUe18Hg12Do1%2Bkj9nPy4jp8dhkDmd6yxw1jfvSm9FdbfrOwv4UUJBQd9bQ6aGItANJ%2Fac48nzqoK2ESC1mhXYD60z%2FoAvOM41G5CunXVV4ocz3w2fIudxkmsHRlVr09wSfLCzrLTrsrz28v4Cwctx2CifdAtCDJhhonqyCVk70zMr6QzzlBtcfeX6HuAw%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20260429T214712Z&X-Amz-SignedHeaders=host&X-Amz-Expires=14400&X-Amz-Credential=ASIA2GKW2SD6ZOYXDJUM%2F20260429%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Signature=992c586b5754f2447eb157ced20b27805aab5b73de275f3c863e78d48f628903\",\n                \"docType\": \"DRVLC\",\n                \"docExtension\": \"pdf\"\n            },\n            {\n                \"docLink\": \"https://ekyc-docs-prod.s3.ap-south-1.amazonaws.com/2026/04/30/347/23921308/915849431967488287/8d041572-2d9f-48fa-91e6-4291bd2a611a/DRVLC.xml?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDUaCmFwLXNvdXRoLTEiRjBEAiAKnJ%2Fhg3ZKVrbrobgWCCf9pKMhiL%2F1Wic%2B7r0xkpZmNwIgBXr3558Dxz7JeS8EgfIcCSrI%2FgumUIA%2FSlpn6nnUrvcqyQUI%2Fv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARADGgw3MDA3OTg2MzYyODUiDACxuDgshfKVVYpDPiqdBShfwzFU6U6DkxPLi8MdL4M%2FwrBeAgH8tNXJWrKysDTEUvnjVfoWcx1j28iBYTURGntbLRH3982rABFxiX0STdnHMxl%2Bz%2FtxegjVWaFK80wb5XuqPSWpUQJ7e%2B6%2BBAZqXvhzlmBoBUM8qKI%2BgZqlhyz8jk%2FDE%2F6dS5vdTZ92%2BfbZIa3O%2FvtWVnebzWpYSDVWOwDMzrbtafmSK0LVng3bYrLhJo9zMqnL51kxVZeIjrtetU%2BM1iDzWRVJiZIAMAutTtz3ziHcRBcBIXNoZga5sKbp59C9%2BmoMafNAkggezgcblicp9A2pP3A0McORLJPdfuLL2rW%2BaK2%2FEeLhP0zM0pGWcd%2BKX0OIY%2BaT80rBoUULg7McrAOicm4ap2rrwJcbjNhvcOa432r1Y2epVDWBzvF9AOtaHzSYPxgOaDhRX4pFJmh9LlQsWw27lAj7E9lxnmXSLQUdPSWB0qpEnUcZXsf0rJ0h%2BFxBCD3FNBdzCQ4cnPBjqyAaQgzKAKOsF47ZvgzPMB%2FG6wlYbN4HKFqQTpEoKdvjJ5BBvHc%2BeUe18Hg12Do1%2Bkj9nPy4jp8dhkDmd6yxw1jfvSm9FdbfrOwv4UUJBQd9bQ6aGItANJ%2Fac48nzqoK2ESC1mhXYD60z%2FoAvOM41G5CunXVV4ocz3w2fIudxkmsHRlVr09wSfLCzrLTrsrz28v4Cwctx2CifdAtCDJhhonqyCVk70zMr6QzzlBtcfeX6HuAw%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20260429T214712Z&X-Amz-SignedHeaders=host&X-Amz-Expires=14400&X-Amz-Credential=ASIA2GKW2SD6ZOYXDJUM%2F20260429%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Signature=9f2f6c5e307c5708da2f11ea9325c0630601874dca898535dfea73270bdf4595\",\n                \"docType\": \"DRVLC\",\n                \"docExtension\": \"xml\"\n            },\n            {\n                \"docLink\": \"https://ekyc-docs-prod.s3.ap-south-1.amazonaws.com/2026/04/30/347/23921308/915849431967488287/697c6a61-c39f-4c67-987b-de13a50f44b7/PANCR.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDUaCmFwLXNvdXRoLTEiRjBEAiAKnJ%2Fhg3ZKVrbrobgWCCf9pKMhiL%2F1Wic%2B7r0xkpZmNwIgBXr3558Dxz7JeS8EgfIcCSrI%2FgumUIA%2FSlpn6nnUrvcqyQUI%2Fv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARADGgw3MDA3OTg2MzYyODUiDACxuDgshfKVVYpDPiqdBShfwzFU6U6DkxPLi8MdL4M%2FwrBeAgH8tNXJWrKysDTEUvnjVfoWcx1j28iBYTURGntbLRH3982rABFxiX0STdnHMxl%2Bz%2FtxegjVWaFK80wb5XuqPSWpUQJ7e%2B6%2BBAZqXvhzlmBoBUM8qKI%2BgZqlhyz8jk%2FDE%2F6dS5vdTZ92%2BTrsrz28v4Cwctx2CifdAtCDJhhonqyCVk70zMr6QzzlBtcfeX6HuAw%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20260429T214712Z&X-Amz-SignedHeaders=host&X-Amz-Expires=14400&X-Amz-Credential=ASIA2GKW2SD6ZOYXDJUM%2F20260429%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Signature=638e25c1fc4b01d6ddafbd2c6e698a25ec7df0d832ca127cc4a7c4e452b7915b\",\n                \"docType\": \"PANCR\",\n                \"docExtension\": \"pdf\"\n            },\n            {\n                \"docLink\": \"https://ekyc-docs-prod.s3.ap-south-1.amazonaws.com/2026/04/30/347/23921308/915849431967488287/07bae1bb-553f-4309-8f28-c1f9bf4458d9/PANCR.xml?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDUaCmFwLXNvdXRoLTEiRjBEAiAKnJ%2Fhg3ZKVrbrobgWCCf9pKMhiL%2F1Wic%2B7r0xkpZmNwIgBXr3558Dxz7JeS8EgfIcCSrI%2FgumUIA%2FSlpn6nnUrvcqyQUI%2Fv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARADGgw3MDA3OTg2MzYyODUiDACxuDgshfKVVYpDPiqdBShfwzFU6U6DkxPLi8MdL4M%2FwrBeAgH8tNXJWrKysDTEUvnjVfoWcx1j28iBYTURGntbLRH3982rABFxiX0STdnHMxl%2Bz%2FtxegjVWaFK80wb5XuqPSWpUQJ7e%2B6%2BBAZqXvhzlmBoBUM8qKI%2BgZqlhyz8jk%2FDE%2F6dS5vdTZ92%2BX-Amz-Date=20260429T214712Z&X-Amz-SignedHeaders=host&X-Amz-Expires=14400&X-Amz-Credential=ASIA2GKW2SD6ZOYXDJUM%2F20260429%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Signature=f99f98bbcb2a78d257e0d9ab5dfa319ccc63d73981697f4147ed50ea7d307073\",\n                \"docType\": \"PANCR\",\n                \"docExtension\": \"xml\"\n            },\n            {\n                \"docLink\": \"https://ekyc-docs-prod.s3.ap-south-1.amazonaws.com/2026/04/30/347/23921308/915849431967488287/ae99c7db-8f08-4bb1-afa7-e4f5712dc0e8/DIGILOCKER_PDF.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDUaCmFwLXNvdXRoLTEiRjBEAiAKnJ%2Fhg3ZKVrbrobgWCCf9pKMhiL%2F1Wic%2B7r0xkpZmNwIgBXr3558Dxz7JeS8EgfIcCSrI%2FgumUIA%2FSlpn6nnUrvcqyQUI%2Fv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARADGgw3MDA3OTg2MzYyODUiDACxuDgshfKVVYpDPiqdBShfwzFU6U6DkxPLi8MdL4M%2FwrBeAgH8tNXJWrKysDTEUvnjVfoWcx1j28iBYTURGntbLRH3982rABFxiX0STdnHMxl%2Bz%2FtxegjVWaFK80wb5XuqPSWpUQJ7e%2B6%2BBAZqXvhzlmBoBUM8qKI%2BgZqlhyz8jk%2FDE%2F6dS5vdTZ92%2BvMhC425QjUnvy2tQAKZJVkIu0nqxnfd2ClbYCvPn4VvZ1t4oe1MKG2npjGNHzKPgwPJ1WlYgRF0sBnYaZqft4tB%2BMQ%2B0eRidSHkcKB4KFxBCD3FNBdzCQ4cnPBjqyAaQgzKAKOsF47ZvgzPMB%2FG6wlYbN4HKFqQTpEoKdvjJ5BBvHc%2BeUe18Hg12Do1%2Bkj9nPy4jp8dhkDmd6yxw1jfvSm9FdbfrOwv4UUJBQd9bQ6aGItANJ%2Fac48nzqoK2ESC1mhXYD60z%2FoAvOM41G5CunXVV4ocz3w2fIudxkmsHRlVr09wSfLCzrLTrsrz28v4Cwctx2CifdAtCDJhhonqyCVk70zMr6QzzlBtcfeX6HuAw%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20260429T214712Z&X-Amz-SignedHeaders=host&X-Amz-Expires=14400&X-Amz-Credential=ASIA2GKW2SD6ZOYXDJUM%2F20260429%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Signature=2208ca5c0ee4c10f5058b015ea99ae457341d81276413655a3ef2d907f6f9667\",\n                \"docType\": \"DIGILOCKER_PDF\",\n                \"docExtension\": \"pdf\"\n            }\n        ]\n    },\n    \"meta\": {\n        \"api\": \"DigiLocker v1\",\n        \"request_id\": \"750847c2-176f-44c5-871d-5810f3b2eacf\",\n        \"response_id\": \"aff1d0ea-bb69-4e4f-9830-0891b2123688\",\n        \"completed_at\": \"2026-04-30T03:17:12.998542+05:30\"\n    }\n}"
+            },
+            {
+              "name": "Pending (Not Charged)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "customer-id",
+                    "value": "{{customer-id}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "private-api-key",
+                    "value": "{{private-api-key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"result_id\": \"769081074291955029\"\r\n}"
+                },
+                "url": {
+                  "raw": "https://api.bharatinformatics.com/prod/digilocker_fetch/v1/",
+                  "protocol": "https",
+                  "host": [
+                    "api",
+                    "bharatinformatics",
+                    "com"
+                  ],
+                  "path": [
+                    "prod",
+                    "digilocker_fetch",
+                    "v1",
+                    ""
+                  ]
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": ":status",
+                  "value": 202
+                },
+                {
+                  "key": "date",
+                  "value": "Wed, 29 Apr 2026 21:53:11 GMT"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "content-length",
+                  "value": "173"
+                },
+                {
+                  "key": "apigw-requestid",
+                  "value": "cmiXDgRhhcwEMJw="
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": \"pending\",\n    \"code\": 202,\n    \"message\": \"DigiLocker flow not yet successful\",\n    \"response_id\": \"b514b985-34e7-4ca7-ba77-0b9d2181613b\",\n    \"action\": \"DigiLocker - Fetch v1\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bank Account Hybrid v1",
+      "item": [
+        {
+          "name": "Bank Account Hybrid - Send Request v1",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "customer-id",
+                "value": "{{customer-id}}",
+                "type": "text"
+              },
+              {
+                "key": "private-api-key",
+                "value": "{{private-api-key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"bank_account\": \"50100087677330\",\r\n    \"ifsc\": \"HDFC0000920\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.bharatinformatics.com/prod/bank_account_hybrid_send_request/v1/",
+              "protocol": "https",
+              "host": [
+                "api",
+                "bharatinformatics",
+                "com"
+              ],
+              "path": [
+                "prod",
+                "bank_account_hybrid_send_request",
+                "v1",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "customer-id",
+                    "value": "{{customer-id}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "private-api-key",
+                    "value": "{{private-api-key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"bank_account\": \"50100087677330\",\r\n    \"ifsc\": \"HDFC0000920\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://api.bharatinformatics.com/prod/bank_account_hybrid_send_request/v1/",
+                  "protocol": "https",
+                  "host": [
+                    "api",
+                    "bharatinformatics",
+                    "com"
+                  ],
+                  "path": [
+                    "prod",
+                    "bank_account_hybrid_send_request",
+                    "v1",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": ":status",
+                  "value": 200
+                },
+                {
+                  "key": "date",
+                  "value": "Wed, 15 Apr 2026 01:22:51 GMT"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "content-length",
+                  "value": "391"
+                },
+                {
+                  "key": "apigw-requestid",
+                  "value": "b1lAWj5xhcwEP6A="
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"success\",\n    \"data\": {\n        \"result_id\": \"a67e898291cc4e288a1d65b1861202eb\"\n    },\n    \"meta\": {\n        \"api\": \"Bank Account Hybrid v1\",\n        \"request_id\": \"d70adf02-bbdf-4b11-ab2a-a777ca44d84d\",\n        \"response_id\": \"51d943e9-5b3f-469b-b73f-f1bef5a25ff4\",\n        \"completed_at\": \"2026-04-15T06:52:51.527301+05:30\",\n        \"action\": \"Bank Account Hybrid - Get Response v1\"\n    }\n}"
+            },
+            {
+              "name": "Failure (Not Charged)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "customer-id",
+                    "value": "{{customer-id}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "private-api-key",
+                    "value": "{{private-api-key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"bank_account\": \"50100087677330\",\r\n    \"ifsc\": \"HDFC0000920\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://api.bharatinformatics.com/prod/bank_account_hybrid_send_request/v1/",
+                  "protocol": "https",
+                  "host": [
+                    "api",
+                    "bharatinformatics",
+                    "com"
+                  ],
+                  "path": [
+                    "prod",
+                    "bank_account_hybrid_send_request",
+                    "v1",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": ":status",
+                  "value": 200
+                },
+                {
+                  "key": "date",
+                  "value": "Wed, 15 Apr 2026 01:14:55 GMT"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "content-length",
+                  "value": "390"
+                },
+                {
+                  "key": "apigw-requestid",
+                  "value": "b1j2KjQ3hcwEPjA="
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"failed\",\n    \"data\": {\n        \"result_id\": \"79c819d4bee143d98c06973efb2a4fde\"\n    },\n    \"meta\": {\n        \"api\": \"Bank Account Hybrid v1\",\n        \"request_id\": \"287c2fc5-b1be-49d9-a0d1-07b20b05c39b\",\n        \"response_id\": \"03f2f804-6aa9-480a-9fcd-135506a989d3\",\n        \"completed_at\": \"2026-04-15T06:44:55.476837+05:30\",\n        \"action\": \"Bank Account Hybrid - Get Response v1\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Bank Account Hybrid - Get Response v1",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "customer-id",
+                "value": "{{customer-id}}",
+                "type": "text"
+              },
+              {
+                "key": "private-api-key",
+                "value": "{{private-api-key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"result_id\": \"fc45f0413af64ebcab3fa0c67befb07f\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.bharatinformatics.com/prod/bank_account_hybrid_get_response/v1/",
+              "protocol": "https",
+              "host": [
+                "api",
+                "bharatinformatics",
+                "com"
+              ],
+              "path": [
+                "prod",
+                "bank_account_hybrid_get_response",
+                "v1",
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "customer-id",
+                    "value": "{{customer-id}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "private-api-key",
+                    "value": "{{private-api-key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"result_id\": \"a67e898291cc4e288a1d65b1861202eb\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://api.bharatinformatics.com/prod/bank_account_hybrid_get_response/v1/",
+                  "protocol": "https",
+                  "host": [
+                    "api",
+                    "bharatinformatics",
+                    "com"
+                  ],
+                  "path": [
+                    "prod",
+                    "bank_account_hybrid_get_response",
+                    "v1",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": ":status",
+                  "value": 200
+                },
+                {
+                  "key": "date",
+                  "value": "Wed, 15 Apr 2026 01:23:34 GMT"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "content-length",
+                  "value": "456"
+                },
+                {
+                  "key": "apigw-requestid",
+                  "value": "b1lHShZwBcwEPgg="
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"success\",\n    \"data\": {\n        \"status\": \"SUCCESS\",\n        \"result_id\": \"a67e898291cc4e288a1d65b1861202eb\",\n        \"beneficiary_name\": \"JOHN DOE\",\n        \"payment_mode\": \"IMPSPENNY\",\n        \"bank_utr\": \"P15040004782800\"\n    },\n    \"meta\": {\n        \"api\": \"Bank Account Hybrid v1\",\n        \"request_id\": \"b40a5a63-ea11-495e-b7b5-91ad7d0a506d\",\n        \"response_id\": \"009bb761-f093-4919-b0dd-304213368261\",\n        \"completed_at\": \"2026-04-15T06:53:34.450802+05:30\"\n    }\n}"
+            },
+            {
+              "name": "Failure - Multiple Attempts (Not Charged)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "customer-id",
+                    "value": "{{customer-id}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "private-api-key",
+                    "value": "{{private-api-key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"result_id\": \"79c819d4bee143d98c06973efb2a4fde\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://api.bharatinformatics.com/prod/bank_account_hybrid_get_response/v1/",
+                  "protocol": "https",
+                  "host": [
+                    "api",
+                    "bharatinformatics",
+                    "com"
+                  ],
+                  "path": [
+                    "prod",
+                    "bank_account_hybrid_get_response",
+                    "v1",
+                    ""
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": ":status",
+                  "value": 200
+                },
+                {
+                  "key": "date",
+                  "value": "Wed, 15 Apr 2026 01:15:25 GMT"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "content-length",
+                  "value": "572"
+                },
+                {
+                  "key": "apigw-requestid",
+                  "value": "b1j7FjqohcwEPjA="
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"failure\",\n    \"data\": {\n        \"status\": \"FAILED\",\n        \"result_id\": \"79c819d4bee143d98c06973efb2a4fde\",\n        \"payment_mode\": null,\n        \"error_message\": \"Maximum attempts reached. The account number and IFSC pair have reached the limit of 1 attempts in the last 24 hours. Retry is permitted only after 24 hours from first hit.\"\n    },\n    \"meta\": {\n        \"api\": \"Bank Account Hybrid v1\",\n        \"request_id\": \"bb771f4c-6e31-4a81-848b-1cf1524669df\",\n        \"response_id\": \"888c15af-dd6b-4b1b-acde-b5f56d3dc267\",\n        \"completed_at\": \"2026-04-15T06:45:25.937474+05:30\"\n    }\n}"
+            },
+            {
+              "name": "Failure - Used Result ID (Not Charged)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "customer-id",
+                    "value": "{{customer-id}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "private-api-key",
+                    "value": "{{private-api-key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"result_id\": \"fc45f0413af64ebcab3fa0c67befb07f\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://api.bharatinformatics.com/prod/bank_account_hybrid_get_response/v1/",
+                  "protocol": "https",
+                  "host": [
+                    "api",
+                    "bharatinformatics",
+                    "com"
+                  ],
+                  "path": [
+                    "prod",
+                    "bank_account_hybrid_get_response",
+                    "v1",
+                    ""
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": ":status",
+                  "value": 400
+                },
+                {
+                  "key": "date",
+                  "value": "Wed, 15 Apr 2026 01:12:46 GMT"
+                },
+                {
+                  "key": "content-type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "content-length",
+                  "value": "122"
+                },
+                {
+                  "key": "apigw-requestid",
+                  "value": "b1jiMicdBcwEP-w="
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": \"error\",\n    \"code\": 400,\n    \"error\": \"result_id already used\",\n    \"response_id\": \"bff128be-e8e1-4e5a-a379-3d6d21b7abc8\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PAN Standard v1",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "customer-id",
+            "value": "{{customer-id}}",
+            "type": "text"
+          },
+          {
+            "key": "private-api-key",
+            "value": "{{private-api-key}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"full_name\": \"Pramod Kumar Mahto\",\r\n    \"date_of_birth\": \"1982-04-03\",\r\n    \"pan\": \"ANRPM2537J\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://api.bharatinformatics.com/prod/pan_standard/v1/",
+          "protocol": "https",
+          "host": [
+            "api",
+            "bharatinformatics",
+            "com"
+          ],
+          "path": [
+            "prod",
+            "pan_standard",
+            "v1",
+            ""
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "customer-id",
+                "value": "{{customer-id}}",
+                "type": "text"
+              },
+              {
+                "key": "private-api-key",
+                "value": "{{private-api-key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"full_name\": \"Pramod Kumar Mahto\",\r\n    \"date_of_birth\": \"1982-04-03\",\r\n    \"pan\": \"ANRPM2537J\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.bharatinformatics.com/prod/pan_standard/v1/",
+              "protocol": "https",
+              "host": [
+                "api",
+                "bharatinformatics",
+                "com"
+              ],
+              "path": [
+                "prod",
+                "pan_standard",
+                "v1",
+                ""
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Date",
+              "value": "Sun, 06 Apr 2025 23:39:42 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "326"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Apigw-Requestid",
+              "value": "In-NeglDhcwEJhA="
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"success\",\n    \"data\": {\n        \"name_match\": true,\n        \"dob_match\": true,\n        \"pan_status\": \"Active\"\n    },\n    \"meta\": {\n        \"api\": \"PAN Standard v1\",\n        \"request_id\": \"424a5010-60e0-4f59-ad51-c505f13fe878\",\n        \"response_id\": \"5a0f9cf2-5fb5-4796-97e3-f8bedae00611\",\n        \"completed_at\": \"2025-04-07T05:09:42.147965+05:30\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "PAN Details v1",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "customer-id",
+            "value": "{{customer-id}}",
+            "type": "text"
+          },
+          {
+            "key": "private-api-key",
+            "value": "{{private-api-key}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"pan\": \"ANRPM2537J\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://api.bharatinformatics.com/prod/pan_details/v1/",
+          "protocol": "https",
+          "host": [
+            "api",
+            "bharatinformatics",
+            "com"
+          ],
+          "path": [
+            "prod",
+            "pan_details",
+            "v1",
+            ""
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "customer-id",
+                "value": "{{customer-id}}",
+                "type": "text"
+              },
+              {
+                "key": "private-api-key",
+                "value": "{{private-api-key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"pan\": \"ANRPM2537J\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.bharatinformatics.com/prod/pan_details/v1/",
+              "protocol": "https",
+              "host": [
+                "api",
+                "bharatinformatics",
+                "com"
+              ],
+              "path": [
+                "prod",
+                "pan_details",
+                "v1",
+                ""
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "Date",
+              "value": "Wed, 24 Sep 2025 05:41:13 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "759"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Apigw-Requestid",
+              "value": "RZGi0hH-hcwEJGw="
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"success\",\n    \"data\": {\n        \"pan\": \"ANRPM2537J\",\n        \"pan_type\": \"Individual\",\n        \"fullname\": \"PRAMOD KUMAR MAHTO\",\n        \"first_name\": \"PRAMOD KUMAR\",\n        \"middle_name\": \"\",\n        \"last_name\": \"MAHTO\",\n        \"gender\": \"male\",\n        \"aadhaar_number\": \"XXXXXXXX5265\",\n        \"aadhaar_linked\": true,\n        \"dob\": \"03/04/1982\",\n        \"address\": {\n            \"building_name\": \"Room No.68, Mariya Committee Chawl\",\n            \"locality\": \"Bangur Nagar S.O\",\n            \"street_name\": \"Old Hanuman Nagar\",\n            \"pincode\": \"400104\",\n            \"city\": \"Goregaon\",\n            \"state\": \"Maharashtra\",\n            \"country\": \"India\"\n        },\n        \"mobile\": \"\",\n        \"email\": \"\"\n    },\n    \"meta\": {\n        \"api\": \"PAN Details v1\",\n        \"request_id\": \"b94052e7-3306-42b3-baf4-6192d469afb7\",\n        \"response_id\": \"b99ecef3-7321-4003-b2d4-aa52efcba796\",\n        \"completed_at\": \"2025-09-24T11:11:13.654414+05:30\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "PAN to GSTIN v1",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "customer-id",
+            "value": "{{customer-id}}",
+            "type": "text"
+          },
+          {
+            "key": "private-api-key",
+            "value": "{{private-api-key}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"pan\": \"AAACR5055K\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://api.bharatinformatics.com/prod/pan_to_gstin/v1/",
+          "protocol": "https",
+          "host": [
+            "api",
+            "bharatinformatics",
+            "com"
+          ],
+          "path": [
+            "prod",
+            "pan_to_gstin",
+            "v1",
+            ""
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "customer-id",
+                "value": "{{customer-id}}",
+                "type": "text"
+              },
+              {
+                "key": "private-api-key",
+                "value": "{{private-api-key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"pan\": \"AAACR5055K\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.bharatinformatics.com/prod/pan_to_gstin/v1/",
+              "protocol": "https",
+              "host": [
+                "api",
+                "bharatinformatics",
+                "com"
+              ],
+              "path": [
+                "prod",
+                "pan_to_gstin",
+                "v1",
+                ""
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Date",
+              "value": "Mon, 28 Jul 2025 17:19:53 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "6663"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Apigw-Requestid",
+              "value": "Obigwg6ahcwEMGg="
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"success\",\n    \"data\": {\n        \"count\": 67,\n        \"gstinResList\": [\n            {\n                \"gstin\": \"24AAACR5055K5Z9\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"24\",\n                \"state\": \"Gujarat\"\n            },\n            {\n                \"gstin\": \"18AAACR5055K2Z5\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"18\",\n                \"state\": \"Assam\"\n            },\n            {\n                \"gstin\": \"33AAACR5055K1ZE\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"33\",\n                \"state\": \"Tamil Nadu\"\n            },\n            {\n                \"gstin\": \"22AAACR5055K1ZH\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"22\",\n                \"state\": \"Chhattisgarh\"\n            },\n            {\n                \"gstin\": \"04AAACR5055K1ZF\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"04\",\n                \"state\": \"Chandigarh\"\n            },\n            {\n                \"gstin\": \"01AAACR5055K1ZL\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"01\",\n                \"state\": \"Jammu and Kashmir\"\n            },\n            {\n                \"gstin\": \"30AAACR5055K1ZK\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"30\",\n                \"state\": \"Goa\"\n            },\n            {\n                \"gstin\": \"29AAACR5055K2Z2\",\n                \"authStatus\": \"Inactive\",\n                \"stateCd\": \"29\",\n                \"state\": \"Karnataka\"\n            },\n            {\n                \"gstin\": \"16AAACR5055K1ZA\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"16\",\n                \"state\": \"Tripura\"\n            },\n            {\n                \"gstin\": \"26AAACR5055K1Z9\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"26\",\n                \"state\": \"Dadra and Nagar Haveli and Daman and Diu\"\n            },\n            {\n                \"gstin\": \"29AAACR5055K1Z3\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"29\",\n                \"state\": \"Karnataka\"\n            },\n            {\n                \"gstin\": \"36AAACR5055K1Z8\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"36\",\n                \"state\": \"Telangana\"\n            },\n            {\n                \"gstin\": \"36AAACR5055K2Z7\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"36\",\n                \"state\": \"Telangana\"\n            },\n            {\n                \"gstin\": \"06AAACR5055K2ZA\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"06\",\n                \"state\": \"Haryana\"\n            },\n            {\n                \"gstin\": \"24AAACR5055K4ZA\",\n                \"authStatus\": \"Inactive\",\n                \"stateCd\": \"24\",\n                \"state\": \"Gujarat\"\n            },\n            {\n                \"gstin\": \"23AAACR5055K3ZD\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"23\",\n                \"state\": \"Madhya Pradesh\"\n            },\n            {\n                \"gstin\": \"37AAACR5055K2Z5\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"37\",\n                \"state\": \"Andhra Pradesh\"\n            },\n            {\n                \"gstin\": \"38AAACR5055K1Z4\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"38\",\n                \"state\": \"Ladakh\"\n            },\n            {\n                \"gstin\": \"02AAACR5055K1ZJ\",\n                \"authStatus\": \"Inactive\",\n                \"stateCd\": \"02\",\n                \"state\": \"Himachal Pradesh\"\n            },\n            {\n                \"gstin\": \"21AAACR5055K3ZH\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"21\",\n                \"state\": \"Odisha\"\n            },\n            {\n                \"gstin\": \"27AAACR5055K2Z6\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"27\",\n                \"state\": \"Maharashtra\"\n            },\n            {\n                \"gstin\": \"24AAACR5055K6Z8\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"24\",\n                \"state\": \"Gujarat\"\n            },\n            {\n                \"gstin\": \"23AAACR5055K2ZE\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"23\",\n                \"state\": \"Madhya Pradesh\"\n            },\n            {\n                \"gstin\": \"25AAACR5055K1ZB\",\n                \"authStatus\": \"Inactive\",\n                \"stateCd\": \"25\",\n                \"state\": \"Daman and Diu\"\n            },\n            {\n                \"gstin\": \"14AAACR5055K1ZE\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"14\",\n                \"state\": \"Manipur\"\n            },\n            {\n                \"gstin\": \"11AAACR5055K1ZK\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"11\",\n                \"state\": \"Sikkim\"\n            },\n            {\n                \"gstin\": \"08AAACR5055K2Z6\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"08\",\n                \"state\": \"Rajasthan\"\n            },\n            {\n                \"gstin\": \"19AAACR5055K1Z4\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"19\",\n                \"state\": \"West Bengal\"\n            },\n            {\n                \"gstin\": \"27AAACR5055K1Z7\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"27\",\n                \"state\": \"Maharashtra\"\n            },\n            {\n                \"gstin\": \"37AAACR5055K3Z4\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"37\",\n                \"state\": \"Andhra Pradesh\"\n            },\n            {\n                \"gstin\": \"21AAACR5055K1ZJ\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"21\",\n                \"state\": \"Odisha\"\n            },\n            {\n                \"gstin\": \"97AAACR5055K1Z0\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"97\",\n                \"state\": \"Other Territory\"\n            },\n            {\n                \"gstin\": \"23AAACR5055K1ZF\",\n                \"authStatus\": \"Inactive\",\n                \"stateCd\": \"23\",\n                \"state\": \"Madhya Pradesh\"\n            },\n            {\n                \"gstin\": \"07AAACR5055K1Z9\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"07\",\n                \"state\": \"Delhi\"\n            },\n            {\n                \"gstin\": \"09AAACR5055K1Z5\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"09\",\n                \"state\": \"Uttar Pradesh\"\n            },\n            {\n                \"gstin\": \"27AAACR5055K5Z3\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"27\",\n                \"state\": \"Maharashtra\"\n            },\n            {\n                \"gstin\": \"10AAACR5055K1ZM\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"10\",\n                \"state\": \"Bihar\"\n            },\n            {\n                \"gstin\": \"18AAACR5055K1Z6\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"18\",\n                \"state\": \"Assam\"\n            },\n            {\n                \"gstin\": \"12AAACR5055K1ZI\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"12\",\n                \"state\": \"Arunachal Pradesh\"\n            },\n            {\n                \"gstin\": \"32AAACR5055K1ZG\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"32\",\n                \"state\": \"Kerala\"\n            },\n            {\n                \"gstin\": \"37AAACR5055K1Z6\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"37\",\n                \"state\": \"Andhra Pradesh\"\n            },\n            {\n                \"gstin\": \"09AAACR5055K2Z4\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"09\",\n                \"state\": \"Uttar Pradesh\"\n            },\n            {\n                \"gstin\": \"23AAACR5055K4ZC\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"23\",\n                \"state\": \"Madhya Pradesh\"\n            },\n            {\n                \"gstin\": \"05AAACR5055K1ZD\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"05\",\n                \"state\": \"Uttarakhand\"\n            },\n            {\n                \"gstin\": \"33AAACR5055K2ZD\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"33\",\n                \"state\": \"Tamil Nadu\"\n            },\n            {\n                \"gstin\": \"34AAACR5055K1ZC\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"34\",\n                \"state\": \"Puducherry\"\n            },\n            {\n                \"gstin\": \"02AAACR5055K2ZI\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"02\",\n                \"state\": \"Himachal Pradesh\"\n            },\n            {\n                \"gstin\": \"34AAACR5055K2ZB\",\n                \"authStatus\": \"Inactive\",\n                \"stateCd\": \"34\",\n                \"state\": \"Puducherry\"\n            },\n            {\n                \"gstin\": \"03AAACR5055K3ZF\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"03\",\n                \"state\": \"Punjab\"\n            },\n            {\n                \"gstin\": \"24AAACR5055K2ZC\",\n                \"authStatus\": \"Inactive\",\n                \"stateCd\": \"24\",\n                \"state\": \"Gujarat\"\n            },\n            {\n                \"gstin\": \"08AAACR5055K1Z7\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"08\",\n                \"state\": \"Rajasthan\"\n            },\n            {\n                \"gstin\": \"26AAACR5055K2Z8\",\n                \"authStatus\": \"Inactive\",\n                \"stateCd\": \"26\",\n                \"state\": \"Dadra and Nagar Haveli and Daman and Diu\"\n            },\n            {\n                \"gstin\": \"03AAACR5055K2ZG\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"03\",\n                \"state\": \"Punjab\"\n            },\n            {\n                \"gstin\": \"17AAACR5055K1Z8\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"17\",\n                \"state\": \"Meghalaya\"\n            },\n            {\n                \"gstin\": \"27AAACR5055K6Z2\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"27\",\n                \"state\": \"Maharashtra\"\n            },\n            {\n                \"gstin\": \"13AAACR5055K1ZG\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"13\",\n                \"state\": \"Nagaland\"\n            },\n            {\n                \"gstin\": \"21AAACR5055K2ZI\",\n                \"authStatus\": \"Inactive\",\n                \"stateCd\": \"21\",\n                \"state\": \"Odisha\"\n            },\n            {\n                \"gstin\": \"20AAACR5055K1ZL\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"20\",\n                \"state\": \"Jharkhand\"\n            },\n            {\n                \"gstin\": \"27AAACR5055K4Z4\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"27\",\n                \"state\": \"Maharashtra\"\n            },\n            {\n                \"gstin\": \"27AAACR5055K3Z5\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"27\",\n                \"state\": \"Maharashtra\"\n            },\n            {\n                \"gstin\": \"15AAACR5055K1ZC\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"15\",\n                \"state\": \"Mizoram\"\n            },\n            {\n                \"gstin\": \"22AAACR5055K2ZG\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"22\",\n                \"state\": \"Chhattisgarh\"\n            },\n            {\n                \"gstin\": \"03AAACR5055K1ZH\",\n                \"authStatus\": \"Inactive\",\n                \"stateCd\": \"03\",\n                \"state\": \"Punjab\"\n            },\n            {\n                \"gstin\": \"35AAACR5055K1ZA\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"35\",\n                \"state\": \"Andaman and Nicobar Islands\"\n            },\n            {\n                \"gstin\": \"06AAACR5055K1ZB\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"06\",\n                \"state\": \"Haryana\"\n            },\n            {\n                \"gstin\": \"24AAACR5055K1ZD\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"24\",\n                \"state\": \"Gujarat\"\n            },\n            {\n                \"gstin\": \"24AAACR5055K3ZB\",\n                \"authStatus\": \"Active\",\n                \"stateCd\": \"24\",\n                \"state\": \"Gujarat\"\n            }\n        ]\n    },\n    \"meta\": {\n        \"api\": \"PAN to GSTIN v1\",\n        \"request_id\": \"413b06a1-ee21-429c-8bd3-c9906a0e203c\",\n        \"response_id\": \"fe68da32-d4a2-4fdd-b140-cb35b1a61d64\",\n        \"completed_at\": \"2025-07-28T22:49:53.771427+05:30\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "GSTIN Basic v1",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "customer-id",
+            "value": "{{customer-id}}",
+            "type": "text"
+          },
+          {
+            "key": "private-api-key",
+            "value": "{{private-api-key}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"gstin\": \"27AAACR5055K1Z7\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://api.bharatinformatics.com/prod/gstin_basic/v1/",
+          "protocol": "https",
+          "host": [
+            "api",
+            "bharatinformatics",
+            "com"
+          ],
+          "path": [
+            "prod",
+            "gstin_basic",
+            "v1",
+            ""
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "customer-id",
+                "value": "{{customer-id}}",
+                "type": "text"
+              },
+              {
+                "key": "private-api-key",
+                "value": "{{private-api-key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"gstin\": \"27AAACR5055K1Z7\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.bharatinformatics.com/prod/gstin_basic/v1/",
+              "protocol": "https",
+              "host": [
+                "api",
+                "bharatinformatics",
+                "com"
+              ],
+              "path": [
+                "prod",
+                "gstin_basic",
+                "v1",
+                ""
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Date",
+              "value": "Sat, 01 Feb 2025 04:14:50 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "7119"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Apigw-Requestid",
+              "value": "FSXkMh_HBcwEJsA="
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"success\",\n    \"data\": {\n        \"taxpayerDetails\": {\n            \"ntcrbs\": \"MFT\",\n            \"adhrVFlag\": \"Yes\",\n            \"lgnm\": \"RELIANCE INDUSTRIES LIMITED\",\n            \"stj\": \"State - Maharashtra,Zone - RAIGAD,Division - RAIGAD-NORTH,Charge - URAN_701\",\n            \"dty\": \"Regular\",\n            \"cxdt\": \"\",\n            \"gstin\": \"27AAACR5055K1Z7\",\n            \"nba\": [\n                \"Factory / Manufacturing\",\n                \"Retail Business\",\n                \"Input Service Distributor (ISD)\",\n                \"Bonded Warehouse\",\n                \"SEZ\",\n                \"Works Contract\",\n                \"Warehouse / Depot\",\n                \"Service Provision\",\n                \"Leasing Business\",\n                \"Office / Sale Office\",\n                \"Recipient of Goods or Services\",\n                \"Wholesale Business\",\n                \"EOU / STP / EHTP\",\n                \"Supplier of Services\",\n                \"Others\",\n                \"Export\"\n            ],\n            \"ekycVFlag\": \"Not Applicable\",\n            \"cmpRt\": \"NA\",\n            \"rgdt\": \"01/07/2017\",\n            \"ctb\": \"Public Limited Company\",\n            \"pradr\": {\n                \"adr\": \"5, TTC Industrial Area, 5, Reliance Corporate Park, Thane Belapur Road, Ghansoli, Navi Mumbai, Thane, Maharashtra, 400701\"\n            },\n            \"sts\": \"Active\",\n            \"tradeNam\": \"RELIANCE INDUSTRIES LIMITED\",\n            \"isFieldVisitConducted\": \"No\",\n            \"adhrVdt\": \"20/01/2025\",\n            \"ctj\": \"State - CBIC,Zone - MUMBAI,Commissionerate - BELAPUR,Division - DIVISION IV,Range - RANGE-IV (Jurisdictional Office)\",\n            \"einvoiceStatus\": \"Yes\"\n        },\n        \"taxpayerReturnDetails\": {\n            \"filingStatus\": [\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"December\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/01/2025\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"November\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/12/2024\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"October\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/11/2024\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"September\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/10/2024\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"August\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/09/2024\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"July\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"09/08/2024\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"June\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/07/2024\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"May\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/06/2024\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"April\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/05/2024\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"December\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"22/01/2025\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"November\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/12/2024\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"October\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/11/2024\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"September\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"19/10/2024\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"August\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/09/2024\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"July\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/08/2024\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"June\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/07/2024\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"May\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/06/2024\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2024-2025\",\n                    \"taxp\": \"April\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"18/05/2024\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"March\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/04/2024\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"February\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/03/2024\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"January\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/02/2024\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"December\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/01/2024\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"November\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/12/2023\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"October\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"10/11/2023\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"September\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/10/2023\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"August\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/09/2023\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"July\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/08/2023\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"June\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"11/07/2023\",\n                    \"rtntype\": \"GSTR1\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"March\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/04/2024\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"February\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/03/2024\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"January\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/02/2024\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"December\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/01/2024\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"November\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/12/2023\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"October\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/11/2023\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"September\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/10/2023\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"August\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/09/2023\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"July\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"19/08/2023\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"June\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"20/07/2023\",\n                    \"rtntype\": \"GSTR3B\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"Annual\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"31/12/2024\",\n                    \"rtntype\": \"GSTR9\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                },\n                {\n                    \"fy\": \"2023-2024\",\n                    \"taxp\": \"Annual\",\n                    \"mof\": \"ONLINE\",\n                    \"dof\": \"31/12/2024\",\n                    \"rtntype\": \"GSTR9C\",\n                    \"arn\": \"NA\",\n                    \"status\": \"Filed\"\n                }\n            ],\n            \"array_length\": 1\n        },\n        \"goods_service\": {\n            \"bzgddtls\": [\n                {\n                    \"gdes\": \"OTHER\",\n                    \"hsncd\": \"55151190\"\n                },\n                {\n                    \"gdes\": \"POLYPROPYLENE ARTICLES, NOT ELSEWHERE SPECIFIED OR INCLUDED\",\n                    \"hsncd\": \"39269080\"\n                },\n                {\n                    \"gdes\": \"ETHYLENE, PROPYLENE, BUTYLENE AND BUTADIENE\",\n                    \"hsncd\": \"27111400\"\n                },\n                {\n                    \"gdes\": \"OTHER, OF POLYESTERS, PARTIALLY ORIENTED\",\n                    \"hsncd\": \"54024600\"\n                },\n                {\n                    \"gdes\": \"WASHING PREPARATIONS (INCLUDING AUXILIARY WASHING PREPARATIONS) AND CLEANING PREPARATIONS, HAVING A BASIS OF SOAP OR OTHER ORGANIC SURFACE ACTIVE AGENTS\",\n                    \"hsncd\": \"34029091\"\n                }\n            ]\n        }\n    },\n    \"meta\": {\n        \"api\": \"GSTIN Basic v1\",\n        \"request_id\": \"f538bc8a-4002-4595-98a0-777b1bb07c13\",\n        \"response_id\": \"7b89ab9a-21f0-4a1b-a11e-f5db374e21d3\",\n        \"completed_at\": \"2025-02-01T09:44:50.610863+05:30\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "CIN Basic v1",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "customer-id",
+            "value": "{{customer-id}}",
+            "type": "text"
+          },
+          {
+            "key": "private-api-key",
+            "value": "{{private-api-key}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"cin\": \"U33301KA2007FTC041898\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://api.bharatinformatics.com/prod/cin_basic/v1/",
+          "protocol": "https",
+          "host": [
+            "api",
+            "bharatinformatics",
+            "com"
+          ],
+          "path": [
+            "prod",
+            "cin_basic",
+            "v1",
+            ""
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "customer-id",
+                "value": "{{customer-id}}",
+                "type": "text"
+              },
+              {
+                "key": "private-api-key",
+                "value": "{{private-api-key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"cin\": \"U33301KA2007FTC041898\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.bharatinformatics.com/prod/cin_basic/v1/",
+              "protocol": "https",
+              "host": [
+                "api",
+                "bharatinformatics",
+                "com"
+              ],
+              "path": [
+                "prod",
+                "cin_basic",
+                "v1",
+                ""
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Date",
+              "value": "Wed, 30 Jul 2025 01:30:05 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Content-Length",
+              "value": "2558"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Apigw-Requestid",
+              "value": "Of9PWhCBhcwEMNQ="
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"success\",\n    \"data\": {\n        \"company_master_data\": {\n            \"cin\": \"U33301KA2007FTC041898\",\n            \"company_id\": \"\",\n            \"company_llp_name\": \"SEIKO WATCH INDIA PRIVATE LIMITED\",\n            \"roc_code\": \"ROC Bangalore\",\n            \"registration_number\": \"041898\",\n            \"company_category\": \"Company limited by shares\",\n            \"company_subcategory\": \"subsidiary of company incorporated outside India\",\n            \"class_of_company\": \"Private\",\n            \"authorised_capital\": \"85000000\",\n            \"paid_up_capital\": \"85000000\",\n            \"number_of_members\": \"\",\n            \"date_of_incorporation\": \"26/02/2007\",\n            \"registered_address\": \"No.874, 'Temple Vista', Ground Floor, Sri Krishna Temple Road, Indiranagar 1st Stage, Bangalore Bangalore Karnataka 560038 India\",\n            \"email_id\": \"ravi.as@seiko.in\",\n            \"whether_listed_or_not\": \"Unlisted\",\n            \"date_of_last_agm\": \"23/09/2024\",\n            \"date_of_balance_sheet\": \"31/03/2024\",\n            \"company_status\": \"Active\"\n        },\n        \"charges\": [\n            {\n                \"assets_under_charges\": \"\",\n                \"charge_amount\": \"\",\n                \"date_of_creation\": \"\",\n                \"date_of_modification\": \"\",\n                \"status\": \"\"\n            }\n        ],\n        \"directors_signatory_details\": [\n            {\n                \"din_pan\": \"07340521\",\n                \"name\": \"TAKU YONEYAMA\",\n                \"begin_date\": \"28/09/2016\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"07550667\",\n                \"name\": \"NILADRI MAZUMDER\",\n                \"begin_date\": \"28/09/2016\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"08533786\",\n                \"name\": \"YASUO OKAJIMA\",\n                \"begin_date\": \"25/09/2019\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"08533897\",\n                \"name\": \"YOSHIKATSU KAWADA\",\n                \"begin_date\": \"05/07/2024\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"\",\n                \"name\": \"SWATI BAIDYA\",\n                \"begin_date\": \"21/08/2017\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"07550667\",\n                \"name\": \"NILADRI MAZUMDER\",\n                \"begin_date\": \"20/02/2023\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"\",\n                \"name\": \"U33301KA2007FTC041898 U33301KA2007FTC041898\",\n                \"begin_date\": \"16/08/2022\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"01209721\",\n                \"name\": \"DUSHYANT KUMAR SINGH\",\n                \"begin_date\": \"11/09/2019\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"\",\n                \"name\": \"KYASANOOR RAVINDRANATHA ADARSHA\",\n                \"begin_date\": \"31/03/2025\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"08533897\",\n                \"name\": \"YOSHIKATSU KAWADA\",\n                \"begin_date\": \"01/07/2024\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"\",\n                \"name\": \"DUSHYANT KUMAR SINGH\",\n                \"begin_date\": \"11/09/2019\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"06846697\",\n                \"name\": \"TERUYO ISHIMARU\",\n                \"begin_date\": \"03/01/2024\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"10221437\",\n                \"name\": \"NAOAKI TANIMURA\",\n                \"begin_date\": \"27/07/2023\",\n                \"end_date\": \"\"\n            },\n            {\n                \"din_pan\": \"10221441\",\n                \"name\": \"HIROMI KANAGAWA\",\n                \"begin_date\": \"27/07/2023\",\n                \"end_date\": \"\"\n            }\n        ]\n    },\n    \"meta\": {\n        \"api\": \"CIN Basic v1\",\n        \"request_id\": \"424a5010-60e0-4f59-ad51-c505f13fe877\",\n        \"response_id\": \"2b429c12-8e6f-4fee-ade3-7d9484ab5118\",\n        \"completed_at\": \"2025-07-30T07:00:05.173447+05:30\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Mobile Prefill with Name v1",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "content-type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "customer-id",
+            "value": "{{customer-id}}",
+            "type": "text"
+          },
+          {
+            "key": "private-api-key",
+            "value": "{{private-api-key}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"mobile\": \"9999999999\",\r\n    \"first_name\": \"John\",\r\n    \"last_name\": \"Doe\"\r\n}"
+        },
+        "url": {
+          "raw": "https://api.bharatinformatics.com/prod/mobile_prefill_with_name/v1/",
+          "protocol": "https",
+          "host": [
+            "api",
+            "bharatinformatics",
+            "com"
+          ],
+          "path": [
+            "prod",
+            "mobile_prefill_with_name",
+            "v1",
+            ""
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Success - Data Found",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "customer-id",
+                "value": "{{customer-id}}",
+                "type": "text"
+              },
+              {
+                "key": "private-api-key",
+                "value": "{{private-api-key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"request_id\": \"{{$guid}}\",\r\n    \"mobile\": \"9999999999\",\r\n    \"first_name\": \"John\",\r\n    \"last_name\": \"Doe\"\r\n}"
+            },
+            "url": {
+              "raw": "https://api.bharatinformatics.com/prod/mobile_prefill_with_name/v1/",
+              "protocol": "https",
+              "host": [
+                "api",
+                "bharatinformatics",
+                "com"
+              ],
+              "path": [
+                "prod",
+                "mobile_prefill_with_name",
+                "v1",
+                ""
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "Text",
+          "header": [
+            {
+              "key": ":status",
+              "value": 200
+            },
+            {
+              "key": "date",
+              "value": "Fri, 10 Apr 2026 09:18:34 GMT"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json"
+            },
+            {
+              "key": "content-length",
+              "value": "1389"
+            },
+            {
+              "key": "apigw-requestid",
+              "value": "bmMAdj8rBcwEPBA="
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"status\": \"success\",\n    \"code\": 200,\n    \"message\": \"success\",\n    \"data\": {\n        \"name\": \"John Doe\",\n        \"dob\": \"01-01-1991\",\n        \"age\": \"35\",\n        \"gender\": \"Male\",\n        \"pan\": \"XXXXD0123X\",\n        \"email\": \"JOHNDOE@GMAIL.COM\",\n        \"address\": [\n            {\n                \"first_line_of_address\": \"ABC XYZ\",\n                \"second_line_of_address\": \"MUMBAI SOUTH\",\n                \"third_line_of_address\": \"LOWER PAREL 400013\",\n                \"city\": \"SOUTH MUMBAI\",\n                \"state\": \"MAHARASHTRA\",\n                \"postal_code\": 400013,\n                \"country_code\": \"IB\",\n                \"reported_date\": \"\"\n            }\n        ]\n    },\n    \"meta\": {\n        \"api\": \"Mobile Prefill with Name v1\",\n        \"request_id\": \"b0f97915-0bc9-4a41-a1b8-f67afa71c326\",\n        \"response_id\": \"4526147e-2592-4814-8b85-ea0c508ba2fe\",\n        \"completed_at\": \"2026-04-10T14:48:34.527900+05:30\"\n    }\n}"
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "customer-id",
+      "value": "atmoonventures-prod-26-39-33-0c-b407"
+    },
+    {
+      "key": "private-api-key",
+      "value": "587237f6-0253-4e60-869e-614769966a81"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-package com.technyk.amarsinghclub
+package com.technyk.aaioi
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -11,7 +11,7 @@ class MainActivity : ReactActivity() {
    * Returns the name of the main component registered from JavaScript. This is used to schedule
    * rendering of the component.
    */
-  override fun getMainComponentName(): String = "AmarSinghClub"
+  override fun getMainComponentName(): String = "AAIOI"
 
   /**
    * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]

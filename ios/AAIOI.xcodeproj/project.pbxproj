@@ -27,7 +27,6 @@
 		4ABBC54FC45B4F35A2B275E7 /* OpenSans_SemiCondensed-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1BD7588C363743BBA56FA5DA /* OpenSans_SemiCondensed-Light.ttf */; };
 		519B0307029A4DEF9BAC3ACF /* OpenSans_Condensed-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1999FFAA59734423BB9D2FB7 /* OpenSans_Condensed-Bold.ttf */; };
 		52562223B0584EFE9181FE34 /* OpenSans_Condensed-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7A678EDD08D544CE8E53E2E0 /* OpenSans_Condensed-Regular.ttf */; };
-		5478D564E326CD4B3303AF9C /* libPods-AmarSinghClub.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E9A4DA58C559A63303AA0716 /* libPods-AmarSinghClub.a */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		8A986CBFA0515E70AABF776C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		8DFB75CCF1BA48529A56DDDD /* OpenSans_SemiCondensed-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 46178C1705A44496B5B77F74 /* OpenSans_SemiCondensed-Regular.ttf */; };
@@ -47,23 +46,27 @@
 		D4CC211A003440B19076357F /* OpenSans_Condensed-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 66944406C8B24E45928D58A9 /* OpenSans_Condensed-ExtraBold.ttf */; };
 		DFFABC2039C049D1B311A81F /* OpenSans-ExtraBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9EC33BA1A9064BA5A79A8873 /* OpenSans-ExtraBoldItalic.ttf */; };
 		E4218B480B5045798A1E2251 /* OpenSans_Condensed-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8730179B15AE480ABF96A3EA /* OpenSans_Condensed-SemiBoldItalic.ttf */; };
+		E51EABBC71AD4FDC8435AB4B /* libPods-AAIOI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 01507B8D11A20916ACD4D9F8 /* libPods-AAIOI.a */; };
 		EF03F844078446FEACCDF816 /* OpenSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 984F7587EF7443FDA92A5EE1 /* OpenSans-Medium.ttf */; };
 		F684407B66CE4A1D8CE05C83 /* OpenSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3777B27B5795444EADC0B3E7 /* OpenSans-Bold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		01507B8D11A20916ACD4D9F8 /* libPods-AAIOI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AAIOI.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0495267F9D6A59E842A34F2B /* Pods-AmarSinghClub.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AmarSinghClub.release.xcconfig"; path = "Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub.release.xcconfig"; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* AmarSinghClub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AmarSinghClub.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* AAIOI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AAIOI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = GVIClub/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = GVIClub/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = GVIClub/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		1999FFAA59734423BB9D2FB7 /* OpenSans_Condensed-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_Condensed-Bold.ttf"; path = "../assets/fonts/OpenSans_Condensed-Bold.ttf"; sourceTree = "<group>"; };
 		1BD7588C363743BBA56FA5DA /* OpenSans_SemiCondensed-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_SemiCondensed-Light.ttf"; path = "../assets/fonts/OpenSans_SemiCondensed-Light.ttf"; sourceTree = "<group>"; };
 		210EE515CA064DD0BD689CD8 /* OpenSans_SemiCondensed-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_SemiCondensed-BoldItalic.ttf"; path = "../assets/fonts/OpenSans_SemiCondensed-BoldItalic.ttf"; sourceTree = "<group>"; };
+		27C39FFE304A9F277D71DDEE /* Pods-AAIOI.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AAIOI.debug.xcconfig"; path = "Target Support Files/Pods-AAIOI/Pods-AAIOI.debug.xcconfig"; sourceTree = "<group>"; };
 		2906D1682FCAB05B007EB721 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		293B417F2ECDA56F007D5BAF /* GVIClub.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = GVIClub.entitlements; path = GVIClub/GVIClub.entitlements; sourceTree = "<group>"; };
 		29BF40712ECC9FAF00312D6A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		2D363C9843FC4BC6BC234DF9 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = ../assets/fonts/MaterialIcons.ttf; sourceTree = "<group>"; };
+		31CD04BB2142C8FAA2BED064 /* Pods-BareillyClub.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BareillyClub.release.xcconfig"; path = "Target Support Files/Pods-BareillyClub/Pods-BareillyClub.release.xcconfig"; sourceTree = "<group>"; };
 		365260B279644F3FB7EF9DCB /* OpenSans-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Regular.ttf"; path = "../assets/fonts/OpenSans-Regular.ttf"; sourceTree = "<group>"; };
 		368552FF55574366B0471F22 /* OpenSans_Condensed-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_Condensed-Medium.ttf"; path = "../assets/fonts/OpenSans_Condensed-Medium.ttf"; sourceTree = "<group>"; };
 		3777B27B5795444EADC0B3E7 /* OpenSans-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Bold.ttf"; path = "../assets/fonts/OpenSans-Bold.ttf"; sourceTree = "<group>"; };
@@ -76,6 +79,7 @@
 		5B05360C8EE44D69ADFDCB0B /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = ../assets/fonts/SimpleLineIcons.ttf; sourceTree = "<group>"; };
 		5E7B3BA122FE4199AFD6DE27 /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = ../assets/fonts/EvilIcons.ttf; sourceTree = "<group>"; };
 		60925EC782D14110A8F2A695 /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = ../assets/fonts/Zocial.ttf; sourceTree = "<group>"; };
+		6304E07EF3EEE4C03B109689 /* Pods-AAIOI.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AAIOI.release.xcconfig"; path = "Target Support Files/Pods-AAIOI/Pods-AAIOI.release.xcconfig"; sourceTree = "<group>"; };
 		646DCB9050AE44D393E6ACA1 /* FontAwesome6_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome6_Brands.ttf; path = ../assets/fonts/FontAwesome6_Brands.ttf; sourceTree = "<group>"; };
 		66944406C8B24E45928D58A9 /* OpenSans_Condensed-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_Condensed-ExtraBold.ttf"; path = "../assets/fonts/OpenSans_Condensed-ExtraBold.ttf"; sourceTree = "<group>"; };
 		6E97529064F14D98BEE07635 /* OpenSans_SemiCondensed-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_SemiCondensed-Italic.ttf"; path = "../assets/fonts/OpenSans_SemiCondensed-Italic.ttf"; sourceTree = "<group>"; };
@@ -115,12 +119,12 @@
 		B7E12BD600C7023DB1133259 /* Pods-AFSC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AFSC.debug.xcconfig"; path = "Target Support Files/Pods-AFSC/Pods-AFSC.debug.xcconfig"; sourceTree = "<group>"; };
 		BEC99070353747059D128D8F /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = ../assets/fonts/Fontisto.ttf; sourceTree = "<group>"; };
 		C31D201774F91CD08B7DFA4C /* Pods-Technyk.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Technyk.debug.xcconfig"; path = "Target Support Files/Pods-Technyk/Pods-Technyk.debug.xcconfig"; sourceTree = "<group>"; };
+		C3DA911B11C8E7A3FB60063F /* Pods-BareillyClub.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BareillyClub.debug.xcconfig"; path = "Target Support Files/Pods-BareillyClub/Pods-BareillyClub.debug.xcconfig"; sourceTree = "<group>"; };
 		C4BFED9F5EFC2AA6938D4208 /* Pods-GVIClub.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GVIClub.release.xcconfig"; path = "Target Support Files/Pods-GVIClub/Pods-GVIClub.release.xcconfig"; sourceTree = "<group>"; };
 		D59798D187A945A7AFB9CEE1 /* OpenSans-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-LightItalic.ttf"; path = "../assets/fonts/OpenSans-LightItalic.ttf"; sourceTree = "<group>"; };
 		DD02BDDC66C549C3AE50450F /* OpenSans_Condensed-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_Condensed-ExtraBoldItalic.ttf"; path = "../assets/fonts/OpenSans_Condensed-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
 		E57C164DD7C14E7C954D2407 /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = ../assets/fonts/Ionicons.ttf; sourceTree = "<group>"; };
 		E8F8EB9D1915FA655BE07C50 /* Pods-LGC.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LGC.release.xcconfig"; path = "Target Support Files/Pods-LGC/Pods-LGC.release.xcconfig"; sourceTree = "<group>"; };
-		E9A4DA58C559A63303AA0716 /* libPods-AmarSinghClub.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AmarSinghClub.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F17AA747E0674412B0244B59 /* FontAwesome6_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome6_Solid.ttf; path = ../assets/fonts/FontAwesome6_Solid.ttf; sourceTree = "<group>"; };
 		F1F9CC16F9BD4B7082C87339 /* OpenSans_Condensed-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans_Condensed-BoldItalic.ttf"; path = "../assets/fonts/OpenSans_Condensed-BoldItalic.ttf"; sourceTree = "<group>"; };
@@ -134,14 +138,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5478D564E326CD4B3303AF9C /* libPods-AmarSinghClub.a in Frameworks */,
+				E51EABBC71AD4FDC8435AB4B /* libPods-AAIOI.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		13B07FAE1A68108700A75B9A /* AmarSinghClub */ = {
+		13B07FAE1A68108700A75B9A /* AAIOI */ = {
 			isa = PBXGroup;
 			children = (
 				293B417F2ECDA56F007D5BAF /* GVIClub.entitlements */,
@@ -152,7 +156,7 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 			);
-			name = AmarSinghClub;
+			name = AAIOI;
 			sourceTree = "<group>";
 		};
 		1479E3A9B54E446482D2B96C /* Resources */ = {
@@ -221,7 +225,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				E9A4DA58C559A63303AA0716 /* libPods-AmarSinghClub.a */,
+				01507B8D11A20916ACD4D9F8 /* libPods-AAIOI.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -236,7 +240,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				13B07FAE1A68108700A75B9A /* AmarSinghClub */,
+				13B07FAE1A68108700A75B9A /* AAIOI */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
@@ -251,7 +255,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* AmarSinghClub.app */,
+				13B07F961A680F5B00A75B9A /* AAIOI.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -269,6 +273,10 @@
 				A23C43CA918B2CFC435BEF53 /* Pods-Technyk.release.xcconfig */,
 				90FE336F66E62544F9A37118 /* Pods-AmarSinghClub.debug.xcconfig */,
 				0495267F9D6A59E842A34F2B /* Pods-AmarSinghClub.release.xcconfig */,
+				C3DA911B11C8E7A3FB60063F /* Pods-BareillyClub.debug.xcconfig */,
+				31CD04BB2142C8FAA2BED064 /* Pods-BareillyClub.release.xcconfig */,
+				27C39FFE304A9F277D71DDEE /* Pods-AAIOI.debug.xcconfig */,
+				6304E07EF3EEE4C03B109689 /* Pods-AAIOI.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -276,9 +284,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		13B07F861A680F5B00A75B9A /* AmarSinghClub */ = {
+		13B07F861A680F5B00A75B9A /* AAIOI */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AmarSinghClub" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AAIOI" */;
 			buildPhases = (
 				FDFDAAE2948E70783ADCF4C0 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
@@ -293,9 +301,9 @@
 			);
 			dependencies = (
 			);
-			name = AmarSinghClub;
+			name = AAIOI;
 			productName = GVIClub;
-			productReference = 13B07F961A680F5B00A75B9A /* AmarSinghClub.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* AAIOI.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -311,7 +319,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "AmarSinghClub" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "AAIOI" */;
 			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -324,7 +332,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* AmarSinghClub */,
+				13B07F861A680F5B00A75B9A /* AAIOI */,
 			);
 		};
 /* End PBXProject section */
@@ -417,19 +425,19 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-AAIOI/Pods-AAIOI-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			inputPaths = (
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-AAIOI/Pods-AAIOI-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AAIOI/Pods-AAIOI-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		8BF4999F4DA2CB9C3D360F58 /* [CP] Embed Pods Frameworks */ = {
@@ -438,19 +446,19 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-AAIOI/Pods-AAIOI-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			inputPaths = (
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-AAIOI/Pods-AAIOI-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AmarSinghClub/Pods-AmarSinghClub-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AAIOI/Pods-AAIOI-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FDFDAAE2948E70783ADCF4C0 /* [CP] Check Pods Manifest.lock */ = {
@@ -468,7 +476,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-AmarSinghClub-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-AAIOI-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -491,30 +499,30 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 90FE336F66E62544F9A37118 /* Pods-AmarSinghClub.debug.xcconfig */;
+			baseConfigurationReference = 27C39FFE304A9F277D71DDEE /* Pods-AAIOI.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = GVIClub/GVIClub.entitlements;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 22N8UDXNHA;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = GVIClub/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Amar singh club";
+				INFOPLIST_KEY_CFBundleDisplayName = AAIOI;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.7;
+				MARKETING_VERSION = 0.0.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.technyk.amarsinghclub;
-				PRODUCT_NAME = AmarSinghClub;
+				PRODUCT_BUNDLE_IDENTIFIER = com.technyk.aaioi;
+				PRODUCT_NAME = AAIOI;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -524,29 +532,29 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0495267F9D6A59E842A34F2B /* Pods-AmarSinghClub.release.xcconfig */;
+			baseConfigurationReference = 6304E07EF3EEE4C03B109689 /* Pods-AAIOI.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = GVIClub/GVIClub.entitlements;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 22N8UDXNHA;
 				INFOPLIST_FILE = GVIClub/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Amar singh club";
+				INFOPLIST_KEY_CFBundleDisplayName = AAIOI;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.7;
+				MARKETING_VERSION = 0.0.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.technyk.amarsinghclub;
-				PRODUCT_NAME = AmarSinghClub;
+				PRODUCT_BUNDLE_IDENTIFIER = com.technyk.aaioi;
+				PRODUCT_NAME = AAIOI;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -728,7 +736,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AmarSinghClub" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AAIOI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
@@ -737,7 +745,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "AmarSinghClub" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "AAIOI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,

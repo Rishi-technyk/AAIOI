@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "AmarSinghClub.app"
-               BlueprintName = "AmarSinghClub"
-               ReferencedContainer = "container:AmarSinghClub.xcodeproj">
+               BuildableName = "AAIOI.app"
+               BlueprintName = "AAIOI"
+               ReferencedContainer = "container:AAIOI.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "AmarSinghClub.app"
-            BlueprintName = "AmarSinghClub"
-            ReferencedContainer = "container:AmarSinghClub.xcodeproj">
+            BuildableName = "AAIOI.app"
+            BlueprintName = "AAIOI"
+            ReferencedContainer = "container:AAIOI.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "AmarSinghClub.app"
-            BlueprintName = "AmarSinghClub"
-            ReferencedContainer = "container:AmarSinghClub.xcodeproj">
+            BuildableName = "AAIOI.app"
+            BlueprintName = "AAIOI"
+            ReferencedContainer = "container:AAIOI.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

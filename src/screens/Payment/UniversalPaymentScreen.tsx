@@ -23,7 +23,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSelector } from 'react-redux';
 import { useQueryClient } from '@tanstack/react-query';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
-import { getway as APP_GATEWAY } from '@env';
+import { getway as APP_GATEWAY, APP_NAME, ICON_URL } from '@env';
 
 import Header from '../../components/Header';
 import DetailSection from '../../components/booking/DetailSection';
@@ -41,7 +41,7 @@ import AppAlertModal from '../../components/feedback/AppAlertModal';
 import { useAppAlert } from '../../hooks/useAppAlert';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'UniversalPayment'>;
-type PaymentUiStatus = 'processing' | 'success' | 'failed' | 'pending' | 'Paid';
+type PaymentUiStatus = 'processing' | 'success'|'Not Paid' | 'failed' | 'pending' | 'Paid';
 
 const POLL_INTERVAL_MS = 2200;
 const POLL_ATTEMPTS = 7;
@@ -275,10 +275,12 @@ console.log( status, '---------------------- paymentResult ---------------------
       }
 
       setStatusPayload(payload);
+console.log( payload.payment_status, '---------------------- payment_status ---------------------');
 
       const nextUiStatus = mapStatusToUi(
        payload?.payment_status,
       );
+
       const nextPhase =
         nextUiStatus === 'success'|| nextUiStatus === 'Paid'
           ? 'Payment verified successfully'
@@ -535,7 +537,8 @@ console.log( apiRes, '---------------------- apiRes ---------------------');
       order_id: paymentConfig.orderId,
       amount: Math.round(paymentConfig.amount * 100),
       currency: 'INR',
-      name: paymentConfig.gatewayName,
+      name: APP_NAME,
+      icon:ICON_URL,
       description: type,
       prefill: {
         name: userData?.user?.DisplayName,
@@ -831,6 +834,8 @@ const openEasebuzzCheckout = useCallback(async () => {
       statusPayload?.payment_status ||
       (status === 'Paid' 
         ? 'Success'
+        : status === 'Not Paid'
+        ? 'Failed'
         : status === 'failed'
         ? 'Failed'
         : status === 'pending'
@@ -879,6 +884,8 @@ const openEasebuzzCheckout = useCallback(async () => {
       ? 'Payment successful'
       : status === 'failed'
       ? 'Payment failed'
+      : status === 'Not Paid'
+      ? 'Payment failed'
       : status === 'pending'
       ? 'Awaiting confirmation'
       : 'Processing payment';
@@ -887,7 +894,7 @@ const openEasebuzzCheckout = useCallback(async () => {
     status === 'success'
       ? 'The transaction is verified and the related booking or balance updates are being reflected.'
       : status === 'failed'
-      ? errorMessage || 'We could not complete the payment. You can retry from here.'
+      ?  'We could not complete the payment. You can retry from here.'
       : status === 'pending'
       ? 'We are waiting for the gateway to confirm the payment. Pull to refresh or check again.'
       : 'Please stay on this screen while we complete the secure payment handshake.';
@@ -1011,18 +1018,7 @@ const openEasebuzzCheckout = useCallback(async () => {
             delay={130}
           >
             <View style={styles.actionRow}>
-              {canRetry ? (
-                <Pressable
-                  onPress={retryPayment}
-                  disabled={retrying}
-                  style={retryActionStyle}
-                >
-                  <Icon name="refresh" size={18} color={colors.onPrimary} />
-                  <Text style={[styles.primaryActionText, { color: colors.onPrimary }]}>
-                    {retrying ? 'Retrying...' : 'Retry payment'}
-                  </Text>
-                </Pressable>
-              ) : null}
+          
 
               <Pressable
                 onPress={onRefresh}

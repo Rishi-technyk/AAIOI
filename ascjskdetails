@@ -1,4 +1,4 @@
- keytool -genkeypair -v -keystore clubdepalma.jks -keyalg RSA -keysize 2048 -validity 10000 -alias key-1
+ keytool -genkeypair -v -keystore aaioi.jks -keyalg RSA -keysize 2048 -validity 10000 -alias key-1
 
 Enter keystore password:  
 Re-enter new password: qwerty

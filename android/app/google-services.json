@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "462582817456",
-    "project_id": "amarsinghclub-caeef",
-    "storage_bucket": "amarsinghclub-caeef.firebasestorage.app"
+    "project_number": "353240215124",
+    "project_id": "aaioi-a1be3",
+    "storage_bucket": "aaioi-a1be3.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:462582817456:android:8ce98c7fb9f71bcb4c5175",
+        "mobilesdk_app_id": "1:353240215124:android:901daecb2e40cc054047c1",
         "android_client_info": {
-          "package_name": "com.technyk.amarsinghclub"
+          "package_name": "com.technyk.aaioi"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD1-VculetCiClQ4RU6bC3eWCsYuGxXf8k"
+          "current_key": "AIzaSyBkFWGEXNBnOK8NnPg40-C42BpJr74ANfE"
         }
       ],
       "services": {

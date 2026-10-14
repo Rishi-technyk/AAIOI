@@ -79,23 +79,23 @@ android {
     project.ext.vectoricons = [
     iconFontNames: [ 'MaterialIcons.ttf', 'Ionicons.ttf', 'FontAwesome.ttf' ]
 ]
-    namespace "com.technyk.amarsinghclub"
+    namespace "com.technyk.aaioi"
     defaultConfig {
-        applicationId "com.technyk.amarsinghclub"
+        applicationId "com.technyk.aaioi"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 6
-        versionName "0.0.6"
+        versionCode 3
+        versionName "0.0.3"
     }
     signingConfigs {
         debug {
-           storeFile file('asc.jks')
+           storeFile file('aaioi.jks')
             storePassword 'qwerty'
             keyAlias 'key-1'
             keyPassword 'qwerty'
         }
          release {
-             storeFile file('asc.jks')
+             storeFile file('aaioi.jks')
             storePassword 'qwerty'
             keyAlias 'key-1'
             keyPassword 'qwerty'
