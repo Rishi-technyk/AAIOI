@@ -38,7 +38,7 @@ const InAppUpdate: React.FC = () => {
               { text: "Later" },
               {
                 text: "Update",
-                onPress: () => Linking.openURL('https://apps.apple.com/in/app/amarsinghclub/id6768513591'),
+                onPress: () => Linking.openURL('https://apps.apple.com/in/app/aaioi/id6795487189'),
               },
             ]
           );

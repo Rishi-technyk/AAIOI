@@ -85,7 +85,7 @@ const BookingForm:React.FC<Props> = ({navigation}) => {
 
   const [Venue, setvenue] = useState([]);
   const [Remark, setRemark] = useState('');
-console.log( Venue, '---------------------- Venue ---------------------');
+console.log( data?.settings?.min_days, '---------------------- Venue ---------------------');
   const [charge, setCharge] = useState(1);
 
   const [rooms, setRooms] = useState([]);
@@ -631,7 +631,8 @@ const Venue_type = (index, newVenue) => {
     return updated;
   });
 };
-
+const minBookingOffset = data?.settings?.min_days ?? 1;
+const maxBookingOffset = data?.settings?.max_days ?? 30;
   return (
     <View style={styles.container}>
       <Header title={'Book Your Venue'}></Header>
@@ -788,10 +789,10 @@ const Venue_type = (index, newVenue) => {
                 stateDate={setStartDate}
                 placeholder={moment(StartDate).format('DD-MMM-YY')}
                 maxDate={moment()
-                    .add(data?.settings?.max_days ?? 50, 'days')
+                    .add(maxBookingOffset , 'days')
                     .toDate()}
                     minDate={moment()
-                    .add(data?.settings?.min_days ?? 3, 'days')
+                    .add(minBookingOffset , 'days')
                     .toDate()}
                     
 

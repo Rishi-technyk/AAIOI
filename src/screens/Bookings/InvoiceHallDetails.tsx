@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
   RefreshControl,
@@ -31,6 +31,9 @@ import { javascriptPost } from '../../util/api';
 import { AppStackParamList } from '../../navigation/AppDrawer';
 import { RootState } from '../../store/store';
 import { useAppTheme } from '../../theme/AppThemeProvider';
+import { TextInput } from 'react-native-gesture-handler';
+import UniversalModal from '../../components/UniversalModal';
+import { CustomCheckbox } from '../../components/CustomCheckBox';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'InvoiceHallDetails'>;
 
@@ -38,14 +41,25 @@ const InvoiceHallDetails: React.FC<Props> = ({ route }) => {
   const userData = useSelector((state: RootState) => state.auth);
   const { colors } = useAppTheme();
   const { resolveTone, buildPaymentTimeline } = usePaymentStatus();
-
+const [modalState, setModalState] = React.useState({
+    isVisible: false,
+    title: '',
+    id: null,
+  });
   const { data, isLoading, isError, refreshing, refresh } = useBookingDetails({
     queryKey: 'banquet-booking-detail',
     path: `member/banquet/transaction/${route.params.id}`,
     token: userData.token,
     transform: response => (response?.status ? response.data : null),
   });
-
+const [cancellationForm, setCancellationForm] = useState({
+    bankName: '',
+    accountHolderName: '',
+    accountNumber: '',
+    ifscCode: '',
+    cancellationReason: '',
+    isConfirmed: false,
+  });
   const handleDownload = useCallback(async () => {
     if (!data) {
       return;
@@ -94,6 +108,11 @@ const InvoiceHallDetails: React.FC<Props> = ({ route }) => {
         path: 'member/banquet/cancel',
         body: {
           ban_charge_id: String(chargeId),
+              bank_name: cancellationForm.bankName,
+          account_holder_name: cancellationForm.accountHolderName,
+          account_number: cancellationForm.accountNumber,
+          ifsc_code: cancellationForm.ifscCode,
+          cancellation_reason: cancellationForm.cancellationReason,
         },
         Token: userData.token,
       });
@@ -221,7 +240,7 @@ const InvoiceHallDetails: React.FC<Props> = ({ route }) => {
                   ]}
                 />
 
-                {item.status === 'Cancelled' ? (
+                {item.status === 'Cancelled' || item.status === 'Refunded' ? (
                   <View style={[styles.cancelBox, { borderColor: colors.danger, backgroundColor: `${colors.danger}10` }]}>
                     <Text style={[styles.cancelTitle, { color: colors.danger }]}>Cancellation Summary</Text>
                     <Text style={[styles.cancelText, { color: colors.text }]}>
@@ -237,10 +256,16 @@ const InvoiceHallDetails: React.FC<Props> = ({ route }) => {
                   <TouchableOpacity
                     style={[styles.cancelButton, { backgroundColor: colors.danger }]}
                     onPress={() =>
-                      Alert.alert('Cancel venue', 'Are you sure you want to cancel this venue session?', [
-                        { text: 'No', style: 'cancel' },
-                        { text: 'Yes', style: 'destructive', onPress: () => cancelVenue(item.id) },
-                      ])
+                      // Alert.alert('Cancel venue', 'Are you sure you want to cancel this venue session?', [
+                      //   { text: 'No', style: 'cancel' },
+                      //   { text: 'Yes', style: 'destructive', onPress: () => cancelVenue(item.id) },
+                      // ])
+                      setModalState({
+                        isVisible: true,
+                        title: 'Cancel room',
+                        id: item.id,
+                       
+                      })
                     }
                   >
                     <Icon name="close-circle-outline" size={16} color={colors.onPrimary} />
@@ -294,6 +319,99 @@ const InvoiceHallDetails: React.FC<Props> = ({ route }) => {
           </View>
         </DetailSection>
       </ScrollView>
+          <UniversalModal
+        visible={modalState.isVisible}
+        title={modalState.title}
+        isFull={true}
+        
+        setVisible={() => setModalState({ isVisible: false, title: '' })}
+       
+      >
+        <Text style={styles.cancelTitle}>Bank Name</Text>
+        <TextInput
+          placeholder="Enter Bank Name"
+          value={cancellationForm.bankName} 
+          onChangeText={(text) => setCancellationForm({...cancellationForm, bankName: text})}
+          maxLength={80}
+          style={[styles.formInput,{
+            color: colors.text,
+             borderColor: colors.border,
+          }]}
+        />
+         <Text style={styles.cancelTitle}>Account Holder Name</Text>
+        <TextInput
+          placeholder="Enter Account Holder Name"
+          value={cancellationForm.accountHolderName}
+             maxLength={80}
+          onChangeText={(text) => setCancellationForm({...cancellationForm, accountHolderName: text})}
+       style={[styles.formInput,{
+            color: colors.text,
+             borderColor: colors.border,
+          }]}
+        />
+         <Text style={styles.cancelTitle}>Account Number</Text>
+         <TextInput
+          placeholder="Enter Account Number"
+          value={cancellationForm.accountNumber}
+          keyboardType='decimal-pad'
+             maxLength={25}
+          onChangeText={(text) => setCancellationForm({...cancellationForm, accountNumber: text})}
+          style={[styles.formInput,{
+            color: colors.text,
+             borderColor: colors.border,
+          }]}
+        />
+         <Text style={styles.cancelTitle}>IFSC Code</Text>
+            <TextInput
+          placeholder="Enter IFSC Code"
+           maxLength={20}
+          value={cancellationForm.ifscCode}
+          onChangeText={(text) => setCancellationForm({...cancellationForm, ifscCode: text})}
+         style={[styles.formInput,{
+            color: colors.text,
+             borderColor: colors.border,
+          }]}
+        />
+          <Text style={styles.cancelTitle}>Cancellation Reason</Text>
+        <TextInput
+          placeholder="Enter cancellation reason"
+          value={cancellationForm.cancellationReason}
+          onChangeText={(text) => setCancellationForm({...cancellationForm, cancellationReason: text})}
+          multiline
+            maxLength={200}
+         style={[styles.formInput,{
+            color: colors.text,
+             borderColor: colors.border,
+            minHeight: 100,
+            textAlignVertical: 'top',
+            color: colors.text,
+          }]}
+        />
+        <View style={{ flexDirection: 'row', alignItems: 'center', margin: 12 }}>
+        <CustomCheckbox
+         checked={cancellationForm.isConfirmed}
+        onToggle={()=> setCancellationForm({...cancellationForm, isConfirmed: !cancellationForm.isConfirmed})}
+
+        />
+        <Text style={{ marginLeft: 10,color: colors.text }}>I confirm that the above details are correct and I want to proceed with the cancellation.</Text>
+        </View>
+        <TouchableOpacity
+          style={{
+            backgroundColor: colors.danger,
+            paddingVertical: 12,
+            borderRadius: 8,
+            marginTop: 12,
+            alignItems: 'center',
+          }}
+          onPress={() => {
+            // Handle cancellation logic here
+            setModalState({ isVisible: false, title: '' });
+          cancelVenue(modalState.id); // Assuming you want to cancel the first room for demonstration
+          }}
+        >
+          <Text  style={{ color: colors.onPrimary, fontWeight: 'bold' }}>Submit Cancellation</Text>
+        </TouchableOpacity>
+      </UniversalModal>
     </View>
   );
 };
@@ -302,6 +420,12 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: 32,
   },
+    formInput:{
+            borderWidth: 1,
+           
+            borderRadius: 8,
+            marginVertical: 12,
+          },
   itemCard: {
     borderWidth: 1,
     borderRadius: 18,

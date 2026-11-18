@@ -219,6 +219,24 @@ export const ENDPOINT = {
  complete_kot_order:'staff/complete-order/',
  modifyKOT:'staff/modify-kot',
  kot_remarks:'staff/kot-remarks',
+
+
+ //Packages
+   club_packages: 'member/club-packages',
+  club_package_occupants:
+    'member/club-packages/occupants',
+  club_package_guest_search:
+    'member/club-packages/guest-search',
+  club_package_calculate:
+    'member/club-packages/calculate',
+  club_package_book:
+    'member/club-packages/initiate-payment',
+  club_package_bookings:
+    'member/club-packages/bookings',
+  club_package_booking_detail:
+    'member/club-packages/bookings',
+  club_package_cancel:
+    'member/club-packages/bookings',
 } as const;
 
 // Optional: Export Type for endpoint keys

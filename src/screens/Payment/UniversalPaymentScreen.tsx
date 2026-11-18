@@ -333,7 +333,7 @@ console.log( payload.payment_status, '---------------------- payment_status ----
       if (!paymentConfig.verifyEndpoint) {
         return null;
       }
-
+console.log( paymentConfig.verifyEndpoint, '----------------here------ ---------------------');
       const apiRes = await javascriptPost({
         path: paymentConfig.verifyEndpoint,
         body: {
@@ -346,7 +346,7 @@ console.log( payload.payment_status, '---------------------- payment_status ----
         },
         Token: userData?.token,
       });
-
+console.log( apiRes, '---------------------- apiRes ---------------------');
       setPaymentResult(apiRes?.data || apiRes || null);
 console.log( apiRes, '---------------------- apiRes ---------------------');
 
@@ -538,7 +538,8 @@ console.log( apiRes, '---------------------- apiRes ---------------------');
       amount: Math.round(paymentConfig.amount * 100),
       currency: 'INR',
       name: APP_NAME,
-      icon:ICON_URL,
+      image:ICON_URL,
+      
       description: type,
       prefill: {
         name: userData?.user?.DisplayName,
@@ -557,7 +558,7 @@ console.log( apiRes, '---------------------- apiRes ---------------------');
 
     setPhase('Opening native payment checkout');
     const result = await RazorpayCheckout.open(options);
-
+console.log( result, '---------------------- result ---------------------');
     return verifyThroughEndpoint({
       ...result,
       transaction_id: paymentConfig.transactionId,
@@ -732,6 +733,7 @@ const openEasebuzzCheckout = useCallback(async () => {
     } catch (error: any) {
       const message = error?.description || error?.message || 'Payment could not be started.';
       await syncLegacyFailure(message);
+     
       setErrorMessage(message);
       setOutcomeState('failed', 'Payment flow was interrupted');
       setLoading(false);

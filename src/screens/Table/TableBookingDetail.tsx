@@ -99,7 +99,7 @@ console.log( booking, '---------------------- booking.booking_date -------------
   if (isLoading) {
     return (
       <View style={{ flex: 1 }}>
-        <Header title="Table Details" />
+        <Header title="Salon Details" />
         <ShimmerView />
       </View>
     );
@@ -123,8 +123,8 @@ console.log( booking, '---------------------- booking.booking_date -------------
         subtitle={moment(booking.booking_date).format('DD MMM YYYY')}
 meta={[
   { label: 'Time', value: booking?.time?.time },
-  { label: 'Venue', value: booking?.venue?.name },
-  { label: 'Table', value: booking?.table?.name },
+  { label: 'Service', value: booking?.venue?.name },
+  { label: 'Chair', value: booking?.table?.name },
 ]}
 
      

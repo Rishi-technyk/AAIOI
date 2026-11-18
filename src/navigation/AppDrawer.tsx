@@ -75,6 +75,10 @@ import FoodMenu from '../screens/FoodOrder/FoodMenu';
 import MemberFoodCart from '../screens/FoodOrder/MemberFoodCart';
 import MemberOrderDetails from '../screens/FoodOrder/MemberOrderDetails';
 import ViewBill from '../screens/ViewBill';
+import ClubPackages from '../screens/Packages/ClubPackages';
+import PackageBookingDetail from '../screens/Packages/PackageBookingDetail';
+import SalonBookingDetail from '../screens/Salon/SalonBookingDetails';
+import Salon from '../screens/Salon/Salon';
 
 /* -----------------------------------------------------------
    TYPE DEFINITIONS FOR NAVIGATION
@@ -178,6 +182,8 @@ export type AppStackParamList = {
   ValidateMemberTickets: {
     memberData: any;
   };
+  ClubPackages:undefined;
+  PackageBookingDetail:undefined;
   //Payment
   UniversalPayment: {
     orderData: any;
@@ -391,6 +397,9 @@ const AppStackScreens = () => {
       {/* Table */}
       <Stack.Screen name="Table" component={Tables} />
       <Stack.Screen name="TableBookingDetail" component={TableBookingDetail} />
+      {/* Table */}
+      <Stack.Screen name="Salon" component={Salon} />
+      <Stack.Screen name="SalonBookingDetail" component={SalonBookingDetail} />
       {/* MMR */}
       <Stack.Screen name="MMR" component={MMR} />
 
@@ -408,6 +417,10 @@ const AppStackScreens = () => {
        <Stack.Screen name="FoodMenu" component={FoodMenu} />
        <Stack.Screen name="MemberFoodCart" component={MemberFoodCart} />
        <Stack.Screen name="MemberOrderDetails" component={MemberOrderDetails} />
+
+           {/* Packages */}
+      <Stack.Screen name="ClubPackages" component={ClubPackages} />
+      <Stack.Screen name="PackageBookingDetail" component={PackageBookingDetail} />
     </Stack.Navigator>
   );
 };

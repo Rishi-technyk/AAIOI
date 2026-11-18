@@ -249,7 +249,109 @@ const MyBookings: React.FC<Props> = ({ navigation, route }) => {
       </TouchableOpacity>
     );
   };
+  const renderPackagesItem = ({ item }: { item: any }) => {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={() =>
+        navigation.navigate('PackageBookingDetail', {
+          bookingId: item.id,
+        })
+      }
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+        },
+      ]}
+    >
+      <View style={styles.rowBetween}>
+        <Text style={[styles.cardTitle, { color: colors.text }]}>
+          {item?.activity_name}
+        </Text>
 
+         <View
+        style={[
+          styles.badge,
+          {
+            alignSelf: 'flex-end',
+            backgroundColor: getStatusTone(item?.booking_status).bg,
+          },
+        ]}
+      >
+        <Text
+          style={[
+            styles.badgeText,
+            {
+              color: getStatusTone(item?.booking_status).fg,
+            },
+          ]}
+        >
+          {item?.booking_status}
+        </Text>
+      </View>
+      </View>
+
+      <InfoRow
+        label="Booking No."
+        value={item?.booking_no}
+        colors={colors}
+      />
+
+      <InfoRow
+        label="Frequency"
+        value={item?.frequency_name}
+        colors={colors}
+      />
+
+      <InfoRow
+        label="Booked On"
+        value={moment(item?.booking_date).format(
+          'DD MMM YYYY, hh:mm A',
+        )}
+        colors={colors}
+      />
+
+      <InfoRow
+        label="Validity"
+        value={`${moment(item?.valid_from).format(
+          'DD MMM YYYY',
+        )} - ${ item?.frequency_name ==='LIFETIME'?item?.frequency_name:moment(item?.valid_to).format('DD MMM YYYY')}`}
+        colors={colors}
+      />
+
+      {/* <InfoRow
+        label="Participants"
+        value={`${participants.length}`}
+        colors={colors}
+      /> */}
+
+      <InfoRow
+        label="Total Amount"
+        value={`₹ ${Number(item?.total_amount ?? 0).toFixed(2)}`}
+        colors={colors}
+      />
+
+    <InfoRow
+  label="Payment"
+  value={item?.payment_status}
+  colors={colors}
+  valueColor={
+    item?.payment_status === 'Paid'
+      ? '#16A34A' // Green
+      : item?.payment_status === 'Pending'
+      ? '#F59E0B' // Orange
+      : item?.payment_status === 'Failed'
+      ? '#DC2626' // Red
+      : colors.text
+  }
+/>
+
+    
+    </TouchableOpacity>
+  );
+};
   
   // const renderActivityItem = ({ item }: { item: any }) => (
   //   <TouchableOpacity
@@ -441,6 +543,8 @@ console.log( data, '---------------------- data ---------------------');
         return renderTeeItem({ item });
       case 'Table':
         return renderTableItem({ item });
+      case 'Packages':
+        return renderPackagesItem({ item });
       default:
         return null;
     }
@@ -496,7 +600,7 @@ console.log( data, '---------------------- data ---------------------');
         <AnalyticsCard label="Cancelled" value={analytics.cancelled} colors={colors} tone="danger" />
       </View>
 
-      <BookingHeroCard
+      {/* <BookingHeroCard
         eyebrow="Booking Hub"
         title={`${toggle} History`}
         subtitle={`Track upcoming, active, and completed ${toggle?.toLowerCase()} reservations from one place.`}
@@ -506,7 +610,7 @@ console.log( data, '---------------------- data ---------------------');
           { label: 'Pending', value: String(analytics.pending), tone: 'warning' },
           { label: 'Cancelled', value: String(analytics.cancelled), tone: 'danger' },
         ]}
-      />
+      /> */}
 
       {isInitialLoading ? (
         <ShimmerList colors={colors} />

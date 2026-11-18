@@ -1,7 +1,7 @@
 import * as api from '../../util/api';
 import { ENDPOINT } from '../../util/constant';
 
-export type BookingTab = 'Room' | 'Banquet' | 'Activity' | 'Event' | 'Tee' | 'Table';
+export type BookingTab = 'Room' | 'Banquet' | 'Activity' | 'Event' | 'Tee' | 'Table'|'Packages';
 
 type FetchBookingsParams = {
   tab: string;
@@ -21,6 +21,7 @@ const TAB_API_MAP: Record<BookingTab, string> = {
   Event: ENDPOINT.event_bookings,
   Tee: ENDPOINT.get_tee_bookings,
   Table: 'member/table-bookings',
+    Packages: 'member/club-packages/bookings',
 };
 
 const getEndpointForTab = (tab: string): string | null => {

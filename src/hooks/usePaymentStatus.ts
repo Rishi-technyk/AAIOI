@@ -18,7 +18,7 @@ export const usePaymentStatus = () => {
       normalized.includes('success') ||
       normalized.includes('active') ||
       normalized.includes('confirmed') ||
-      normalized.includes('complete')
+      normalized.includes('complete') 
     ) {
       return {
         background: `${colors.success}22`,

@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
+  Image,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -21,13 +23,17 @@ import AppAlertModal from '../../components/feedback/AppAlertModal';
 import { useAppAlert } from '../../hooks/useAppAlert';
 import UniversalModal from '../../components/UniversalModal';
 import NewButton from '../../components/Button';
-import { usePlayers, usePlayersQuery } from '../../services/Activity/FacilityService';
+import {
+  usePlayers,
+  usePlayersQuery,
+} from '../../services/Activity/FacilityService';
 import { javascriptPost } from '../../util/api';
-import { ENDPOINT } from '../../util/constant';
+import { DOMAIN, ENDPOINT } from '../../util/constant';
 import { FONT_FAMILY } from '../../util/colors';
 import { AppStackParamList } from '../../navigation/AppDrawer';
 import { RootState } from '../../store/store';
 import { useAppTheme } from '../../theme/AppThemeProvider';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Players'>;
 
@@ -37,11 +43,13 @@ type PlayerForm = {
   name: string;
   mobile: string;
   email: string;
+  image: string;
 };
 
 const ShimmerPlaceholder = createShimmerPlaceholder(LinearGradient);
 
 const initialFormState: PlayerForm = {
+  image: '',
   name: '',
   mobile: '',
   email: '',
@@ -87,14 +95,19 @@ const Players: React.FC<Props> = () => {
 
     return [];
   }, [playersQuery?.data]);
-
+  console.log(
+    savedPlayers,
+    '---------------------- savedPlayers ---------------------',
+  );
   const searchedPlayers = useMemo(() => {
     const searchData = guestQuery?.data?.data?.data;
     return Array.isArray(searchData) ? searchData : [];
   }, [guestQuery?.data]);
 
   const favoriteCount = useMemo(
-    () => savedPlayers.filter((item: any) => Number(item?.is_favorite) === 1).length,
+    () =>
+      savedPlayers.filter((item: any) => Number(item?.is_favorite) === 1)
+        .length,
     [savedPlayers],
   );
 
@@ -112,6 +125,8 @@ const Players: React.FC<Props> = () => {
     setPlayerForm({
       id: item.id,
       is_update: true,
+      image:  '',
+      profile_image: item.profile_image || '',
       name: item.name || '',
       mobile: item.mobile || '',
       email: item.email || '',
@@ -128,7 +143,16 @@ const Players: React.FC<Props> = () => {
       });
       return false;
     }
-
+    console.log( playerForm, '---------------------- playerForm ---------------------');
+    if (!playerForm.image?.length && !playerForm.profile_image?.length) {
+      showAlert({
+        title: 'Profile image required',
+        message: 'Please upload a profile image for the guest. sss.',
+        tone: 'warning',
+      });
+      return false;
+    }
+     console.log(  '----------------------asddasd playerForm ---------------------');
     const mobileRegex = /^[0-9]{10}$/;
     if (!mobileRegex.test(playerForm.mobile)) {
       showAlert({
@@ -167,42 +191,78 @@ const Players: React.FC<Props> = () => {
     setSaving(true);
 
     try {
-      const response = await javascriptPost({
-        path: playerForm.is_update
-          ? ENDPOINT.update_activity_guest + playerForm.id
-          : ENDPOINT.create_activity_guest,
-        body: {
-          name: playerForm.name,
-          email: playerForm.email,
-          mobile: playerForm.mobile,
-          occupant_id: 2,
+      const apiUrl = playerForm.is_update
+        ? DOMAIN.BASE + ENDPOINT.update_activity_guest + playerForm.id
+        : DOMAIN.BASE + ENDPOINT.create_activity_guest;
+
+      const formData = new FormData();
+
+      // Upload image only if a new image is selected
+      if (playerForm.image && !playerForm.image.startsWith('http')) {
+        const extension =
+          playerForm.image.split('.').pop()?.split('?')[0] || 'jpg';
+
+        formData.append('profile_image', {
+          uri: playerForm.image,
+          type: extension.toLowerCase() === 'png' ? 'image/png' : 'image/jpeg',
+          name: `profile.${extension}`,
+        } as any);
+      }
+
+      formData.append('name', playerForm.name);
+      formData.append('email', playerForm.email);
+      formData.append('mobile', playerForm.mobile);
+      formData.append('occupant_id', '2');
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${userData?.token}`,
+          Accept: 'application/json',
         },
-        Token: userData?.token,
+        body: formData,
       });
-console.log( response, '---------------------- response ---------------------');
+
+      const result = await response.json();
+
+      console.log('Guest API response:', result);
+
+      if (!response.ok) {
+        throw new Error(JSON.stringify(result.message));
+      }
+
+      //       const response = await javascriptPost({
+      // path: playerForm.is_update
+      //   ? ENDPOINT.update_activity_guest + playerForm.id
+      //   : ENDPOINT.create_activity_guest,
+      //         body: {
+      //           name: playerForm.name,
+      //           email: playerForm.email,
+      //           mobile: playerForm.mobile,
+      //           occupant_id: 2,
+      //         },
+      //         Token: userData?.token,
+      //       });
+      // console.log( response, '---------------------- response ---------------------');
       if (response?.success || response?.status) {
         setShowModal(false);
         setPlayerForm(initialFormState);
         refreshSavedPlayers();
         showAlert({
           title: playerForm.is_update ? 'Player updated' : 'Player added',
-          message: response?.message || 'Player details have been saved successfully.',
+          message:
+            response?.message || 'Player details have been saved successfully.',
           tone: 'success',
         });
         return;
       }
-let message = 'Unable to save player details right now.';
+      let message = 'Unable to save player details right now.';
 
-if (typeof response?.message === 'string') {
-  message = response.message;
-} else if (
-  response?.message &&
-  typeof response.message === 'object'
-) {
-  message = Object.values(response.message)
-    .flat()
-    .join('\n');
-}
+      if (typeof response?.message === 'string') {
+        message = response.message;
+      } else if (response?.message && typeof response.message === 'object') {
+        message = Object.values(response.message).flat().join('\n');
+      }
 
       showAlert({
         title: 'Save failed',
@@ -218,48 +278,81 @@ if (typeof response?.message === 'string') {
     } finally {
       setSaving(false);
     }
-  }, [playerForm, refreshSavedPlayers, showAlert, userData?.token, validatePlayerForm]);
+  }, [
+    playerForm,
+    refreshSavedPlayers,
+    showAlert,
+    userData?.token,
+    validatePlayerForm,
+  ]);
 
-  const updatePlayerAction = useCallback(async (item: any, action: 'Like' | 'Delete') => {
-    try {
-      const response = await javascriptPost({
-        body: {
-          type: action,
-          id: item.id,
-        },
-        path: ENDPOINT.editPlayer,
-        Token: userData?.token,
-      });
+  const updatePlayerAction = useCallback(
+    async (item: any, action: 'Like' | 'Delete') => {
+      try {
+        const response = await javascriptPost({
+          body: {
+            type: action,
+            id: item.id,
+          },
+          path: ENDPOINT.editPlayer,
+          Token: userData?.token,
+        });
 
-      if (response?.status) {
-        refreshSavedPlayers();
-        return;
+        if (response?.status) {
+          refreshSavedPlayers();
+          return;
+        }
+
+        showAlert({
+          title: 'Action unavailable',
+          message:
+            response?.message || 'We could not update this player right now.',
+          tone: 'warning',
+        });
+      } catch (error) {
+        showAlert({
+          title: 'Action failed',
+          message: 'Something went wrong while updating this player.',
+          tone: 'danger',
+        });
       }
+    },
+    [refreshSavedPlayers, showAlert, userData?.token],
+  );
 
+  const openImagePicker = useCallback(() => {
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        quality: 1,
+      },
+      response => {
+        if (response?.didCancel || response?.errorCode) {
+          return;
+        }
+
+        const imageUri = response?.assets?.[0]?.uri;
+        if (imageUri) {
+          setPlayerForm(prev => ({ ...prev, image: imageUri }));
+        }
+      },
+    );
+  }, [setPlayerForm]);
+  const confirmDelete = useCallback(
+    (item: any) => {
       showAlert({
-        title: 'Action unavailable',
-        message: response?.message || 'We could not update this player right now.',
+        title: 'Remove player',
+        message: `Do you want to remove ${
+          item?.name || 'this player'
+        } from your saved list?`,
         tone: 'warning',
+        primaryLabel: 'Remove',
+        secondaryLabel: 'Cancel',
+        onPrimaryPress: () => updatePlayerAction(item, 'Delete'),
       });
-    } catch (error) {
-      showAlert({
-        title: 'Action failed',
-        message: 'Something went wrong while updating this player.',
-        tone: 'danger',
-      });
-    }
-  }, [refreshSavedPlayers, showAlert, userData?.token]);
-
-  const confirmDelete = useCallback((item: any) => {
-    showAlert({
-      title: 'Remove player',
-      message: `Do you want to remove ${item?.name || 'this player'} from your saved list?`,
-      tone: 'warning',
-      primaryLabel: 'Remove',
-      secondaryLabel: 'Cancel',
-      onPrimaryPress: () => updatePlayerAction(item, 'Delete'),
-    });
-  }, [showAlert, updatePlayerAction]);
+    },
+    [showAlert, updatePlayerAction],
+  );
 
   const toggleFilter = useCallback((id: number) => {
     setPlayerFilters(prev =>
@@ -269,62 +362,89 @@ if (typeof response?.message === 'string') {
     );
   }, []);
 
-  const renderSavedPlayer = ({ item }: { item: any }) => (
-    <View style={styles.playerCard}>
-      <View style={styles.playerHeader}>
-        <View style={styles.avatarWrap}>
-          <Text style={styles.avatarLabel}>
-            {(item?.name || 'P').trim().charAt(0).toUpperCase()}
+  const renderSavedPlayer = ({ item }: { item: any }) => {
+    console.log(item, '---------------------- item ---------------------');
+    return (
+      <View style={styles.playerCard}>
+        <View style={styles.playerHeader}>
+          <View style={styles.avatarWrap}>
+            <Image
+              source={{
+                uri:
+                  `${DOMAIN.IMG}${item?.profile_image}` ||
+                  'https://via.placeholder.com/100',
+              }}
+              style={styles.avatar}
+            />
+          </View>
+
+          <View style={styles.playerInfo}>
+            <Text style={styles.playerName}>{item?.name || 'Player'}</Text>
+            <Text style={styles.playerMeta}>
+              {Number(item?.occupant_id) === 1
+                ? item?.player_memberId || 'Member'
+                : 'Non-member'}
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => updatePlayerAction(item, 'Like')}
+            style={styles.starButton}
+          >
+            <StarIcon
+              name={Number(item?.is_favorite) === 1 ? 'star' : 'staro'}
+              size={18}
+              color={
+                Number(item?.is_favorite) === 1 ? '#f59e0b' : colors.textMuted
+              }
+            />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Icon name="email-outline" size={16} color={colors.textMuted} />
+          <Text style={styles.detailText}>
+            {item?.email || 'Email not available'}
           </Text>
         </View>
 
-        <View style={styles.playerInfo}>
-          <Text style={styles.playerName}>{item?.name || 'Player'}</Text>
-          <Text style={styles.playerMeta}>
-            {Number(item?.occupant_id) === 1
-              ? item?.player_memberId || 'Member'
-              : 'Non-member'}
+        <View style={styles.detailRow}>
+          <Icon name="phone-outline" size={16} color={colors.textMuted} />
+          <Text style={styles.detailText}>
+            {item?.mobile || 'Mobile not available'}
           </Text>
         </View>
 
-        <TouchableOpacity onPress={() => updatePlayerAction(item, 'Like')} style={styles.starButton}>
-          <StarIcon
-            name={Number(item?.is_favorite) === 1 ? 'star' : 'staro'}
-            size={18}
-            color={Number(item?.is_favorite) === 1 ? '#f59e0b' : colors.textMuted}
-          />
-        </TouchableOpacity>
+        <View style={styles.actionRow}>
+          {/* <TouchableOpacity
+            style={styles.secondaryAction}
+            onPress={() => openEditModal(item)}
+          >
+            <Icon name="pencil-outline" size={16} color={colors.primary} />
+            <Text style={styles.secondaryActionText}>Edit</Text>
+          </TouchableOpacity> */}
+          <TouchableOpacity
+            style={styles.dangerAction}
+            onPress={() => confirmDelete(item)}
+          >
+            <Icon name="trash-can-outline" size={16} color={colors.danger} />
+            <Text style={styles.dangerActionText}>Remove</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-
-      <View style={styles.detailRow}>
-        <Icon name="email-outline" size={16} color={colors.textMuted} />
-        <Text style={styles.detailText}>{item?.email || 'Email not available'}</Text>
-      </View>
-
-      <View style={styles.detailRow}>
-        <Icon name="phone-outline" size={16} color={colors.textMuted} />
-        <Text style={styles.detailText}>{item?.mobile || 'Mobile not available'}</Text>
-      </View>
-
-      <View style={styles.actionRow}>
-        <TouchableOpacity style={styles.secondaryAction} onPress={() => openEditModal(item)}>
-          <Icon name="pencil-outline" size={16} color={colors.primary} />
-          <Text style={styles.secondaryActionText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.dangerAction} onPress={() => confirmDelete(item)}>
-          <Icon name="trash-can-outline" size={16} color={colors.danger} />
-          <Text style={styles.dangerActionText}>Remove</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  };
 
   const renderSearchResult = ({ item }: { item: any }) => (
     <View style={styles.searchResultCard}>
       <View style={styles.searchResultTextWrap}>
-        <Text style={styles.searchResultName}>{item?.DisplayName?.trim() || 'Player'}</Text>
+        <Text style={styles.searchResultName}>
+          {item?.DisplayName?.trim() || 'Player'}
+        </Text>
         <Text style={styles.searchResultSubtitle}>
-          {Number(item?.occupant_id) === 2 ? 'Non-member' : item?.MemberID || 'Member'}
+          {Number(item?.occupant_id) === 2
+            ? 'Non-member'
+            : item?.MemberID || 'Member'}
         </Text>
       </View>
       <Text style={styles.chargeText}>Rs. {item?.charge || 0}</Text>
@@ -360,7 +480,9 @@ if (typeof response?.message === 'string') {
 
       <FlatList
         data={debouncedSearch ? searchedPlayers : savedPlayers}
-        keyExtractor={(item, index) => String(item?.id || item?.MemberID || index)}
+        keyExtractor={(item, index) =>
+          String(item?.id || item?.MemberID || index)
+        }
         renderItem={debouncedSearch ? renderSearchResult : renderSavedPlayer}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
@@ -373,11 +495,14 @@ if (typeof response?.message === 'string') {
               status={`${savedPlayers.length} saved`}
               statusTone="neutral"
               meta={[
-                { label: 'Favorites', value: String(favoriteCount), tone: 'success' },
+                {
+                  label: 'Favorites',
+                  value: String(favoriteCount),
+                  tone: 'success',
+                },
                 // { label: 'Total', value: String(savedPlayers.length) },
               ]}
             />
-
           </View>
         }
         ListEmptyComponent={
@@ -385,9 +510,9 @@ if (typeof response?.message === 'string') {
             renderSkeleton()
           ) : (
             <EmptyStateCard
-              title={  'No Active slots available for this activity.'}
+              title={'No Active slots available for this activity.'}
               description={
-               'Please check back later or contact support for assistance.'
+                'Please check back later or contact support for assistance.'
               }
             />
           )
@@ -403,18 +528,48 @@ if (typeof response?.message === 'string') {
       >
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>
-            {playerForm.is_update ? 'Update guest details' : 'Create a new saved guest'}
-          </Text>
-          <Text style={styles.modalSubtitle}>
-            These values are posted to the existing activity guest APIs, so the backend and booking flows stay unchanged.
+            {playerForm.is_update
+              ? 'Update guest details'
+              : 'Create a new saved guest'}
           </Text>
 
+          <Text style={styles.modalSubtitle}>
+            These values are posted to the existing activity guest APIs, so the
+            backend and booking flows stay unchanged.
+          </Text>
+          {playerForm.image ||playerForm.profile_image ? (
+            <View style={{ alignItems: 'center' }}>
+              <Pressable onPress={() => openImagePicker()}>
+                <Image
+                  source={{ uri:playerForm.is_update && playerForm.profile_image ? DOMAIN.IMG + playerForm.profile_image : playerForm.image }}
+                  style={styles.playerImage}
+                />
+              </Pressable>
+              <Text style={styles.modalSubtitle}>
+                Click on the image to change the profile image for the guest.
+              </Text>
+            </View>
+          ) : (
+            <View style={{ alignItems: 'center' }}>
+              <Pressable
+                onPress={() => openImagePicker()}
+                style={styles.playerEmptyImage}
+              >
+                <Icon name="account" size={40} color={colors.textMuted} />
+              </Pressable>
+              <Text style={styles.modalSubtitle}>
+                Please upload a profile image for the guest as identity.
+              </Text>
+            </View>
+          )}
           <TextInput
             value={playerForm.name}
             placeholder="Guest name"
             placeholderTextColor={colors.placeholder}
             style={styles.input}
-            onChangeText={text => setPlayerForm(prev => ({ ...prev, name: text }))}
+            onChangeText={text =>
+              setPlayerForm(prev => ({ ...prev, name: text }))
+            }
             cursorColor={colors.primary}
             maxLength={50}
           />
@@ -423,7 +578,9 @@ if (typeof response?.message === 'string') {
             placeholder="Mobile number"
             placeholderTextColor={colors.placeholder}
             style={styles.input}
-            onChangeText={text => setPlayerForm(prev => ({ ...prev, mobile: text }))}
+            onChangeText={text =>
+              setPlayerForm(prev => ({ ...prev, mobile: text }))
+            }
             keyboardType="number-pad"
             cursorColor={colors.primary}
             maxLength={10}
@@ -433,7 +590,9 @@ if (typeof response?.message === 'string') {
             placeholder="Email address"
             placeholderTextColor={colors.placeholder}
             style={styles.input}
-            onChangeText={text => setPlayerForm(prev => ({ ...prev, email: text }))}
+            onChangeText={text =>
+              setPlayerForm(prev => ({ ...prev, email: text }))
+            }
             keyboardType="email-address"
             cursorColor={colors.primary}
             maxLength={100}
@@ -473,6 +632,21 @@ const createStyles = (colors: any) =>
     screen: {
       flex: 1,
       backgroundColor: colors.background,
+    },
+    playerImage: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      marginBottom: 12,
+    },
+    playerEmptyImage: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      marginBottom: 12,
+      backgroundColor: colors.surfaceAlt,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     listContent: {
       paddingBottom: 40,
@@ -582,6 +756,11 @@ const createStyles = (colors: any) =>
       color: colors.textMuted,
       fontFamily: FONT_FAMILY.normal,
       fontSize: 12,
+    },
+    avatar: {
+      width: 46,
+      height: 46,
+      borderRadius: 15,
     },
     starButton: {
       padding: 6,

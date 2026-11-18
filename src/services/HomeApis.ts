@@ -19,6 +19,16 @@ export interface HomeDashboardSummary {
   pay_status?: string | null;
 }
 
+
+export interface AppBannerItem {
+  id: string | number;
+  image: string;
+  title?: string;
+  sub_title?: string;
+  navigation?: string;
+  data?: any;
+}
+
 export interface HomeDashboardCard {
   label: string;
   value: number | string;
@@ -95,4 +105,32 @@ const useDashboardData = ({
   });
 };
 
+
+export const useAppBanner = ({
+  token,
+}: UseDashboardDataParams): UseQueryResult<ApiResponse<AppBannerItem[]>, unknown> => {
+  return useQuery({
+    queryKey: ['member-app-banner', token],
+    queryFn: async () => {
+      const response = await javascriptGet<AppBannerItem[] | { data?: AppBannerItem[] }>({
+        path: 'member/app-banner',
+        Token: token ?? '',
+      });
+      const payload = response.data;
+      const banners = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.data)
+          ? payload.data
+          : [];
+
+      return {
+        ...response,
+        data: banners,
+      };
+    },
+    enabled: !!token,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
+};
 export default useDashboardData;

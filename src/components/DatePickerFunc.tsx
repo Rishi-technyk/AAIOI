@@ -26,7 +26,7 @@ const DatePickerComponent: React.FC<DatePickerComponentProps> = ({
   const [updateDate, setUpdateDate] = useState<boolean>(false);
   const { colors, resolvedMode } = useAppTheme();
   const styles = createStyles(colors);
-
+console.log( minDate, '---------------------- minDate ---------------------');
   useEffect(() => {
     if (setResetDate === true) {
       setUpdateDate(false);

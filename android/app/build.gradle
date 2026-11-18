@@ -84,8 +84,8 @@ android {
         applicationId "com.technyk.aaioi"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
-        versionName "0.0.3"
+        versionCode 7
+        versionName "0.0.7"
     }
     signingConfigs {
         debug {
@@ -132,3 +132,4 @@ project.ext.vectoricons = [
 ]
 apply plugin: 'com.google.gms.google-services'
 apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
+
